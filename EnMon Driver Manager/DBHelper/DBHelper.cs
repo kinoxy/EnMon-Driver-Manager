@@ -466,7 +466,7 @@ namespace EnMon_Driver_Manager
             return _analogSignalList;
         }
 
-        public bool SetAnalogSignalValue(int _signalID, bool _signalValue)
+        public bool SetAnalogSignalValue(int _signalID, int _signalValue)
         {
             Log.Instance.Trace("SetAnalogSignalValue fonksiyonu çağrıldı");
 
@@ -501,6 +501,8 @@ namespace EnMon_Driver_Manager
                 return false;
             }
         }
+
+
         #endregion
     }
 }

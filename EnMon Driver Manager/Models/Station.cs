@@ -3,10 +3,11 @@ using System.Collections.Generic;
 
 namespace EnMon_Driver_Manager
 {
-    internal class Station
+    public class Station
     {
         private int id;
         private String name;
+        private string ipAddress;
         private List<Device> devices;
 
         public int ID
@@ -19,6 +20,12 @@ namespace EnMon_Driver_Manager
         {
             get { return name; }
             set { name = value; }
+        }
+
+        public string IpAddress
+        {
+            get { return ipAddress; }
+            set { ipAddress = value; }
         }
 
         public List<Device> Devices
