@@ -8,7 +8,27 @@ namespace EnMon_Driver_Manager.Modbus
 {
     class ModbusRTU : AbstractDriver
     {
-        public override void ReadValueFromDevice()
+        public override void Connect()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ConnectToDisconnectedDevices()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ReadAnalogValuesfromDevices()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ReadBinaryValuesFromDevices()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void StartToReadValues()
         {
             throw new NotImplementedException();
         }

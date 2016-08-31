@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EnMon_Driver_Manager.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,17 +8,26 @@ using System.Threading.Tasks;
 
 namespace EnMon_Driver_Manager.Modbus
 {
-    abstract class AbstractDriver
+    public abstract class AbstractDriver
     {
         #region Private Properties
+        public static int pollingTime;
+        public static int portNumber;
+        public static int retryNumber;
+        public static int readTimeOut;
         private List<BinarySignal> binarySignals;
         private List<AnalogSignal> analogSignals;
-        private List<Device> devices;
+        public static List<Device> devices;
         private Thread thread_ReadBinaryValues;
         private Thread thread_ReadAnalogValues;
         #endregion
 
         #region Public Methods
+        public int PollingTime
+        {
+            get { return pollingTime; }
+            set { pollingTime = value; }
+        }
         public List<BinarySignal> BinarySignals
         {
             get { return binarySignals; }
@@ -160,13 +170,6 @@ namespace EnMon_Driver_Manager.Modbus
 
                 // TODO: burdan sonra iki tane async thread calıstırmak gerekli. birinci thread cihazlardan veri okurken, ikinci thread baglantısı kopmus cihazlara tekrardan baglanmaya calısacak. 
 
-                thread_ReadBinaryValues = new Thread(ReadBinaryValuesFromDevices);
-                thread_ReadAnalogValues = new Thread(ReadAnalogValuesfromDevices);
-
-                thread_ReadBinaryValues.Start();
-                thread_ReadAnalogValues.Start();
-
-                
             }
             catch (Exception e)
             {
@@ -186,8 +189,8 @@ namespace EnMon_Driver_Manager.Modbus
         /// Device'tan istenilen sinyalin degerini okur
         /// </summary>
         /// <returns></returns>
-        abstract public void ReadBinaryValuesFromDevices();
-        abstract public void ReadAnalogValuesfromDevices();
+        abstract public void ReadBinaryValuesFromDevice();
+        abstract public void ReadAnalogValuesfromDevice();
         abstract public void WriteAnalogValuesToDatabase(List<AnalogSignal> _analogValues);
         abstract public void WriteValueToDevice();
         abstract public void Connect();
@@ -200,7 +203,7 @@ namespace EnMon_Driver_Manager.Modbus
 
         abstract public void ConnectToDisconnectedDevices();
 
-        abstract public void ReadValuesFromConnectedDevices();
+        abstract public void StartToReadValues();
 
         #endregion
 

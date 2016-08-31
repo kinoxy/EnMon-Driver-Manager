@@ -6,7 +6,7 @@ namespace EnMon_Driver_Manager
     {
         private bool currentValue;
         private bool is_reversed;
-        private DateTime timetag;
+        private string timetag;
 
         public bool CurrentValue
         {
@@ -20,7 +20,7 @@ namespace EnMon_Driver_Manager
             set { is_reversed = value; }
         }
 
-        public DateTime TimeTag
+        public string TimeTag
         {
             get { return timetag; }
             set { timetag = value; }

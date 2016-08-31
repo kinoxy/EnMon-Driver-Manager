@@ -62,6 +62,9 @@
     <Compile Include="Modbus\ModbusTCP.cs" />
     <Compile Include="Modbus\AbstractDriver.cs" />
     <Compile Include="Models\ModbusServer.cs" />
+    <Compile Include="Models\PollingTimer.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Models\Signal.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\Alarm.cs" />
