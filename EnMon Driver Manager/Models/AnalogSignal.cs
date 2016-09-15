@@ -5,11 +5,11 @@ namespace EnMon_Driver_Manager
     public class AnalogSignal : Signal
     {
         private int currentValue;
-        private int dataTypeID;
+        private byte dataTypeID;
         private int maxValue;
         private int minValue;
-        private int scaleValue;
-
+        private float scaleValue;
+        public string TimeTag { get; set; }
         
         public int CurrentValue
         {
@@ -17,25 +17,49 @@ namespace EnMon_Driver_Manager
             set { currentValue = value; }
         }
 
-        public int DatatypeID
+        /// <summary>
+        /// Gets or sets the datatype identifier.
+        /// </summary>
+        /// <value>
+        /// The datatype identifier.
+        /// </value>
+        public byte DatatypeID
         {
             get { return dataTypeID; }
             set { dataTypeID = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum value.
+        /// </summary>
+        /// <value>
+        /// The maximum value.
+        /// </value>
         public int MaxValue
         {
             get { return maxValue; }
             set { maxValue = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the minimum value.
+        /// </summary>
+        /// <value>
+        /// The minimum value.
+        /// </value>
         public int MinValue
         {
             get { return minValue; }
             set { minValue = value; }
         }
 
-        public int ScaleValue
+        /// <summary>
+        /// Gets or sets the scale value.
+        /// </summary>
+        /// <value>
+        /// The scale value.
+        /// </value>
+        public float ScaleValue
         {
             get { return scaleValue; }
             set { scaleValue = value; }

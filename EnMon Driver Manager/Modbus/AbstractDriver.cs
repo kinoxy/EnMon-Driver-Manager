@@ -1,51 +1,175 @@
-﻿using EnMon_Driver_Manager.Models;
+﻿using IniParser;
+using IniParser.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace EnMon_Driver_Manager.Modbus
 {
+    /// <summary>
+    ///
+    /// </summary>
     public abstract class AbstractDriver
     {
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the analog signals.
+        /// </summary>
+        /// <value>
+        /// The analog signals.
+        /// </value>
+        public List<AnalogSignal> AnalogSignals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binary signals.
+        /// </summary>
+        /// <value>
+        /// The binary signals.
+        /// </value>
+        public List<BinarySignal> BinarySignals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the devices.
+        /// </summary>
+        /// <value>
+        /// The devices.
+        /// </value>
+        public List<Device> Devices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the polling time.
+        /// </summary>
+        /// <value>
+        /// The polling time.
+        /// </value>
+        public int PollingTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the read time out.
+        /// </summary>
+        /// <value>
+        /// The read time out.
+        /// </value>
+        public int ReadTimeOut { get; set; }
+
+        /// <summary>
+        /// Gets or sets the retry number.
+        /// </summary>
+        /// <value>
+        /// The retry number.
+        /// </value>
+        public int RetryNumber { get; set; }
+
+        #endregion Public Properties
+
         #region Private Properties
+
         public static int pollingTime;
         public static int portNumber;
-        public static int retryNumber;
         public static int readTimeOut;
-        private List<BinarySignal> binarySignals;
+        public static int retryNumber;
         private List<AnalogSignal> analogSignals;
-        public static List<Device> devices;
-        private Thread thread_ReadBinaryValues;
+        private List<BinarySignal> binarySignals;
         private Thread thread_ReadAnalogValues;
-        #endregion
+
+        private Thread thread_ReadBinaryValues;
+
+        /// <summary>
+        /// Gets or sets the database helper.
+        /// </summary>
+        /// <value>
+        /// The database helper.
+        /// </value>
+        protected static DBHelper dbHelper { get; set; }
+
+        #endregion Private Properties
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AbstractDriver"/> class.
+        /// </summary>
+        public AbstractDriver() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AbstractDriver"/> class.
+        /// </summary>
+        /// <param name="_configFile">The configuration file.</param>
+        public AbstractDriver(string _configFile)
+        {
+            dbHelper = new DBHelper();
+            Devices = new List<Device>();
+
+            var parser = new FileIniDataParser();
+            IniData data = parser.ReadFile(_configFile);
+
+            var _stations = data["Stations"]["Names"];
+
+            if (_stations != null)
+            {
+                string[] _stationNames = _stations.Split(',');
+                if (_stationNames != null)
+                {
+                    foreach (string _station in _stationNames)
+                    {
+                        List<Device> _stationDevices = dbHelper.GetStationDevices(_station.Trim());
+
+                        if (_stationDevices.Count > 0)
+                        {
+                            foreach (Device d in _stationDevices)
+                            {
+                                d.BinarySignals = dbHelper.GetDeviceBinarySignalsInfo(d.ID);
+                                d.AnalogSignals = dbHelper.GetDeviceAnalogSignalsInfo(d.ID);
+                            }
+
+                            Devices.AddRange(_stationDevices);
+                        }
+                        else
+                        {
+                            Log.Instance.Info("{0} adlı station için herhang bir device bulunamadı", _station);
+                        }
+                    }
+
+                    if (Devices != null)
+                    {
+                        VerifyProtocolofDevices();
+
+                        if (Devices != null)
+                        {
+                            InitializeDriver();
+                        }
+                        else
+                        {
+                            Log.Instance.Error("{0} Hata: İstasyon cihazları haberleşme protokolü hatası.", this.GetType().Name);
+                        }
+                    }
+                    else
+                    {
+                        Log.Instance.Error("{0} Hata: İstasyonlara ait modbus cihazı bulunamadı.", this.GetType().Name);
+                    }
+                }
+                else
+                {
+                    Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyası veri girişi hatası.", this.GetType().Name);
+                }
+            }
+            else
+            {
+                Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyasında kayıtlı istasyon bulunamadı.", this.GetType().Name);
+            }
+            
+        }
+
+        #endregion Constructors
 
         #region Public Methods
-        public int PollingTime
-        {
-            get { return pollingTime; }
-            set { pollingTime = value; }
-        }
-        public List<BinarySignal> BinarySignals
-        {
-            get { return binarySignals; }
-            set { binarySignals = value; }
-        }
 
-        public List<AnalogSignal> AnalogSignals
-        {
-            get { return analogSignals; }
-            set { analogSignals = value; }
-        }
-
-        public List<Device> Devices
-        {
-            get { return devices; }
-            set { devices = value; }
-        }
-
+        /// <summary>
+        /// Gets the signal list for driver devices.
+        /// </summary>
         public void GetSignalListForDriverDevices()
         {
             Log.Instance.Trace("GetSignalListForDriverDevices fonksiyonu cagrıldı");
@@ -56,14 +180,33 @@ namespace EnMon_Driver_Manager.Modbus
                 _device.BinarySignals = db_connection.GetDeviceBinarySignalsInfo(_device.ID);
                 _device.AnalogSignals = db_connection.GetDeviceAnalogSignalsInfo(_device.ID);
             }
-
-
         }
+
+        /// <summary>
+        /// Starts the communication.
+        /// </summary>
+        public void StartCommunication()
+        {
+            Log.Instance.Trace("{0}: {1} methodu çağrıldı cagrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+            try
+            {
+                ConnectToModbusDevices();
+                dbHelper.WriteValuesAtBufferToDatabase();
+            }
+            catch (Exception e)
+            {
+                Log.Instance.Fatal("{0}: Driver baglantı hatası => ", this.GetType().Name, e.Message);
+            }
+        }
+
+        #endregion Public Methods
+
+        #region Private Methods
 
         /// <summary>
         /// Driver'da tanımlı tüm device'ların database'de kayıtlı sinyallerinin database'deki son güncel degerlerini alır.
         /// </summary>
-        public void GetLastValuesFromDatabase()
+        private void GetLatestValuesFromDatabase()
         {
             Log.Instance.Trace("GetLastValuesFromDatabase fonksiyonu cagrıldı");
 
@@ -77,11 +220,12 @@ namespace EnMon_Driver_Manager.Modbus
                 List<BinarySignal> _binarySignals = new List<BinarySignal>();
                 _binarySignals = db_connection.GetDeviceBinarySignalsValue(device.ID);
 
-                if(_binarySignals != null)
+                if (_binarySignals != null)
                 {
-                    foreach( BinarySignal signal in device.BinarySignals)
+                    foreach (BinarySignal signal in device.BinarySignals)
                     {
-                        signal.CurrentValue = _binarySignals.First(s => s.Name == signal.Name).CurrentValue; 
+                        signal.CurrentValue = _binarySignals.First(s => s.Name == signal.Name).CurrentValue;
+                        signal.TimeTag = _binarySignals.First(s => s.Name == signal.Name).TimeTag;
                     }
                 }
                 else
@@ -97,7 +241,7 @@ namespace EnMon_Driver_Manager.Modbus
                 {
                     foreach (AnalogSignal signal in device.AnalogSignals)
                     {
-                         signal.CurrentValue = _analogSignals.First(s => s.Name == signal.Name).CurrentValue; 
+                        signal.CurrentValue = _analogSignals.First(s => s.Name == signal.Name).CurrentValue;
                     }
                 }
                 else
@@ -106,156 +250,47 @@ namespace EnMon_Driver_Manager.Modbus
                 }
             }
         }
-       
-        /// <summary>
-        /// Fonksiyonuna girilen BinarySignal listesindeki sinyallerin degerleri driverdaki sinyallerin degerleri ile karsılastırılıyor. 
-        /// Guncellenmesi gereken deger varsa hem driver da hem de database de guncelleniyor.
-        /// </summary>
-        /// <param name="_binarySignals"></param>
-        /// <param name="_deviceID"></param>
-        public void UpdateValuesOfDeviceBinarySignals(List<BinarySignal> _binarySignals, int _deviceID)
-        {
-            Log.Instance.Trace("UpdateValuesOfDeviceBinarySignals fonksiyonu cagrıldı");
 
-            DBHelper db_connection = new DBHelper();
-            db_connection.Connect();
-            foreach(BinarySignal signal in _binarySignals)
-            {
-                //Mevcut deger ile okunan deger farklı ise databasede ve driverda tutulan deger guncelleniyor.
-                if (signal.CurrentValue != Devices.Where(d => d.ID == _deviceID).First().BinarySignals.Where(b => b.CurrentValue == signal.CurrentValue).First().CurrentValue)
-                {
-                    //Mevuct deger ile okunan deger farklı cıktıgı için yeni deger database'e gonderiliyor.
-                    db_connection.SetBinarySignalValue(signal.DeviceID, signal.CurrentValue);
-                    //Driver'da tutulan listede yer alan sinyalin degeri güncelleniyor.
-                    Devices.Where(d => d.ID == _deviceID).First().BinarySignals.Where(b => b.CurrentValue == signal.CurrentValue).First().CurrentValue = signal.CurrentValue;
-                }
-
-            }
-            db_connection.Disconnect();
-        }
-
-        /// <summary>
-        /// Fonksiyonuna girilen AnalogSignal listesindeki sinyallerin degerleri driverdaki sinyallerin degerleri ile karsılastırılıyor. 
-        /// Guncellenmesi gereken deger varsa hem driver da hem de database de guncelleniyor.
-        /// </summary>
-        /// <param name="_analogSignals"></param>
-        /// <param name="_deviceID"></param>
-        public void UpdateValuesOfDeviceAnalogSignals(List<AnalogSignal> _analogSignals, int _deviceID)
-        {
-            Log.Instance.Trace("UpdateValuesOfDeviceAnalogSignals fonksiyonu cagrıldı");
-
-            DBHelper db_connection = new DBHelper();
-            db_connection.Connect();
-            foreach (AnalogSignal signal in _analogSignals)
-            {
-                //Mevcut deger ile okunan deger farklı ise databasede ve driverda tutulan deger guncelleniyor.
-                if (signal.CurrentValue != Devices.Where(d => d.ID == _deviceID).First().AnalogSignals.Where(b => b.CurrentValue == signal.CurrentValue).First().CurrentValue)
-                {
-                    //Mevuct deger ile okunan deger farklı cıktıgı için yeni deger database'e gonderiliyor.
-                    db_connection.SetAnalogSignalValue(signal.DeviceID, signal.CurrentValue);
-                    //Driver'da tutulan listede yer alan sinyalin degeri güncelleniyor.
-                    Devices.Where(d => d.ID == _deviceID).First().AnalogSignals.Where(b => b.CurrentValue == signal.CurrentValue).First().CurrentValue = signal.CurrentValue;
-                }
-
-            }
-            db_connection.Disconnect();
-        }
-
-        public void StartCommunication()
-        {
-            Log.Instance.Trace("StartCommunication fonksiyonu cagrıldı");
-            try
-            {
-                Connect();
-
-                // TODO: burdan sonra iki tane async thread calıstırmak gerekli. birinci thread cihazlardan veri okurken, ikinci thread baglantısı kopmus cihazlara tekrardan baglanmaya calısacak. 
-
-            }
-            catch (Exception e)
-            {
-                Log.Instance.Fatal("Driver baglantı hatası: " + e.Message);
-            }
-
-            
-        }
-        #endregion
-
-        #region Private Methods
-
-        #endregion
+        #endregion Private Methods
 
         #region Abstract Methods
+
         /// <summary>
         /// Device'tan istenilen sinyalin degerini okur
         /// </summary>
         /// <returns></returns>
-        abstract public void ReadBinaryValuesFromDevice();
-        abstract public void ReadAnalogValuesfromDevice();
-        abstract public void WriteAnalogValuesToDatabase(List<AnalogSignal> _analogValues);
-        abstract public void WriteValueToDevice();
-        abstract public void Connect();
-        
+        //abstract public void ReadBinaryValuesFromDevice();
+
+        /// <summary>
+        /// Reads the analog values from device.
+        /// </summary>
+        //abstract public void ReadAnalogValuesfromDevice();
+
+        /// <summary>
+        /// Writes the value to device.
+        /// </summary>
+        //abstract public void WriteValueToDevice();
+
+        /// <summary>
+        /// Connects this instance.
+        /// </summary>
+        protected abstract void ConnectToModbusDevices();
+
+        /// <summary>
+        /// Initializes the driver.
+        /// </summary>
+        protected abstract void InitializeDriver();
+
         /// <summary>
         /// Devices listesindeki tüm cihazların dogru protokol ile haberleşip haberleşmediğini kontrol eder.
         /// Protokolü yanlış seçilmiş device varsa onu driver'in devices listesinden çıkartır ve o device ile baglantı kurmaz.
         /// </summary>
-        abstract public void VerifyProtocolofDevices();
+        protected abstract void VerifyProtocolofDevices();
+        /// <summary>
+        /// Starts to read values.
+        /// </summary>
+        //abstract public void StartToReadValues();
 
-        abstract public void ConnectToDisconnectedDevices();
-
-        abstract public void StartToReadValues();
-
-        #endregion
-
+        #endregion Abstract Methods
     }
-
-    #region eskiyapılanlar
-
-    //    public interface IDriverBuilder
-    //    {
-    //        Driver driver();
-
-
-    //        private List<Station> stations;
-
-    //        public abstract void GetBinarySignalList()
-    //        {
-
-    //        }
-    //        public abstract void GetAnalogSignalList();
-
-    //    }
-
-    //    public class ModbusTCP : IDriverBuilder
-    //    {
-    //        private Driver driver;
-
-    //        public ModbusTCP()
-    //        {
-    //            driver = new Driver(Driver.driverType.ModbusTCP);
-    //        }
-
-    //    }
-
-    //    public class ModbusRTU : IDriverBuilder
-    //    {
-
-    //    }
-
-    //    public class Driver
-    //    {
-    //        public static enum driverType
-    //        {
-    //            ModbusRTU,
-    //            ModbusTCP,
-    //            ModbusASCII
-    //        };
-
-    //        public Driver(enum _driverType)
-    //        {
-    //        }
-    //    }
-
-    #endregion
-
 }

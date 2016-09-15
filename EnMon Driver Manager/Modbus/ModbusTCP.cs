@@ -1,241 +1,221 @@
 ﻿using EnMon_Driver_Manager.Models;
+using IniParser;
+using IniParser.Model;
 using Modbus.Device;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace EnMon_Driver_Manager.Modbus
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="EnMon_Driver_Manager.Modbus.AbstractDriver" />
     public class ModbusTCP : AbstractDriver
     {
+
         #region Private Properties
 
-        private List<string> ipAddresses;
-        private List<string> connectedIpAdress;
-        private List<string> notConnectedIpAdresses;
-        public static List<ModbusServer> modbusServers;
-        private static List<PollingTimer> timers;
-        private static Dictionary<string, bool> connectionStatus;
-        private static Dictionary<string, ModbusIpMaster> modbusMasters;
-        private Dictionary<string, Timer> timers1;
+        private List<string> ipAddresses { get; set; }
 
-        //private List<ModbusIpMaster> modbusMasters;
+        /// <summary>
+        /// Gets or sets the modbus TCP masters.
+        /// </summary>
+        /// <value>
+        /// The modbus TCP masters.
+        /// </value>
+        private List<ModbusTCPMaster> modbusTCPMasters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the loop result.
+        /// </summary>
+        /// <value>
+        /// The loop result.
+        /// </value>
+        private ParallelLoopResult loopResult { get; set; }
+
+
 
         #endregion Private Properties
 
-        #region Constructors
+        #region Public Properties
 
-        public ModbusTCP(List<string> _ipAddresses)
-        {
-            // TODO: ipaddress yerine driver dosyasının adı verilebilir. Ya da ModbusCommSettings diye bir model olusturularak tüm ayarlar buraya atanıp burdan okunabilir.
-            ipAddresses = _ipAddresses;
-            portNumber = 502;
-            modbusServers = new List<ModbusServer>();
-            foreach (string _ipAddress in _ipAddresses)
-            {
-                ModbusServer _modbusClient = new ModbusServer(_ipAddress, portNumber);
-                modbusServers.Add(_modbusClient);
-            }
-            Log.Instance.Trace("Modbus driver olusturuldu.");
-        }
-
-        public ModbusTCP(List<string> _ipAddresses, int _portNumber)
-        {
-            ipAddresses = _ipAddresses;
-            portNumber = _portNumber;
-            Log.Instance.Trace("Modbus driver olusturuldu.");
-        }
-
-        public ModbusTCP(string _ipAddress, int _portnumber)
-        {
-            if (modbusServers == null)
-            {
-                modbusServers = new List<ModbusServer>();
-            }
-
-            ModbusServer _modbusServer = new ModbusServer(_ipAddress, _portnumber);
-            modbusServers.Add(_modbusServer);
-            Log.Instance.Trace("Modbus driver olusturuldu.");
-        }
-
-        public ModbusTCP(string _ipAddress)
-        {
-            if (modbusServers == null)
-            {
-                modbusServers = new List<ModbusServer>();
-            }
-            ModbusServer _modbusClient = new ModbusServer(_ipAddress);
-            modbusServers.Add(_modbusClient);
-            Log.Instance.Trace("Modbus driver olusturuldu.");
-        }
-
-        #endregion Constructors
-
+        /// <summary>
+        /// Gets or sets the port number.
+        /// </summary>
+        /// <value>
+        /// The port number.
+        /// </value>
+        /// 
         public int PortNumber
         {
             get { return portNumber; }
             set { portNumber = value; }
         }
 
-        #region Private Methods
+        #endregion
+
+        #region Constructors        
 
         /// <summary>
-        /// Herhangi bir ağ bağlantısı olup olmadığını kontrol eder.
+        /// Initializes a new instance of the <see cref="ModbusTCP"/> class.
         /// </summary>
-        /// <returns></returns>
-        private bool IsNetworkAvaliable()
+        /// <param name="_configFile">The configuration file.</param>
+        public ModbusTCP(string _configFile) : base(_configFile) { }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModbusTCP"/> class.
+        /// </summary>
+        /// <param name="_ipAddresses">The ip addresses.</param>
+        public ModbusTCP(List<string> _ipAddresses) : base()
         {
-            return System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+            ipAddresses = _ipAddresses;
+            portNumber = 502;
+            modbusTCPMasters = new List<Models.ModbusTCPMaster>();
+            dbHelper = new DBHelper();
+            Log.Instance.Trace("{0}: Modbus driver olusturuldu.", this.GetType().Name);
         }
 
         /// <summary>
-        /// Devices listesinde yer alan deviceları kontrol ederek tekil IP listesini çıkarır.
+        /// Initializes a new instance of the <see cref="ModbusTCP"/> class.
+        /// </summary>
+        /// <param name="_ipAddresses">The ip addresses.</param>
+        /// <param name="_portNumber">The port number.</param>
+        public ModbusTCP(List<string> _ipAddresses, int _portNumber) : this(_ipAddresses)
+        {
+            portNumber = _portNumber;
+
+        }
+
+        #endregion Constructors  
+
+        #region Private Methods
+
+        /// <summary>
+        /// Gets the ip list from devices.
         /// </summary>
         private void GetIpListFromDevices()
         {
-            
+            Log.Instance.Trace("{0}: {1} methodu çağrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
             ipAddresses = new List<string>();
             ipAddresses = Devices.Select(d => d.IpAddress).Distinct().ToList();
         }
 
         /// <summary>
-        /// Verilen ip adresindeki modbus server cihazına baglanır.
+        /// Connects to modbus servers.
         /// </summary>
-        /// <param name="_ipAddress"></param>
-        /// <param name="pls"></param>
-        private static void /*bool /*ModbusIpMaster*/ ConnectToModbusServer(string _ipAddress, ParallelLoopState pls)
+        /// <param name="_ipAddress">The ip address.</param>
+        /// <param name="pls">The PLS.</param>
+        private void ConnectToModbusServer(string _ipAddress, ParallelLoopState pls)
         {
-            Log.Instance.Trace("ConnectToModbusServerAsync methodu {0} için cagrıldı", _ipAddress);
+            Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", _ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
 
-            bool status = false;
             try
             {
-                // Server ile TCP baglantısı olusturuluyor
-                TcpClient tcpClient = new TcpClient();
-                IAsyncResult asyncResult = tcpClient.BeginConnect(_ipAddress, portNumber, null, null);
-                asyncResult.AsyncWaitHandle.WaitOne(3000, true); // 3 saniye içerisinde bağlantının kurulması bekleniyor.
-                // 3 saniye  içerisinde baglantı cevap vermezse
-                if (!asyncResult.IsCompleted)
+                // Verilen IP adresi icin modbusTCPMaster olusturuluyor
+                ModbusTCPMaster _modbusTCPmaster = new ModbusTCPMaster(_ipAddress);
+                // modbusTCPMaster'ın aynı ip adresi üzerinden haberleşeceği cihazlar ekleniyor.
+                _modbusTCPmaster.Devices = (from d in Devices where d.IpAddress == _ipAddress select d).ToList();
+                
+                // Eventler ayarlanıyor
+                _modbusTCPmaster.ConnectedToServer += _modbusServer_ConnectedToServer;
+                _modbusTCPmaster.DisconnectedFromDevice += _modbusServer_DisconnectedFromToDevice;
+                _modbusTCPmaster.AnyBinarySignalValueChanged += _modbusServer_AnyBinarySignalValueChanged;
+                _modbusTCPmaster.AnyAnalogSignalValueChanged += _modbusServer_AnyAnalogSignalValueChanged;
+                modbusTCPMasters.Add(_modbusTCPmaster);
+                _modbusTCPmaster.Connect();
+                if(_modbusTCPmaster.IsConnected)
                 {
-                    tcpClient.Close();
-                    // TODO: Baglantı kurulamazsa database'de device ile ilgili "Communication Not Ok" diye bir bilgi tutulmalı.
-                    Log.Instance.Error("Driver baglantı hatası: {0} ip adresi ile bağlantı kurulamadı", _ipAddress);
-                    status = false;
+                    _modbusTCPmaster.ReadValuesFromModbusServer();
                 }
-                else
-                {
-                    // TCP baglantısı kurulduktan sonra _ipAddress için modbus baglantısı olusturuluyor ve daha sonra erişebilmek için dictionary'e atılıyor.
-                    ModbusIpMaster master = ModbusIpMaster.CreateIp(tcpClient);
-                    master.Transport.Retries = retryNumber;
-                    master.Transport.ReadTimeout = readTimeOut;
-                    if (modbusMasters.ContainsKey(_ipAddress))
-                    {
-                        modbusMasters[_ipAddress] = master;
-                    }
-                    else
-                    {
-                        modbusMasters.Add(_ipAddress, master); 
-                    }
-                    // Ipadresi için daha önce timer olusturulmamışsa sinyalleri okumak icin timer olusturuluyor.
-                    if(_ipAddress != (from t in timers where t.hostAddress == _ipAddress select t.hostAddress).First())
-                    {
-                        PollingTimer timer = new PollingTimer(pollingTime);
-                        timer.hostAddress = _ipAddress;
-                        timer.Elapsed += ReadValuesFromServer;
-                        timer.AutoReset = true;
-                        timer.Enabled = true;
-                    }
-                    
 
-                    // TODO: Baglantı kuruldugunda database'de device ile ilgili "Communication Ok" diye bir bilgi tutulmalı. Database, driver manager ile bir baglantısı yoksa otomatik olarak bu sutunu "Communication Not OK" e cevirmeli.
-                    Log.Instance.Info("{0} ip adresi ile bağlantı kuruldu", _ipAddress);
-                    status = true;
-                }
             }
             catch (Exception e)
             {
-                Log.Instance.Fatal("Driver baglantı hatası: " + e.Message);
-                status = false;
-            }
-            finally
-            {
-                if (connectionStatus.ContainsKey(_ipAddress))
-                {
-                    connectionStatus[_ipAddress] = status;
-                }
-                else
-                {
-                    connectionStatus.Add(_ipAddress, status);
-                }
+                Log.Instance.Fatal("{0}: Driver baglantı hatası => {1}", this.GetType().Name, e.ToString());
             }
         }
 
-        private static void ReadValuesFromServer(Object source, ElapsedEventArgs e)
+        /// <summary>
+        /// Handles the AnyAnalogSignalValueChanged event of the _modbusServer control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private static void _modbusServer_AnyAnalogSignalValueChanged(object sender, ModbusServerEventArgs e)
         {
-            PollingTimer timer = (PollingTimer)source;
-            timer.Enabled = false;
-            try
-            {
-                if(connectionStatus[timer.hostAddress])
-                {
-                    var _serverDevices = from k in devices where k.IpAddress == timer.hostAddress select k;
-                    ModbusIpMaster master = modbusMasters[timer.hostAddress];
+            dbHelper.AddAnalogSignalsToBuffer(e.AnalogSignals);
+        }
 
-                    // TODO: Degerleri okumaya basla
-                }
-                else
-                {
+        private static void _modbusServer_AnyBinarySignalValueChanged(object sender, ModbusServerEventArgs e)
+        {
+            dbHelper.AddBinarySignalsToBuffer(e.BinarySignals);
+        }
 
-                }
+        private static void _modbusServer_DisconnectedFromToDevice(object sender, ModbusServerEventArgs e)
+        {
+            //Log.Instance.Error("{0} ile bağlantı koptu", e.ipAddress);
+            //throw new NotImplementedException();
+        }
 
-            }
-            catch (Exception)
-            {
-                
-                throw;
-            }
+        private static void _modbusServer_ConnectedToServer(object sender, ModbusServerEventArgs e)
+        {
+            Log.Instance.Trace("{0}: {1} baglantı kuruldu", MethodBase.GetCurrentMethod().Name, e.ipAddress );
+            //_modbusTCPmaster.ReadValuesFromModbusServer();
+            //throw new NotImplementedException();
         }
 
         #endregion Private Methods
 
-        #region Public Override Methods
+        #region Public Override Methods                
+        
         /// <summary>
-        /// Devices listesinde yer alan tüm device'ların haberleşme protokol ayarları kontrol edilir. Haberleşme protokolu ModbusTCP seçilmeyen device'lar listeden çıkartılır.
+        /// Devices listesindeki tüm cihazların dogru protokol ile haberleşip haberleşmediğini kontrol eder.
+        /// Protokolü yanlış seçilmiş device varsa onu driver'in devices listesinden çıkartır ve o device ile baglantı kurmaz.
         /// </summary>
-        public override void VerifyProtocolofDevices()
+        protected override void VerifyProtocolofDevices()
         {
             foreach (Device device in Devices)
             {
                 if (device.ProtocolID != Device.Protocol.ModbusTCP)
                 {
-                    Log.Instance.Warn("Yanlış protokol seçimi hatası: {0} adlı device'ın haberleşme protokolu ModbusTCP seçilmediği için bu device listeden çıkartılıyor.", device.Name);
+                    Log.Instance.Warn("Modbus Driver Uyarı: {0} adlı device'ın haberleşme protokolu ModbusTCP seçilmemiş Haberleşilecek cihazlar listesinden çıkartılıyor...", device.Name);
                     Devices.Remove(device);
                 }
             }
         }
 
-        public override void Connect()
+        /// <summary>
+        /// Connects this instance.
+        /// </summary>
+        protected override void ConnectToModbusDevices()
         {
-            VerifyProtocolofDevices();
+            
+            loopResult = Parallel.ForEach(ipAddresses, ConnectToModbusServer);
 
+        }
+
+        /// <summary>
+        /// Initializes the driver.
+        /// </summary>
+        protected override void InitializeDriver()
+        {
             GetIpListFromDevices();
 
-            modbusMasters = new Dictionary<string, ModbusIpMaster>();
-            connectionStatus = new Dictionary<string, bool>();
-            connectedIpAdress = new List<string>();
-            notConnectedIpAdresses = new List<string>();
-
-            if (IsNetworkAvaliable())
+            if(ipAddresses!=null)
             {
-                ParallelLoopResult _loopResult = Parallel.ForEach(ipAddresses, ConnectToModbusServer);
+                modbusTCPMasters = new List<Models.ModbusTCPMaster>();
+                Log.Instance.Trace("{0}: Modbus driver olusturuldu.", this.GetType().Name );
             }
             else
             {
-                Log.Instance.Error("Driver baglantı hatası: Aktif bir network bağlantısı bulunmamaktadır.");
+                Log.Instance.Error("{0} Hata: ModbusTCP Server cihazlar için Ip adresi bulunamadı", this.GetType().Name);
             }
         }
 

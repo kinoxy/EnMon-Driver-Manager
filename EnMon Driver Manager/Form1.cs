@@ -13,12 +13,16 @@ using MySql.Data.MySqlClient;
 using System.Resources;
 using Modbus.Device;
 using NLog;
+using IniParser;
+using IniParser.Model;
+using EnMon_Driver_Manager.Modbus;
+using System.IO;
 
 namespace EnMon_Driver_Manager
 {
     public partial class MainForm: Form
     {
-        
+        private ModbusTCP modbusTCP;
         public MainForm()
         {
             InitializeComponent();
@@ -69,13 +73,13 @@ namespace EnMon_Driver_Manager
             {
                 pct_led.Visible = false;
                 timer_led_count++;
-                timer_led.Start();
+                //timer_led.Start();
             }
             else if(timer_led_count % 2 == 0)
             {
                 pct_led.Visible = true;
                 timer_led_count++;
-                timer_led.Start();
+                //timer_led.Start();
 
             }
             if(timer_led_count == 7)
@@ -94,12 +98,28 @@ namespace EnMon_Driver_Manager
             }
         }
 
-        private void btn_start_Click(object sender, EventArgs e)
+        private async void btn_start_Click(object sender, EventArgs e)
         {
-            //DBHelper.GetDeviceBinarySignalsInfo(1);
-            DBHelper db_connection = new DBHelper();
-            dataGridView1.DataSource = db_connection.GetDeviceBinarySignalsInfo(1);
             timer_led.Start();
+
+            if (File.Exists("ModbusTCPConfig.ini"))
+            {
+                Task t1 = Task.Factory.StartNew(() => modbusTCP = new ModbusTCP("ModbusTCPConfig.ini"));
+                await t1;
+                if (modbusTCP.Devices.Count > 0)
+                {
+                    pct_led.Image = EnMon_Driver_Manager.Properties.Resources.green;
+                    modbusTCP.StartCommunication();
+                }
+            }
+            else
+            {
+                Log.Instance.Error("Driver config dosyası bulunamadı");
+            }
+            timer_led.Stop();
+            pct_led.Visible = true;
+            
+   
         }
     }
 }

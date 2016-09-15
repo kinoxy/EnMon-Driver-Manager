@@ -163,6 +163,7 @@ namespace EnMon_Driver_Manager
             this.Controls.Add(this.btn_start);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "EnMon Driver Manager";

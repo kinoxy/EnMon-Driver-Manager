@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using System.Reflection;
+using System.Threading;
 
 namespace EnMon_Driver_Manager
 {
@@ -16,9 +18,12 @@ namespace EnMon_Driver_Manager
         private static String str_userName = "root";
         private static String str_password = "Qweasd123";
         private static MySqlConnection conn;
+        private static Queue<BinarySignal> buffer_BinarySignals;
+        private static Queue<AnalogSignal> buffer_AnalogSignals;
         #endregion
 
-        #region Public Tanımlamalar
+        #region Public Methods
+
         /// <summary>
         /// Connection string
         /// </summary>
@@ -27,42 +32,20 @@ namespace EnMon_Driver_Manager
             get { return String.Format("Server={0};Database={1};Uid={2};Pwd={3};", str_serverAddress, str_databaseName, str_userName, str_password); }
         }
 
-        public bool Connect()
-        {
-            try
-            {
-                conn.Open();
-                Log.Instance.Info("Database'e baglanıldı");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Fatal("Database baglantısı kurulamadı: {0}", ex.Message);
-                return false;
-            }
-        }
-
-        public bool Disconnect()
-        {
-            try
-            {
-                conn.Close();
-                Log.Instance.Info("Database'e baglantısı kesildi.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Fatal("Database baglantısı kesilirken hata olustu: {0}", ex.Message);
-                return false;
-            }
-        }
-    
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is database write enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is database write enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsWriteEnabled { get; set; }
 
         #endregion
 
         #region Constructors
+                
         /// <summary>
-        /// Default ayarlar ile database'e baglanır
+        /// Initializes a new instance of the <see cref="DBHelper"/> class.
         /// </summary>
         public DBHelper ()
         {
@@ -70,32 +53,36 @@ namespace EnMon_Driver_Manager
             {
                 conn = new MySqlConnection(ConnectionString);
             }
+
+            buffer_BinarySignals = new Queue<BinarySignal>();
+            buffer_AnalogSignals = new Queue<AnalogSignal>();
+            IsWriteEnabled = true;
             
         }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="DBHelper"/> class.
         /// </summary>
-        /// <param name="_serverAddres">Server hostname ya da ip addresi</param>
-        /// <param name="_databaseName">Serverda baglanılacak olan database adı</param>
-        /// <param name="_username">Kullanıcı adı</param>
-        /// <param name="_password">Kullanıcı şifresi</param>
-        public DBHelper (string _serverAddres, string _databaseName, string _username, string _password)
+        /// <param name="_serverAddres">The server addres.</param>
+        /// <param name="_databaseName">Name of the database.</param>
+        /// <param name="_username">The username.</param>
+        /// <param name="_password">The password.</param>
+        public DBHelper (string _serverAddres, string _databaseName, string _username, string _password) : this()
         {
             str_serverAddress = _serverAddres;
             str_databaseName = _databaseName;
             str_userName = _username;
             str_password = _password;
-
-            if (conn == null)
-            {
-                conn = new MySqlConnection(ConnectionString);
-            }
         }
 
         #endregion
 
-        #region Methods
+        #region Public Methods
+        
+        /// <summary>
+        /// Databases the test connection.
+        /// </summary>
+        /// <returns></returns>
         public bool DatabaseTestConnection()
         {
             try
@@ -112,13 +99,14 @@ namespace EnMon_Driver_Manager
                 return false;
             }
         }
+
         /// <summary>
-        /// Database'de "devices" tablosunda yer alan tum device'ların device_id, name, station_id, protocol_id, ip_address ve slave_id bilgilerini getirir.
+        /// Gets the device list from database.
         /// </summary>
         /// <returns></returns>
-        public List<Device> GetDeviceList()
+        public List<Device> GetAllDevicesList()
         {
-            Log.Instance.Trace("GetDeviceList fonksiyonu cagrıldı");
+            Log.Instance.Trace("GetAllDeviceList fonksiyonu cagrıldı");
 
             string query = "CALL getAllDevicesInfo()";
 
@@ -130,7 +118,7 @@ namespace EnMon_Driver_Manager
                 if (conn != null)
                 {
 
-                    if (Connect())
+                    if (OpenConnection())
                     {
                         using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
                         {
@@ -139,11 +127,11 @@ namespace EnMon_Driver_Manager
                                 while (reader.Read())
                                 {
                                     _device = new Device();
-                                    _device.ID = reader.GetInt32(0);
-                                    _device.Name = reader.GetString(1);
-                                    _device.StationID = reader.GetInt32(2);
+                                    _device.ID = reader.GetUInt16("device_id");
+                                    _device.Name = reader.GetString("name");
+                                    _device.StationID = reader.GetUInt16("station_id");
 
-                                    int protocolID = reader.GetInt32(3);
+                                    int protocolID = reader.GetByte(3);
                                     switch (protocolID)
                                     {
                                         case 0:
@@ -159,8 +147,8 @@ namespace EnMon_Driver_Manager
                                             break;
                                     }
 
-                                    _device.IpAddress = reader.GetString(4);
-                                    _device.SlaveID = reader.GetInt32(5);
+                                    _device.IpAddress = reader.GetString("ip_address");
+                                    _device.SlaveID = reader.GetByte("slave_id");
 
                                     _deviceList.Add(_device);
                                 }
@@ -171,7 +159,7 @@ namespace EnMon_Driver_Manager
                             }
                         } 
                     }
-                    Disconnect();
+                    //CloseConnection();
 
                 }
                 else
@@ -187,16 +175,96 @@ namespace EnMon_Driver_Manager
 
             return _deviceList;
         }
-        
+
+        /// <summary>
+        /// Gets the station devices list.
+        /// </summary>
+        /// <param name="_stationName">Name of the station.</param>
+        /// <returns></returns>
+        public List<Device> GetStationDevices(string _stationName)
+        {
+            Log.Instance.Trace("{0}: {1} methodu cagrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+
+            string query = String.Format("CALL getStationDevicesInfo('{0}')", _stationName);
+
+            List<Device> _deviceList = new List<Device>();
+            Device _device;
+
+            try
+            {
+                if (conn != null)
+                {
+
+                    if (OpenConnection())
+                    {
+                        using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
+                        {
+                            if (reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    _device = new Device();
+                                    _device.ID = reader.GetUInt16("device_id");
+                                    _device.Name = reader.GetString("name");
+                                    _device.StationID = reader.GetUInt16("station_id");
+
+                                    int protocolID = reader.GetByte(3);
+                                    switch (protocolID)
+                                    {
+                                        case 0:
+                                            _device.ProtocolID = Device.Protocol.ModbusRTU;
+                                            break;
+                                        case 1:
+                                            _device.ProtocolID = Device.Protocol.ModbusTCP;
+                                            break;
+                                        case 2:
+                                            _device.ProtocolID = Device.Protocol.ModbusASCII;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                    _device.IpAddress = reader.GetString("ip_address");
+                                    _device.SlaveID = reader.GetByte("slave_id");
+
+                                    _deviceList.Add(_device);
+                                }
+                            }
+                            else
+                            {
+                                Log.Instance.Error("Database'den deger donmedi");
+                            }
+                        }
+                    }
+
+                    //CloseConnection();
+
+                }
+                else
+                {
+                    Log.Instance.Trace("{0}.{1}", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                    Log.Instance.Error("Database baglantı hatası: Aktif bir database baglantısı yok.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Trace("{0}.{1}", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                Log.Instance.Error("Database hatası: {0}", ex.Message);
+                throw;
+            }
+
+            return _deviceList;
+        }
+
         /// <summary>
         /// Database'de binary_signals" tablosunda yer alan binary_signals verilerinden girilen device_id'ye filtreleyerek 
         /// signal_id, name, identification, is_event, is_alarm ve is_reversed bilgilerini döndürür.
         /// </summary>
         /// <param name="_deviceID">Device'ın database'de kayıtlı id'si</param>
         /// <returns></returns>
-        public List<BinarySignal> GetDeviceBinarySignalsInfo(int _deviceID)
+        public List<BinarySignal> GetDeviceBinarySignalsInfo(ushort _deviceID)
         {
-            Log.Instance.Trace("GetDeviceBinarySignalsInfo fonksiyonu cagrıldı");
+            Log.Instance.Trace("{0}: {1} methodu {2} userID numaralı device için cagrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
 
             string query = String.Format("CALL getDeviceBinarySignalsInfo({0})", _deviceID.ToString());
 
@@ -207,9 +275,9 @@ namespace EnMon_Driver_Manager
             {
                 if (conn != null)
                 {
-                    if (Connect())
+                    if (OpenConnection())
                     {
-                        Log.Instance.Trace("Binary sinyal bilgileri databaseden okunuyor");
+                        Log.Instance.Trace("{0}: {1} => Binary sinyal bilgileri databaseden okunuyor", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
                         {
                             if (reader.HasRows)
@@ -217,13 +285,15 @@ namespace EnMon_Driver_Manager
                                 while (reader.Read())
                                 {
                                     _binarySignal = new BinarySignal();
-                                    _binarySignal.ID = reader.GetInt32(0);
-                                    _binarySignal.Name = reader.GetString(1);
-                                    _binarySignal.Identification = reader.GetString(2);
-                                    _binarySignal.Address = reader.GetInt32(3);
-                                    _binarySignal.IsEvent = reader.GetBoolean(4);
-                                    _binarySignal.IsAlarm = reader.GetBoolean(5);
-                                    _binarySignal.IsReversed = reader.GetBoolean(6);
+                                    _binarySignal.ID = reader.GetUInt32("binary_signal_id");
+                                    _binarySignal.Name = reader.GetString("name");
+                                    _binarySignal.Identification = reader.GetString("identification");
+                                    _binarySignal.Address = reader.GetUInt16("address");
+                                    _binarySignal.FunctionCode = reader.GetByte("function_code");
+                                    _binarySignal.BitNumber = reader.GetByte("bit_number");
+                                    _binarySignal.IsEvent = reader.GetBoolean("is_event");
+                                    _binarySignal.IsAlarm = reader.GetBoolean("is_alarm");
+                                    _binarySignal.IsReversed = reader.GetBoolean("is_reversed");
                                     _binarySignal.DeviceID = _deviceID;
 
                                     _binarySignalList.Add(_binarySignal);
@@ -231,12 +301,12 @@ namespace EnMon_Driver_Manager
                             }
                             else
                             {
-                                Log.Instance.Error("Database'den deger donmedi");
+                                Log.Instance.Trace("{0}: {1} => Database'den deger donmedi", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             }
                         } 
                     }
 
-                    Disconnect();
+                    //CloseConnection();
 
                 } 
                 else
@@ -253,9 +323,14 @@ namespace EnMon_Driver_Manager
             return _binarySignalList;
         }
 
-        public List<BinarySignal> GetDeviceBinarySignalsValue(int _deviceID)
+        /// <summary>
+        /// Gets the device binary signals value.
+        /// </summary>
+        /// <param name="_deviceID">The device identifier.</param>
+        /// <returns></returns>
+        public List<BinarySignal> GetDeviceBinarySignalsValue(ushort _deviceID)
         {
-            Log.Instance.Trace("GetDeviceBinarySignalsValue fonksiyonu cagrıldı");
+            Log.Instance.Trace("{0}: {1} methodu {2} userID numaralı device için cagrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
 
             string query = String.Format("CALL getDeviceBinarySignalsValue({0})", _deviceID.ToString());
 
@@ -263,12 +338,11 @@ namespace EnMon_Driver_Manager
 
             try
             {
-
                 if (conn != null)
                 {
-                    if (Connect())
+                    if (OpenConnection())
                     {
-                        Log.Instance.Trace("Database'de kayıtlı binary sinyal son deger bilgileri databaseden okunuyor");
+                        Log.Instance.Trace("{0}: {1} => Analog sinyal bilgileri databaseden okunuyor", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                         using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
                         {
                             if (reader.HasRows)
@@ -277,9 +351,10 @@ namespace EnMon_Driver_Manager
                                 {
                                     BinarySignal _binarySignal = new BinarySignal();
 
-                                    _binarySignal.ID = reader.GetInt32(0);
-                                    _binarySignal.Name = reader.GetString(1);
-                                    _binarySignal.CurrentValue = reader.GetBoolean(2);
+                                    _binarySignal.ID = reader.GetUInt32("binary_signal_id");
+                                    _binarySignal.Name = reader.GetString("name");
+                                    _binarySignal.CurrentValue = reader.GetBoolean("current_value");
+                                    _binarySignal.TimeTag = reader.GetDateTime("ts_datetime").ToString(); ;
                                     _binarySignal.DeviceID = _deviceID;
 
                                     _binarySignalList.Add(_binarySignal);
@@ -287,75 +362,33 @@ namespace EnMon_Driver_Manager
                             }
                             else
                             {
-                                Log.Instance.Error("Database'den deger donmedi");
+                                Log.Instance.Trace("{0}: {1} => Database'den deger donmedi", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                             }
-                        } 
-                    }
+                        }
 
-                    Disconnect();
+                        //CloseConnection();
+                    }   
                 }
                 else
                 {
-                    Log.Instance.Error("Database baglantı hatası: Aktif bir database baglantısı yok.");
+                    Log.Instance.Error("Database hatası: Aktif bir database baglantısı yok.");
                 }
             }
             catch (Exception ex)
             {
                 Log.Instance.Fatal("Database hatası: {0}", ex.Message);
-                throw;
             }
 
             return _binarySignalList;
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="_signalID">signalID</param>
-        /// <param name="_signalValue">signal Value</param>
-        /// <returns></returns>
-        public bool SetBinarySignalValue(int _signalID, bool _signalValue)
-        {
-            Log.Instance.Trace("SetBinarySignalValue fonksiyonu çağrıldı");
-
-            string query = String.Format("Call setBinarySignalValue({0},{1}", _signalID, _signalValue);
-            try
-            {
-                using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
-                {
-                    bool _returnValue = false;
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
-                        {
-                            _returnValue = reader.GetBoolean(0);
-                            if(!_returnValue)
-                            {
-                                Log.Instance.Error("Database Hatası: (setBinarySignalValue({ 0},{ 1}) stored procedure çağrılırken bir hata oluştu)",_signalID, _signalValue );
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Log.Instance.Error("Database'den deger donmedi");
-                        _returnValue = false;
-                    }
-                    return _returnValue;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Fatal("Database Hatası (setBinarySignalValue stored procedure çağrılırken bir hata olustu): {0}", ex.Message);
-                return false;
-            }
-        }
-
+       
         /// <summary>
         /// Database'de "analog_signals" tablosunda yer alan analog_signals verilerinden girilen device_id'ye filtreleyerek 
         /// signal_id, name, identification, is_event, is_alarm ve is_reversed bilgilerini döndürür.
         /// </summary>
         /// <param name="_deviceID">Device'ın database'de kayıtlı id'si</param>
         /// <returns></returns>
-        public List<AnalogSignal> GetDeviceAnalogSignalsInfo(int _deviceID)
+        public List<AnalogSignal> GetDeviceAnalogSignalsInfo(ushort _deviceID)
         {
             Log.Instance.Trace("GetDeviceAnalogSignalsInfo fonksiyonu cagrıldı");
 
@@ -371,7 +404,7 @@ namespace EnMon_Driver_Manager
                 {
 
 
-                    if (Connect())
+                    if (OpenConnection())
                     {
                         Log.Instance.Trace("Analog sinyal bilgileri databaseden okunuyor");
                         using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
@@ -381,16 +414,19 @@ namespace EnMon_Driver_Manager
                                 while (reader.Read())
                                 {
                                     _analogSignal = new AnalogSignal();
-                                    _analogSignal.ID = reader.GetInt32(0);
-                                    _analogSignal.Name = reader.GetString(1);
-                                    _analogSignal.Identification = reader.GetString(2);
-                                    _analogSignal.Address = reader.GetInt32(3);
-                                    _analogSignal.DatatypeID = reader.GetInt32(4);
-                                    _analogSignal.ScaleValue = reader.GetInt32(5);
-                                    _analogSignal.MaxValue = reader.GetInt32(6);
-                                    _analogSignal.MinValue = reader.GetInt32(7);
-                                    _analogSignal.IsAlarm = reader.GetBoolean(8);
-                                    _analogSignal.IsEvent = reader.GetBoolean(9);
+                                    _analogSignal.ID = reader.GetUInt32("analog_signal_id");
+                                    _analogSignal.Name = reader.GetString("name");
+                                    _analogSignal.Identification = reader.GetString("identification");
+                                    _analogSignal.Address = reader.GetUInt16("address");
+                                    _analogSignal.FunctionCode = reader.GetByte("function_code");
+                                    _analogSignal.WordCount = reader.GetByte("word_count");
+                                    _analogSignal.DatatypeID = reader.GetByte("data_type_id");
+                                    _analogSignal.ScaleValue = reader.GetFloat("scale_value");
+                                    _analogSignal.MaxValue = reader.GetInt32("max_value");
+                                    _analogSignal.MinValue = reader.GetInt32("min_value");
+                                    _analogSignal.IsAlarm = reader.GetBoolean("is_alarm");
+                                    _analogSignal.IsEvent = reader.GetBoolean("is_event");
+
                                     _analogSignal.DeviceID = _deviceID;
 
                                     _analogSignalList.Add(_analogSignal);
@@ -399,7 +435,7 @@ namespace EnMon_Driver_Manager
                         } 
                     }
 
-                    Disconnect();
+                    //CloseConnection();
                 }
                 else
                 {
@@ -415,7 +451,12 @@ namespace EnMon_Driver_Manager
             return _analogSignalList;
         }
 
-        public List<AnalogSignal> GetDeviceAnalogSignalsValue(int _deviceID)
+        /// <summary>
+        /// Gets the device analog signals value.
+        /// </summary>
+        /// <param name="_deviceID">The device identifier.</param>
+        /// <returns></returns>
+        public List<AnalogSignal> GetDeviceAnalogSignalsValue(ushort _deviceID)
         {
             Log.Instance.Trace("GetDeviceAnalogSignalsValue fonksiyonu cagrıldı");
 
@@ -428,7 +469,7 @@ namespace EnMon_Driver_Manager
                 if (conn != null)
                 {
 
-                    if (Connect())
+                    if (OpenConnection())
                     {
                         Log.Instance.Trace("Database'de kayıtlı analog sinyallerin son deger bilgileri databaseden okunuyor");
                         using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
@@ -439,18 +480,18 @@ namespace EnMon_Driver_Manager
                                 {
                                     AnalogSignal _analogSignal = new AnalogSignal();
 
-                                    _analogSignal.ID = reader.GetInt32(0);
-                                    _analogSignal.Name = reader.GetString(1);
-                                    _analogSignal.CurrentValue = reader.GetInt32(2);
+                                    _analogSignal.ID = reader.GetUInt32("analog_signal_id");
+                                    _analogSignal.Name = reader.GetString("name");
+                                    _analogSignal.CurrentValue = reader.GetInt32("current_value");
                                     _analogSignal.DeviceID = _deviceID;
 
                                     _analogSignalList.Add(_analogSignal);
                                 }
                             }
-                        } 
+                        }
                     }
 
-                    Disconnect();
+                    //CloseConnection();
                 }
                 else
                 {
@@ -466,13 +507,148 @@ namespace EnMon_Driver_Manager
             return _analogSignalList;
         }
 
-        public bool SetAnalogSignalValue(int _signalID, int _signalValue)
+        /// <summary>
+        /// Adds the binary signals to buffer.
+        /// </summary>
+        /// <param name="_signalList">The signal list.</param>
+        public void AddBinarySignalsToBuffer(List<BinarySignal> _signalList)
+        {
+            foreach (BinarySignal _signal in _signalList)
+            {
+                buffer_BinarySignals.Enqueue(_signal);
+            }
+        }
+
+        /// <summary>
+        /// Adds the analog signals to buffer.
+        /// </summary>
+        /// <param name="_signalList">The signal list.</param>
+        public void AddAnalogSignalsToBuffer(List<AnalogSignal> _signalList)
+        {
+            foreach (AnalogSignal _signal in _signalList)
+            {
+                buffer_AnalogSignals.Enqueue(_signal);
+            }
+        }
+        
+        /// <summary>
+        /// Writes the values at buffer to database.
+        /// </summary>
+        public async void WriteValuesAtBufferToDatabase()
+        {
+            OpenConnection();
+            Task writeBinaryValues = Task.Factory.StartNew(() =>
+            {
+                while (IsWriteEnabled)
+                {
+                    while (buffer_BinarySignals.Count > 0)
+                    {
+                        BinarySignal _signal = buffer_BinarySignals.Dequeue();
+                        SetBinarySignalValue(_signal.ID, _signal.CurrentValue, _signal.TimeTag);
+                    }
+                    Thread.Sleep(20);
+                }
+                
+            });
+
+            Task writeAnalogValues = Task.Factory.StartNew(() =>
+            {
+                while (IsWriteEnabled)
+                {
+                    while (buffer_AnalogSignals.Count > 0)
+                    {
+                        AnalogSignal _signal = buffer_AnalogSignals.Dequeue();
+                        SetAnalogSignalValue(_signal.ID, _signal.CurrentValue, _signal.TimeTag);
+                    }
+                    Thread.Sleep(20);
+                }
+                
+            });
+
+            await writeBinaryValues;
+            await writeAnalogValues;
+            //CloseConnection();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Connects this instance.
+        /// </summary>
+        /// <returns></returns>
+        public bool OpenConnection()
+        {
+            try
+            {
+                if (conn.State == System.Data.ConnectionState.Closed)
+                {
+                    conn.Open();
+                    Log.Instance.Info("Database'e baglanıldı");
+                }
+
+                if(conn.State == System.Data.ConnectionState.Open)
+                { 
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }                
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Fatal("Database baglantısı kurulamadı: {0}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Disconnects this instance.
+        /// </summary>
+        /// <returns></returns>
+        public bool CloseConnection()
+        {
+            try
+            {
+                if(conn.State != System.Data.ConnectionState.Closed)
+                {
+                    conn.Close();
+                    Log.Instance.Info("Database baglantısı kesildi.");
+                }
+                
+                if(conn.State == System.Data.ConnectionState.Closed)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Fatal("Database baglantısı kesilirken hata olustu: {0}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Sets the analog signal value.
+        /// </summary>
+        /// <param name="_signalID">The signal identifier.</param>
+        /// <param name="_signalValue">The signal value.</param>
+        /// <param name="_datetime">The datetime.</param>
+        /// <returns></returns>
+        private bool SetAnalogSignalValue(uint _signalID, int _signalValue, string _datetime)
         {
             Log.Instance.Trace("SetAnalogSignalValue fonksiyonu çağrıldı");
 
-            string query = String.Format("Call setAnalogSignalValue({0},{1}", _signalID, _signalValue);
+            string query = String.Format("Call setAnalogSignalValue({0},{1},'{2}')", _signalID, _signalValue, _datetime);
             try
             {
+                OpenConnection();
                 using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
                 {
                     bool _returnValue = false;
@@ -483,7 +659,7 @@ namespace EnMon_Driver_Manager
                             _returnValue = reader.GetBoolean(0);
                             if (!_returnValue)
                             {
-                                Log.Instance.Error("Database Hatası: (setAnalogSignalValue({0},{1}) stored procedure çağrılırken bir hata oluştu)",_signalID, _signalValue );
+                                Log.Instance.Error("Database Hatası: (setAnalogSignalValue({0},{1}) stored procedure çağrılırken bir hata oluştu)", _signalID, _signalValue);
                             }
                         }
                     }
@@ -502,7 +678,49 @@ namespace EnMon_Driver_Manager
             }
         }
 
+        /// <summary>
+        /// Sets the binary signal value.
+        /// </summary>
+        /// <param name="_signalID">The signal identifier.</param>
+        /// <param name="_signalValue">if set to <c>true</c> [signal value].</param>
+        /// <param name="_datetime">The datetime.</param>
+        /// <returns></returns>
+        private bool SetBinarySignalValue(uint _signalID, bool _signalValue, string _datetime)
+        {
+            Log.Instance.Trace("SetBinarySignalValue fonksiyonu çağrıldı");
 
+            string query = String.Format("Call setBinarySignalValue({0},{1},{2}", _signalID, _signalValue, _datetime);
+            try
+            {
+                OpenConnection();
+                using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
+                {
+                    bool _returnValue = false;
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            _returnValue = reader.GetBoolean(0);
+                            if (!_returnValue)
+                            {
+                                Log.Instance.Error("Database Hatası: (setBinarySignalValue({ 0},{ 1}) stored procedure çağrılırken bir hata oluştu)", _signalID, _signalValue);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Log.Instance.Error("Database'den deger donmedi");
+                        _returnValue = false;
+                    }
+                    return _returnValue;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Fatal("Database Hatası: (setBinarySignalValue stored procedure çağrılırken bir hata olustu) {0}", ex.Message);
+                return false;
+            }
+        }
         #endregion
     }
 }

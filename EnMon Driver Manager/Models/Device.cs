@@ -5,13 +5,13 @@ namespace EnMon_Driver_Manager
 {
     public class Device
     {
-        private int id;
+        private ushort id;
         private String name;
-        private int stationID;
+        private ushort stationID;
         private Protocol protocolID;
         private String ipAddress;
-        private int slaveID;
-        private List<BinarySignal> binarySginals;
+        private byte slaveID;
+        private List<BinarySignal> binarySignals;
         private List<AnalogSignal> analogSignals;
 
         public enum Protocol
@@ -21,7 +21,7 @@ namespace EnMon_Driver_Manager
             ModbusASCII
         }
 
-        public int ID
+        public ushort ID
         {
             get { return id; }
             set { id = value; }
@@ -32,7 +32,7 @@ namespace EnMon_Driver_Manager
             set { name = value; }
         }
 
-        public int StationID
+        public ushort StationID
         {
             get { return stationID; }
             set { stationID = value; }
@@ -51,16 +51,16 @@ namespace EnMon_Driver_Manager
             set { ipAddress = value; }
         }
 
-        public int SlaveID
+        public byte SlaveID
         {
-            get { return SlaveID; }
+            get { return slaveID; }
             set { slaveID = value; }
         }
 
         public List<BinarySignal> BinarySignals
         {
-            get { return binarySginals; }
-            set { binarySginals = value; }
+            get { return binarySignals; }
+            set { binarySignals = value; }
         }
 
         public List<AnalogSignal> AnalogSignals

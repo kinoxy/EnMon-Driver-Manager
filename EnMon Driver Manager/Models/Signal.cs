@@ -4,21 +4,21 @@ namespace EnMon_Driver_Manager
 {
     public abstract class Signal
     {
-        private int id;
-        private int deviceId;
+        private uint id;
+        private ushort deviceId;
         private String name;
         private String identification;
-        private int address;
+        private ushort address;
         private bool is_alarm;
         private bool is_event;
 
-        public int ID
+        public uint ID
         {
             get { return id; }
             set { id = value; }
         }
 
-        public int DeviceID
+        public ushort DeviceID
         {
             get { return deviceId; }
             set { deviceId = value; }
@@ -36,11 +36,15 @@ namespace EnMon_Driver_Manager
             set { identification = value; }
         }
 
-        public int Address
+        public ushort Address
         {
             get { return address; }
             set { address = value; }
         }
+
+        public byte FunctionCode { get; set; }
+
+        public byte WordCount { get; set; }
 
         public bool IsAlarm
         {
