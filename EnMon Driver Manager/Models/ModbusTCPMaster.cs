@@ -173,7 +173,7 @@ namespace EnMon_Driver_Manager.Models
         /// <summary>
         /// Occurs when [cannot connect to device].
         /// </summary>
-        public event ModbusServerEventHandler DisconnectedFromDevice;
+        public event ModbusServerEventHandler DisconnectedFromServer;
 
         /// <summary>
         /// Occurs when [communication established].
@@ -202,7 +202,7 @@ namespace EnMon_Driver_Manager.Models
         /// <param name="_valueChangedSignals">Value changed signals.</param>
         private void OnAnyAnalogSignalValueChanged(List<AnalogSignal> _valueChangedSignals)
         {
-            // TODO: OnAnyAnalogSignalValueChanged eventi gereğinden bir fazla çagrılıyor
+            // TODO: OnAnyAnalogSignalValueChanged eventi bir fazla çagrılıyor
             // TODO: Aynı ip  adres altnda birden fazla cihaz varken cihazlardan birine erişim durdugunda diger cihazlara sorgulamayı kesiyor. Bununla ilgili çalışma yap.
             // TODO: Sinyal listesini fazla fazla doldurup he birden fazla ip içiççn hem de birden fazla cihaz  için test yap.
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
@@ -218,18 +218,19 @@ namespace EnMon_Driver_Manager.Models
         /// <summary>
         /// Called when [disconnect from server].
         /// </summary>
-        private void OnDisconnectedFromServer()
+        private void OnDisconnectedFromServer(List<Device> _devices)
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
 
             Log.Instance.Error("ModbusTCPMaster: Driver baglantı hatası => {1} ip adresi ile bağlantı problemi", this.GetType().Name, ipAddress);
             
+            
             dtDisconnected = DateTime.Now;
             ModbusServerEventArgs ms = new ModbusServerEventArgs();
-            ms.ipAddress = ipAddress;
-            if (DisconnectedFromDevice != null)
+            ms.Devices = _devices;
+            if (DisconnectedFromServer != null)
             {
-                DisconnectedFromDevice(this, ms);
+                DisconnectedFromServer(this, ms);
             }
         }
 
@@ -300,7 +301,7 @@ namespace EnMon_Driver_Manager.Models
                 {
                     client.Close();
                     IsConnected = false;
-                    OnDisconnectedFromServer();
+                    OnDisconnectedFromServer(Devices);
                     
                 }
                 // Baglantı kuruldugunda
@@ -313,7 +314,7 @@ namespace EnMon_Driver_Manager.Models
             catch (Exception e)
             {
                 IsConnected = false;
-                OnDisconnectedFromServer();
+                OnDisconnectedFromServer(Devices);
                 Log.Instance.Trace("{0}.{1}", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 Log.Instance.Fatal("ModbusTCP ({0}) => {1}", ipAddress, e.InnerException);   
             }
@@ -349,10 +350,12 @@ namespace EnMon_Driver_Manager.Models
         {
             try
             {
-                if(client.Client.IsConnected())
+                if(IsConnected)
                 {
+                    pollingTimer.Enabled = false;
                     ReadBinaryValues();
                     ReadAnalogValues();
+                    pollingTimer.Enabled = true;
                 }
                 else
                 {
@@ -388,6 +391,7 @@ namespace EnMon_Driver_Manager.Models
                 {
                     
                     dtDisconnected = DateTime.Now;
+                    IsConnected = false;
                     Log.Instance.Trace("{0}.{1}", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                     Log.Instance.Error("ModbusServer Hata: {0} => {1}", ipAddress, ex.Message);
                     //OnDisconnectedFromServer();
@@ -489,56 +493,82 @@ namespace EnMon_Driver_Manager.Models
         /// <param name="e">The <see cref="ElapsedEventArgs" /> instance containing the event data.</param>
         private void ReadAnalogValues()
         {
-            pollingTimer.Enabled = false;
-
-            try
+            // ModbusServer'da yer alan her device'lar için okuma işlemi başlatılır.
+            foreach (Device d in Devices) 
             {
-                // ModbusServer'da yer alan her device'lar için okuma işlemi başlatılır.
-                foreach (Device d in Devices)
+
+                if (d.isActive)
                 {
-                    if (d.AnalogSignals != null)
+                    try
                     {
-                        //Device(d) AnalogSignals listesi boş değilse okuma işlemi başlatılır
-                        if (d.AnalogSignals.Count > 0)
+                        if (d.AnalogSignals != null)
                         {
-                            // Note: AnalogSignal listesindeki tüm sinyaller "OnConnectedToServe" methodunda modbus adreslerine göre sıralanmıştır.
-
-                            int _queueIndexOfFirstSignalWillBeRead = 0;
-
-                            // AnalogSignals listesinde birden fazla sinyal varsa ardışık okuma yapabilmek için for dongusu ile diger sinyallerin function code'ları ve modbus adreslerindeki ardışıklık kontrol edilir.
-                            // Modbus adreslerinde ardışıklık yer alan sinyaller aynı request içerisinde okunur.
-                            for (int index = 1; index < d.AnalogSignals.Count; index++)
+                            //Device(d) AnalogSignals listesi boş değilse okuma işlemi başlatılır
+                            if (d.AnalogSignals.Count > 0)
                             {
-                                bool isSameFunctionCode = ((d.AnalogSignals[index - 1].FunctionCode == 3 || d.AnalogSignals[index - 1].FunctionCode == 4) & (d.AnalogSignals[index - 1].FunctionCode == d.AnalogSignals[index].FunctionCode));
-                                bool isModbusAddressSequential = d.AnalogSignals[index - 1].Address == d.AnalogSignals[index].Address - d.AnalogSignals[index].WordCount;
-                                // AnalogSignals listesindeki signal[index-1] ve signal[index]'in function code'ları aynı ve singnal[i] ile signal[i-1]'in modbus adreslerinde istenen ardışıklık olduğu sürece for düngüsü devam eder.
-                                // Logiclerden herhangi biri false donerse okuma işlemi başlatılır.
-                                if (!(isSameFunctionCode & isModbusAddressSequential))
+                                // Note: AnalogSignal listesindeki tüm sinyaller "OnConnectedToServe" methodunda modbus adreslerine göre sıralanmıştır.
+
+                                int _queueIndexOfFirstSignalWillBeRead = 0;
+
+                                // AnalogSignals listesinde birden fazla sinyal varsa ardışık okuma yapabilmek için for dongusu ile diger sinyallerin function code'ları ve modbus adreslerindeki ardışıklık kontrol edilir.
+                                // Modbus adreslerinde ardışıklık yer alan sinyaller aynı request içerisinde okunur.
+                                for (int index = 1; index < d.AnalogSignals.Count; index++)
                                 {
-                                    d.AnalogSignals = ReadAnalogSignalsFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
-                                    _queueIndexOfFirstSignalWillBeRead = index;
+                                    bool isSameFunctionCode = ((d.AnalogSignals[index - 1].FunctionCode == 3 || d.AnalogSignals[index - 1].FunctionCode == 4) & (d.AnalogSignals[index - 1].FunctionCode == d.AnalogSignals[index].FunctionCode));
+                                    bool isModbusAddressSequential = d.AnalogSignals[index - 1].Address == d.AnalogSignals[index].Address - d.AnalogSignals[index].WordCount;
+                                    // AnalogSignals listesindeki signal[index-1] ve signal[index]'in function code'ları aynı ve singnal[i] ile signal[i-1]'in modbus adreslerinde istenen ardışıklık olduğu sürece for düngüsü devam eder.
+                                    // Logiclerden herhangi biri false donerse okuma işlemi başlatılır.
+                                    if (!(isSameFunctionCode & isModbusAddressSequential))
+                                    {
+                                        d.AnalogSignals = ReadAnalogSignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
+                                        if (d.Connected == false)
+                                        {
+                                            d.Connected = true;
+                                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                        }
+                                        _queueIndexOfFirstSignalWillBeRead = index;
+                                    }
+                                }
+
+                                // Son for döngüsünden sonra degeri okunmamış sinyal varsa bu sinyaller için okuma işlemi for döngüşü bittikten sonra gerçeklenir.
+                                if (_queueIndexOfFirstSignalWillBeRead != d.AnalogSignals.Count)
+                                {
+                                    d.AnalogSignals = ReadAnalogSignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, d.AnalogSignals.Count - _queueIndexOfFirstSignalWillBeRead);
+                                    if (d.Connected == false)
+                                    {
+                                        d.Connected = true;
+                                        DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                    }
                                 }
                             }
-
-                            // Son for döngüsünden sonra degeri okunmamış sinyal varsa bu sinyaller için okuma işlemi for döngüşü bittikten sonra gerçeklenir.
-                            if (_queueIndexOfFirstSignalWillBeRead != d.AnalogSignals.Count)
-                            {
-                                d.AnalogSignals = ReadAnalogSignalsFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, d.AnalogSignals.Count - _queueIndexOfFirstSignalWillBeRead);
-                                int y = 5;
-                            }
                         }
-                    }
 
+                    }
+                    catch (Exception e)
+                    {
+                        
+                        if(e.Source.Equals("System")) 
+                        {
+                            // System tarafından gönderilen exception mesajı sinyal okuyamam ile ilgili bir exception değilse bu exceptionu üst methoda gönderir
+                            if(e.HResult != -2146232800)
+                            {
+                                throw;
+                            }
+                            
+                        }
+                        
+                        // 
+                        if (d.Connected)
+                        {
+                            Log.Instance.Error("{0}: {1} nolu device haberleşme hatası ", this.GetType().Name, d.ID);
+                            d.Connected = false;
+                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                        } 
+                        
+                        //throw;
+                    } 
                 }
             }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                pollingTimer.Enabled = true;
-            }   
         }
 
         /// <summary>
@@ -553,60 +583,86 @@ namespace EnMon_Driver_Manager.Models
         /// </exception>
         private void ReadBinaryValues()
         {
-            pollingTimer.Enabled = false;
+            
 
-            try
+            // ModbusServer'da yer alan her device için okuma işlemi başlatılır.
+            foreach (Device d in Devices) 
             {
-                // ModbusServer'da yer alan her device için okuma işlemi başlatılır.
-                foreach (Device d in Devices)
+                if (d.isActive)
                 {
-                    if (d.BinarySignals != null)
+                    try
                     {
-                        //Device(d) BinarySignal listesi boş değilse okuma işlemi başlatılır
-                        if (d.BinarySignals.Count > 0)
+                        if (d.BinarySignals != null)
                         {
-                            int _queueIndexOfFirstSignalWillBeRead = 0;
-                            
-                            // Not: BinarySignal listesindeki tüm sinyaller "startCommunication" methodunda modbus adreslerine göre sıralanmıştı.
-
-                            // BinarySignals listesinde birden fazla sinyal varsa ardışık okuma yapabilmek için for dongusu ile diger sinyallerin function code'ları ve modbus adreslerindeki ardışıklık kontrol edilir.
-                            // Modbus adreslerinde ardışıklık yer alan sinyaller aynı request içerisinde okunur.
-                            for (int index = 1; index < d.BinarySignals.Count; index++)
+                            //Device(d) BinarySignal listesi boş değilse okuma işlemi başlatılır
+                            if (d.BinarySignals.Count > 0)
                             {
-                                bool isSameFunctionCode = ((d.BinarySignals[index-1].FunctionCode == 1 || d.BinarySignals[index - 1].FunctionCode == 2 || d.BinarySignals[index - 1].FunctionCode == 3 ) & (d.BinarySignals[index-1].FunctionCode == d.BinarySignals[index].FunctionCode));
-                                bool isModbusAddressSequential = ((d.BinarySignals[index - 1].FunctionCode == 1 || d.BinarySignals[index - 1].FunctionCode == 2 & (d.BinarySignals[index - 1].Address == d.BinarySignals[index].Address - 1))
-                                                              || ((d.BinarySignals[index - 1].FunctionCode == 3) & (d.BinarySignals[index - 1].Address == d.BinarySignals[index].Address)));
+                                int _queueIndexOfFirstSignalWillBeRead = 0;
 
-                                // AnalogSignals listesindeki signal[index-1] ve signal[index]'in function code'ları aynı ve singnal[i] ile signal[i-1]'in modbus adreslerinde istenen ardışıklık olduğu sürece for düngüsü devam eder.
-                                // Logiclerden herhangi biri false donerse okuma işlemi başlatılır.
-                                if (!(isSameFunctionCode & isModbusAddressSequential))
+                                // Not: BinarySignal listesindeki tüm sinyaller "startCommunication" methodunda modbus adreslerine göre sıralanmıştı.
+
+                                // BinarySignals listesinde birden fazla sinyal varsa ardışık okuma yapabilmek için for dongusu ile diger sinyallerin function code'ları ve modbus adreslerindeki ardışıklık kontrol edilir.
+                                // Modbus adreslerinde ardışıklık yer alan sinyaller aynı request içerisinde okunur.
+                                for (int index = 1; index < d.BinarySignals.Count; index++)
                                 {
-                                    d.BinarySignals = ReadBinarySignalsFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
-                                    _queueIndexOfFirstSignalWillBeRead = index;
+                                    bool isSameFunctionCode = ((d.BinarySignals[index - 1].FunctionCode == 1 || d.BinarySignals[index - 1].FunctionCode == 2 || d.BinarySignals[index - 1].FunctionCode == 3) & (d.BinarySignals[index - 1].FunctionCode == d.BinarySignals[index].FunctionCode));
+                                    bool isModbusAddressSequential = ((d.BinarySignals[index - 1].FunctionCode == 1 || d.BinarySignals[index - 1].FunctionCode == 2 & (d.BinarySignals[index - 1].Address == d.BinarySignals[index].Address - 1))
+                                                                  || ((d.BinarySignals[index - 1].FunctionCode == 3) & (d.BinarySignals[index - 1].Address == d.BinarySignals[index].Address)));
+
+                                    // AnalogSignals listesindeki signal[index-1] ve signal[index]'in function code'ları aynı ve singnal[i] ile signal[i-1]'in modbus adreslerinde istenen ardışıklık olduğu sürece for düngüsü devam eder.
+                                    // Logiclerden herhangi biri false donerse okuma işlemi başlatılır.
+                                    if (!(isSameFunctionCode & isModbusAddressSequential))
+                                    {
+                                        d.BinarySignals = ReadBinarySignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
+                                        if (d.Connected == false)
+                                        {
+                                            d.Connected = true;
+                                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                        }
+                                        _queueIndexOfFirstSignalWillBeRead = index;
+                                    }
+                                }
+
+                                // Son for döngüsünden sonra degeri okunmamış sinyal varsa bu sinyaller için okuma işlemi for döngüşü bittikten sonra gerçeklenir.
+                                if (_queueIndexOfFirstSignalWillBeRead != d.BinarySignals.Count)
+                                {
+                                    d.BinarySignals = ReadBinarySignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, d.BinarySignals.Count - _queueIndexOfFirstSignalWillBeRead);
+                                    if (d.Connected == false)
+                                    {
+                                        d.Connected = true;
+                                        DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                    }
                                 }
                             }
-
-                            // Son for döngüsünden sonra degeri okunmamış sinyal varsa bu sinyaller için okuma işlemi for döngüşü bittikten sonra gerçeklenir.
-                            if (_queueIndexOfFirstSignalWillBeRead != d.BinarySignals.Count)
-                            {
-                                d.BinarySignals = ReadBinarySignalsFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, d.BinarySignals.Count - _queueIndexOfFirstSignalWillBeRead);
-                            }
                         }
-                    }
 
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.Source.Equals("System"))
+                        {
+                            // System tarafından gönderilen exception mesajı sinyal okuyamam ile ilgili bir exception değilse bu exceptionu üst methoda gönderir
+                            if (e.HResult != -2146232800)
+                            {
+                                throw;
+                            }
+
+                        }
+
+                        // 
+                        if (d.Connected)
+                        {
+                            Log.Instance.Error("{0}: {1} nolu device haberleşme hatası ", this.GetType().Name, d.ID);
+                            d.Connected = false;
+                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                        }
+
+                        //throw;
+                    }
                 }
             }
+            
 
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-
-            finally
-            {
-                pollingTimer.Enabled = true;
-            }
         }
 
         /// <summary>
@@ -617,7 +673,7 @@ namespace EnMon_Driver_Manager.Models
         /// <param name="_totalSignalCount">Okunacak toplam sinyal sayısı</param>
         /// <returns></returns>
         /// <exception cref="Exception">ModbusServer Hata: Yanlış tanımlanan adres veya Function Code bulundu</exception>
-        private List<AnalogSignal> ReadAnalogSignalsFromModbusServer(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
+        private List<AnalogSignal> ReadAnalogSignalsValuesFromModbusServer(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
         {
             List<AnalogSignal> _valueChangedSignals = new List<AnalogSignal>();
             AnalogSignal _firstSignal = _device.AnalogSignals[_numberOfFirstSignal];
@@ -695,7 +751,7 @@ namespace EnMon_Driver_Manager.Models
         /// <param name="_totalSignalCount">The total signal count.</param>
         /// <returns></returns>
         /// <exception cref="Exception">ModbusServer Hata: Yanlış tanımlanan adres veya Function Code bulundu</exception>
-        private List<BinarySignal> ReadBinarySignalsFromModbusServer(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
+        private List<BinarySignal> ReadBinarySignalsValuesFromModbusServer(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
         {
             List<BinarySignal> _valueChangedSignals = new List<BinarySignal>();
             BinarySignal _firstSignal = _device.BinarySignals[_numberOfFirstSignal];
@@ -767,7 +823,7 @@ namespace EnMon_Driver_Manager.Models
                 Log.Instance.Error("{0} Hata: Yanlış tanımlanan adres veya geçersiz function Code bulundu", this.GetType().Name);
             }
 
-            // Okuma işlemi bittiğinde bufferValueChangedSignals listesine sinyal eklenmişse event çağrılır.
+            // Okuma işlemi bittiğinde _valueChangedSignals listesine sinyal eklenmişse event çağrılır.
             if (_valueChangedSignals.Count > 0)
             {
                 OnAnyBinarySignalValueChanged(_valueChangedSignals);
@@ -855,7 +911,7 @@ namespace EnMon_Driver_Manager.Models
         /// The analog signals
         /// </summary>
         public List<AnalogSignal> AnalogSignals { get; internal set; }
-       
+
         /// <summary>
         /// Gets or sets the binary signals.
         /// </summary>
@@ -865,5 +921,7 @@ namespace EnMon_Driver_Manager.Models
         public List<BinarySignal> BinarySignals { get; internal set; }
 
         public string ipAddress { get; internal set; }
+
+        public List<Device> Devices {get; internal set;}
     }
 }

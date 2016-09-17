@@ -149,7 +149,8 @@ namespace EnMon_Driver_Manager
 
                                     _device.IpAddress = reader.GetString("ip_address");
                                     _device.SlaveID = reader.GetByte("slave_id");
-
+                                    _device.Connected = reader.GetBoolean("connected");
+                                    _device.isActive = reader.GetBoolean("is_active");
                                     _deviceList.Add(_device);
                                 }
                             }
@@ -226,6 +227,8 @@ namespace EnMon_Driver_Manager
 
                                     _device.IpAddress = reader.GetString("ip_address");
                                     _device.SlaveID = reader.GetByte("slave_id");
+                                    _device.isActive = reader.GetBoolean("is_active");
+                                    _device.Connected = reader.GetBoolean("connected");
 
                                     _deviceList.Add(_device);
                                 }
@@ -249,11 +252,67 @@ namespace EnMon_Driver_Manager
             catch (Exception ex)
             {
                 Log.Instance.Trace("{0}.{1}", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-                Log.Instance.Error("Database hatası: {0}", ex.Message);
-                throw;
+                Log.Instance.Fatal("Database hatası: {0}", ex.Message);
+                //throw;
             }
 
             return _deviceList;
+        }
+
+        /// <summary>
+        /// Updates the state of the device connected.
+        /// </summary>
+        /// <param name="_deviceID">The device identifier.</param>
+        /// <param name="_state">if set to <c>true</c> [state].</param>
+        public static void UpdateDeviceConnectedState(ushort _deviceID, bool _state)
+        {
+            Log.Instance.Trace("{0}.{1} methodu {2} nolu device için cagrıldı", "DBHelper", MethodBase.GetCurrentMethod().Name, _deviceID);
+            string query = String.Format("CALL updateDeviceConnectedState({0},{1})", _deviceID.ToString(), _state.ToString());
+            try
+            {
+                ExecuteNonQuery(query);
+            }
+            catch (Exception e)
+            {
+                Log.Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
+            }
+        }
+
+        public static Station GetStationInfoByName(string s)
+        {
+            Log.Instance.Trace("DBHelper.{0} methodu {1} için çağrıldı", MethodBase.GetCurrentMethod().Name, s);
+            Station _station = null;
+            if (OpenConnection())
+            {
+
+                string query = String.Format("CALL getStationInfoByName('{0}')", s);
+
+                using (MySqlDataReader reader = MySqlHelper.ExecuteReader(conn, query))
+                {
+                    if(reader.HasRows)
+                    {
+
+                        while(reader.Read())
+                        {
+                            _station = new Station();
+                            _station.ID = reader.GetUInt16("station_id");
+                            _station.Name = s;
+                        }
+                    }
+                    else
+                    {
+                        Log.Instance.Trace("DBHelper.{0}", MethodBase.GetCurrentMethod().Name);
+                        Log.Instance.Warn("{0} adlı bir station kaydı bulunamadı", s);
+                    }
+                }
+
+                return _station;
+            }
+            else
+            {
+                Log.Instance.Debug("{0} methodu için database baglantısı olusturulamadı", MethodBase.GetCurrentMethod().Name);
+                return null;
+            }
         }
 
         /// <summary>
@@ -543,8 +602,21 @@ namespace EnMon_Driver_Manager
                 {
                     while (buffer_BinarySignals.Count > 0)
                     {
-                        BinarySignal _signal = buffer_BinarySignals.Dequeue();
-                        SetBinarySignalValue(_signal.ID, _signal.CurrentValue, _signal.TimeTag);
+                         //;
+                        try
+                        {
+                            BinarySignal _signal = buffer_BinarySignals.Peek();
+                            if(SetBinarySignalValue(_signal.ID, _signal.CurrentValue, _signal.TimeTag))
+                            {
+                                buffer_BinarySignals.Dequeue();
+                            }
+                            
+                        }
+                        catch(Exception)
+                        {
+                            throw;
+                        }
+                        //Thread.Sleep(5);
                     }
                     Thread.Sleep(20);
                 }
@@ -557,8 +629,20 @@ namespace EnMon_Driver_Manager
                 {
                     while (buffer_AnalogSignals.Count > 0)
                     {
-                        AnalogSignal _signal = buffer_AnalogSignals.Dequeue();
-                        SetAnalogSignalValue(_signal.ID, _signal.CurrentValue, _signal.TimeTag);
+                        try
+                        {
+                            AnalogSignal _signal = buffer_AnalogSignals.Peek();
+                            if(SetAnalogSignalValue(_signal.ID, _signal.CurrentValue, _signal.TimeTag))
+                            {
+                                buffer_AnalogSignals.Dequeue();
+                            }
+                            
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                        //Thread.Sleep(5);
                     }
                     Thread.Sleep(20);
                 }
@@ -570,6 +654,25 @@ namespace EnMon_Driver_Manager
             //CloseConnection();
         }
 
+        /// <summary>
+        /// Updates the state of the device active.
+        /// </summary>
+        /// <param name="_deviceID">The device identifier.</param>
+        /// <param name="_state">if set to <c>true</c> [state].</param>
+        public static void UpdateDeviceActiveState(ushort _deviceID, bool _state)
+        {
+            Log.Instance.Trace("{0}.{1} methodu {2} nolu device için cagrıldı", "DBHelper", MethodBase.GetCurrentMethod().Name, _deviceID);
+            string query = String.Format("CALL updateDeviceActiveState({0},{1})", _deviceID.ToString(), _state.ToString());
+            try
+            {
+                ExecuteNonQuery(query);
+            }
+            catch(Exception e)
+            {
+                Log.Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
+            }
+        }
+
         #endregion
 
         #region Private Methods
@@ -578,8 +681,13 @@ namespace EnMon_Driver_Manager
         /// Connects this instance.
         /// </summary>
         /// <returns></returns>
-        public bool OpenConnection()
+        public static bool OpenConnection()
         {
+            if(conn == null)
+            {
+                conn = new MySqlConnection(ConnectionString);
+            }
+
             try
             {
                 if (conn.State == System.Data.ConnectionState.Closed)
@@ -659,7 +767,7 @@ namespace EnMon_Driver_Manager
                             _returnValue = reader.GetBoolean(0);
                             if (!_returnValue)
                             {
-                                Log.Instance.Error("Database Hatası: (setAnalogSignalValue({0},{1}) stored procedure çağrılırken bir hata oluştu)", _signalID, _signalValue);
+                                Log.Instance.Error("Database Hatası: {0} sorgusu çağrılırken bir hata oluştu)", query);
                             }
                         }
                     }
@@ -722,6 +830,18 @@ namespace EnMon_Driver_Manager
             }
         }
         #endregion
+
+        private static void ExecuteNonQuery(string _query)
+        {
+            if (OpenConnection())
+            {
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = conn;
+                cmd.CommandText = _query;
+                cmd.Prepare();
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }
 

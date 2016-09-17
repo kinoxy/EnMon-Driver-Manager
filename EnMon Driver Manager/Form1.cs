@@ -22,6 +22,7 @@ namespace EnMon_Driver_Manager
 {
     public partial class MainForm: Form
     {
+        private frm_Devices frm;
         private ModbusTCP modbusTCP;
         public MainForm()
         {
@@ -36,26 +37,27 @@ namespace EnMon_Driver_Manager
         /// <param name="e"></param>
         private void switch_language(object sender, EventArgs e)
         {
-            
-            if (sender.Equals(turkishToolStripMenuItem))
-            {
-                turkishToolStripMenuItem.Checked = true;
-                englishToolStripMenuItem.Checked = false;
-                cul = CultureInfo.CreateSpecificCulture("tr");
-            }
 
-            else if (sender.Equals(englishToolStripMenuItem))
-            {
-                turkishToolStripMenuItem.Checked = false;
-                englishToolStripMenuItem.Checked = true;
-                cul = CultureInfo.CreateSpecificCulture("en");
-            }
+            //if (sender.Equals(turkishToolStripMenuItem))
+            //{
+            //    turkishToolStripMenuItem.Checked = true;
+            //    englishToolStripMenuItem.Checked = false;
+            //    cul = CultureInfo.CreateSpecificCulture("tr");
+            //}
 
-            this.fileToolStripMenuItem.Text = res_man.GetString("File", cul);
-            this.editToolStripMenuItem.Text = res_man.GetString("Edit", cul);
-            this.languageToolStripMenuItem.Text = res_man.GetString("Language", cul);
-            this.turkishToolStripMenuItem.Text = res_man.GetString("Turkish", cul);
-            this.englishToolStripMenuItem.Text = res_man.GetString("English", cul);
+            //else if (sender.Equals(englishToolStripMenuItem))
+            //{
+            //    turkishToolStripMenuItem.Checked = false;
+            //    englishToolStripMenuItem.Checked = true;
+            //    cul = CultureInfo.CreateSpecificCulture("en");
+            //}
+
+            //this.fileToolStripMenuItem.Text = res_man.GetString("File", cul);
+            //this.editToolStripMenuItem.Text = res_man.GetString("Edit", cul);
+            //this.languageToolStripMenuItem.Text = res_man.GetString("Language", cul);
+            //this.turkishToolStripMenuItem.Text = res_man.GetString("Turkish", cul);
+            //this.englishToolStripMenuItem.Text = res_man.GetString("English", cul);
+            this.lblHeader.Text = res_man.GetString("EnMon Driver Manager", cul);
             this.btn_start.Text = res_man.GetString("btn_Start", cul);
             this.chkBox_runOnStartup.Text = res_man.GetString("chkBox_runOnStartup", cul);
 
@@ -84,13 +86,13 @@ namespace EnMon_Driver_Manager
             }
             if(timer_led_count == 7)
             {
-                if(pct_led.Image == EnMon_Driver_Manager.Properties.Resources.green)
+                if(pct_led.Image == Properties.Resources.green)
                 {
-                    pct_led.Image = EnMon_Driver_Manager.Properties.Resources.red;
+                    pct_led.Image = Properties.Resources.red;
                 }
                 else
                 {
-                    pct_led.Image = EnMon_Driver_Manager.Properties.Resources.green;
+                    pct_led.Image = Properties.Resources.green;
                 }
                 timer_led.Stop();
                 timer_led_count = 0;
@@ -120,6 +122,124 @@ namespace EnMon_Driver_Manager
             pct_led.Visible = true;
             
    
+        }
+
+        private void headerPanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            dragging = true;
+            dragCursorPoint = Cursor.Position;
+            dragFormPoint = this.Location;
+        }
+
+        private void headerPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                Point dif = Point.Subtract(Cursor.Position, new Size(dragCursorPoint));
+                this.Location = Point.Add(dragFormPoint, new Size(dif));
+            }
+        }
+
+        private void headerPanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragging = false;
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            pictureBox1.Image = Properties.Resources.Close32MouseOut;
+        }
+
+        private void pictureBox2_MouseMove(object sender, MouseEventArgs e)
+        {
+            pictureBox2.Image = Properties.Resources.Minus32MouseIn;
+        }
+
+        private void pictureBox2_MouseLeave(object sender, EventArgs e)
+        {
+            pictureBox2.Image = Properties.Resources.Minus32MouseOut;
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            pictureBox1.Image = Properties.Resources.Close32MouseIn;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if(frm == null)
+            {
+                frm_Devices frm = new frm_Devices();
+                frm.TopLevel = false;
+                frm.FormBorderStyle = FormBorderStyle.None;
+                if(modbusTCP != null)
+                {
+                    frm.addDeviceInfo(modbusTCP); 
+                }
+                frm.StateChanged += UpdateDeviceActiveState;
+                frm.Dock = DockStyle.Fill;
+                panel_Main.Controls.Clear();
+                panel_Main.Controls.Add(frm);
+                frm.Visible = true;
+                //(sender as Button).BackColor = Color.FromArgb(0, 0, 196, 174);
+            }
+            
+
+        }
+
+        /// <summary>
+        /// Updates the state of the device active.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="args">The <see cref="frm_DevicesEventArgs"/> instance containing the event data.</param>
+        private void UpdateDeviceActiveState(object source, frm_DevicesEventArgs args)
+        {
+            // DeviceInfo control'unden gönderilen eventteki args'lara göre ilgili device'ın haberleşme durumu değiştirilir.
+            modbusTCP.Devices.Where(d => d.ID == args.deviceId).First().isActive = args.state;
+            DBHelper.UpdateDeviceActiveState(args.deviceId, args.state);
+            if(args.state)
+            {
+                Log.Instance.Info("{0} nolu Device için haberleşme aktif edildi", args.deviceId);
+                // Haberleşme aktif edilse bile haberleşmenin kurulacağı kesin olmadığı için device.Connected burada true yapılmaz.
+                // modbusTCP.Devices.Where(d => d.ID == args.deviceId).First().Connected = true;
+                
+            }
+            else
+            {
+                Log.Instance.Info("{0} nolu Device için haberleşme kapatıldı", args.deviceId);
+                modbusTCP.Devices.Where(d => d.ID == args.deviceId).First().Connected = false;
+                DBHelper.UpdateDeviceConnectedState(args.deviceId, args.state);
+                // Haberleşme kapatıldıgında haberleşme sağlanamayacağı için device.Connected burada false'a çekilir.
+            }
+        }
+
+        private void MinimizeForm(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        private void ResizeForm(object sender, EventArgs e)
+        {
+            if (FormWindowState.Minimized == this.WindowState)
+            {
+                notifyIcon.Visible = true;
+                notifyIcon.ShowBalloonTip(500);
+                this.Hide();
+            }
+            else if (FormWindowState.Normal == this.WindowState)
+            {
+                notifyIcon.Visible = false;
+            }
+        }
+
+        private void GetFormBack(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Normal;
         }
     }
 }

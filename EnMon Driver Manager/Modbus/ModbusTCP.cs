@@ -126,7 +126,7 @@ namespace EnMon_Driver_Manager.Modbus
                 
                 // Eventler ayarlanıyor
                 _modbusTCPmaster.ConnectedToServer += _modbusServer_ConnectedToServer;
-                _modbusTCPmaster.DisconnectedFromDevice += _modbusServer_DisconnectedFromToDevice;
+                _modbusTCPmaster.DisconnectedFromServer += _modbusServer_DisconnectedFromServer;
                 _modbusTCPmaster.AnyBinarySignalValueChanged += _modbusServer_AnyBinarySignalValueChanged;
                 _modbusTCPmaster.AnyAnalogSignalValueChanged += _modbusServer_AnyAnalogSignalValueChanged;
                 modbusTCPMasters.Add(_modbusTCPmaster);
@@ -158,8 +158,16 @@ namespace EnMon_Driver_Manager.Modbus
             dbHelper.AddBinarySignalsToBuffer(e.BinarySignals);
         }
 
-        private static void _modbusServer_DisconnectedFromToDevice(object sender, ModbusServerEventArgs e)
+        private static void _modbusServer_DisconnectedFromServer(object sender, ModbusServerEventArgs e)
         {
+            foreach (Device d in e.Devices)
+            {
+                if (d.Connected == true)
+                {
+                    d.Connected = false;
+                    DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                }
+            }
             //Log.Instance.Error("{0} ile bağlantı koptu", e.ipAddress);
             //throw new NotImplementedException();
         }

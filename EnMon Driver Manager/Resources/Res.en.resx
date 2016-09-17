@@ -138,4 +138,7 @@
   <data name="Turkish" xml:space="preserve">
     <value>Turkish</value>
   </data>
+  <data name="EnMon_Driver_Manager" xml:space="preserve">
+    <value>EnMon Driver Manager</value>
+  </data>
 </root>

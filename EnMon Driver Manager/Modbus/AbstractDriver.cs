@@ -40,6 +40,14 @@ namespace EnMon_Driver_Manager.Modbus
         public List<Device> Devices { get; set; }
 
         /// <summary>
+        /// Gets or sets the stations.
+        /// </summary>
+        /// <value>
+        /// The stations.
+        /// </value>
+        public List<Station> Stations { get; set; }
+
+        /// <summary>
         /// Gets or sets the polling time.
         /// </summary>
         /// <value>
@@ -102,63 +110,54 @@ namespace EnMon_Driver_Manager.Modbus
         {
             dbHelper = new DBHelper();
             Devices = new List<Device>();
+            Stations = new List<Station>();
 
-            var parser = new FileIniDataParser();
-            IniData data = parser.ReadFile(_configFile);
-
-            var _stations = data["Stations"]["Names"];
-
-            if (_stations != null)
+            string[] _stationNames = GetStationNamesFromConfigFile(_configFile);
+            Stations = VerifyStationNames(_stationNames);
+            
+            if (Stations != null)
             {
-                string[] _stationNames = _stations.Split(',');
-                if (_stationNames != null)
+                foreach (Station s in Stations)
                 {
-                    foreach (string _station in _stationNames)
+                    List<Device> _stationDevices = dbHelper.GetStationDevices(s.Name);
+
+                    if (_stationDevices.Count > 0)
                     {
-                        List<Device> _stationDevices = dbHelper.GetStationDevices(_station.Trim());
-
-                        if (_stationDevices.Count > 0)
+                        foreach (Device d in _stationDevices)
                         {
-                            foreach (Device d in _stationDevices)
-                            {
-                                d.BinarySignals = dbHelper.GetDeviceBinarySignalsInfo(d.ID);
-                                d.AnalogSignals = dbHelper.GetDeviceAnalogSignalsInfo(d.ID);
-                            }
+                            d.BinarySignals = dbHelper.GetDeviceBinarySignalsInfo(d.ID);
+                            d.AnalogSignals = dbHelper.GetDeviceAnalogSignalsInfo(d.ID);
+                        }
 
-                            Devices.AddRange(_stationDevices);
-                        }
-                        else
-                        {
-                            Log.Instance.Info("{0} adlı station için herhang bir device bulunamadı", _station);
-                        }
-                    }
-
-                    if (Devices != null)
-                    {
-                        VerifyProtocolofDevices();
-
-                        if (Devices != null)
-                        {
-                            InitializeDriver();
-                        }
-                        else
-                        {
-                            Log.Instance.Error("{0} Hata: İstasyon cihazları haberleşme protokolü hatası.", this.GetType().Name);
-                        }
+                        Devices.AddRange(_stationDevices);
                     }
                     else
                     {
-                        Log.Instance.Error("{0} Hata: İstasyonlara ait modbus cihazı bulunamadı.", this.GetType().Name);
+                        Log.Instance.Info("{0} adlı station için herhang bir device bulunamadı", s.Name);
                     }
                 }
+
+                if (Devices != null)
+                {
+                    VerifyProtocolofDevices();
+
+                    if (Devices != null)
+                    {
+                        InitializeDriver();
+                    }
+                    else
+                    {
+                        Log.Instance.Error("{0} Hata: İstasyon cihazları haberleşme protokolü hatası.", this.GetType().Name);
+                    }
+                    }
                 else
                 {
-                    Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyası veri girişi hatası.", this.GetType().Name);
+                    Log.Instance.Error("{0} Hata: İstasyonlara ait modbus cihazı bulunamadı.", this.GetType().Name);
                 }
             }
             else
             {
-                Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyasında kayıtlı istasyon bulunamadı.", this.GetType().Name);
+                Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyasında kayıtlı istasyon adı bulunamadı.", this.GetType().Name);
             }
             
         }
@@ -251,6 +250,49 @@ namespace EnMon_Driver_Manager.Modbus
             }
         }
 
+        /// <summary>
+        /// Verifies the station names and returns Station informations from database for given station names.
+        /// </summary>
+        /// <param name="_stationNames">The station names.</param>
+        /// <returns></returns>
+        private List<Station> VerifyStationNames(string[] _stationNames)
+        {
+            List<Station> _stations = new List<Station>();
+            foreach (string s in _stationNames)
+            {
+                Station _station = null;
+                _station = DBHelper.GetStationInfoByName(s);
+                if(_station != null)
+                {
+                    _stations.Add(_station);
+                }  
+            }
+            return _stations;
+        }
+
+        /// <summary>
+        /// Gets the station names from configuration file.
+        /// </summary>
+        /// <param name="_configFile">The configuration file.</param>
+        /// <returns></returns>
+        private string[] GetStationNamesFromConfigFile(string _configFile)
+        {
+            var parser = new FileIniDataParser();
+            IniData data = parser.ReadFile(_configFile);
+
+            var _stations = data["Stations"]["Names"];
+            string[] _stationNames = null;
+            if (_stations != null)
+            {
+                _stationNames = _stations.Split(',');
+                for (int i = 0; i < _stationNames.Length; i++)
+                {
+                    _stationNames[i] = _stationNames[i].Trim();
+                }
+            }
+
+            return _stationNames;
+        }
         #endregion Private Methods
 
         #region Abstract Methods
