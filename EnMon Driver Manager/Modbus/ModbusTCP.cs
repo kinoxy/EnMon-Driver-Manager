@@ -1,15 +1,10 @@
 ﻿using EnMon_Driver_Manager.Models;
-using IniParser;
-using IniParser.Model;
-using Modbus.Device;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
+using EnMon_Driver_Manager.DataBase;
 
 namespace EnMon_Driver_Manager.Modbus
 {
@@ -79,7 +74,7 @@ namespace EnMon_Driver_Manager.Modbus
             ipAddresses = _ipAddresses;
             portNumber = 502;
             modbusTCPMasters = new List<Models.ModbusTCPMaster>();
-            dbHelper = new DBHelper();
+            dbhelper = new MySqlDBHelper();
             Log.Instance.Trace("{0}: Modbus driver olusturuldu.", this.GetType().Name);
         }
 
@@ -150,12 +145,12 @@ namespace EnMon_Driver_Manager.Modbus
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private static void _modbusServer_AnyAnalogSignalValueChanged(object sender, ModbusServerEventArgs e)
         {
-            dbHelper.AddAnalogSignalsToBuffer(e.AnalogSignals);
+            dbhelper.AddAnalogSignalsToDataBaseWriteBuffer(e.AnalogSignals);
         }
 
         private static void _modbusServer_AnyBinarySignalValueChanged(object sender, ModbusServerEventArgs e)
         {
-            dbHelper.AddBinarySignalsToBuffer(e.BinarySignals);
+            dbhelper.AddBinarySignalsToDataBaseWriteBuffer(e.BinarySignals);
         }
 
         private static void _modbusServer_DisconnectedFromServer(object sender, ModbusServerEventArgs e)
@@ -165,7 +160,7 @@ namespace EnMon_Driver_Manager.Modbus
                 if (d.Connected == true)
                 {
                     d.Connected = false;
-                    DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                    dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
                 }
             }
             //Log.Instance.Error("{0} ile bağlantı koptu", e.ipAddress);

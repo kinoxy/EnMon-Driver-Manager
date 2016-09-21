@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using EnMon_Driver_Manager.DataBase;
 
 namespace EnMon_Driver_Manager.Modbus
 {
@@ -82,8 +83,9 @@ namespace EnMon_Driver_Manager.Modbus
         private List<AnalogSignal> analogSignals;
         private List<BinarySignal> binarySignals;
         private Thread thread_ReadAnalogValues;
-
         private Thread thread_ReadBinaryValues;
+
+
 
         /// <summary>
         /// Gets or sets the database helper.
@@ -91,7 +93,7 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The database helper.
         /// </value>
-        protected static DBHelper dbHelper { get; set; }
+        protected static MySqlDBHelper dbhelper { get; set; }
 
         #endregion Private Properties
 
@@ -108,7 +110,7 @@ namespace EnMon_Driver_Manager.Modbus
         /// <param name="_configFile">The configuration file.</param>
         public AbstractDriver(string _configFile)
         {
-            dbHelper = new DBHelper();
+            dbhelper = new MySqlDBHelper();
             Devices = new List<Device>();
             Stations = new List<Station>();
 
@@ -119,14 +121,14 @@ namespace EnMon_Driver_Manager.Modbus
             {
                 foreach (Station s in Stations)
                 {
-                    List<Device> _stationDevices = dbHelper.GetStationDevices(s.Name);
+                    List<Device> _stationDevices = dbhelper.GetStationDevices(s.Name);
 
                     if (_stationDevices.Count > 0)
                     {
                         foreach (Device d in _stationDevices)
                         {
-                            d.BinarySignals = dbHelper.GetDeviceBinarySignalsInfo(d.ID);
-                            d.AnalogSignals = dbHelper.GetDeviceAnalogSignalsInfo(d.ID);
+                            d.BinarySignals = dbhelper.GetDeviceBinarySignalsInfo(d.ID);
+                            d.AnalogSignals = dbhelper.GetDeviceAnalogSignalsInfo(d.ID);
                         }
 
                         Devices.AddRange(_stationDevices);
@@ -173,7 +175,7 @@ namespace EnMon_Driver_Manager.Modbus
         {
             Log.Instance.Trace("GetSignalListForDriverDevices fonksiyonu cagrıldı");
 
-            DBHelper db_connection = new DBHelper();
+            MySqlDBHelper db_connection = new MySqlDBHelper();
             foreach (Device _device in Devices)
             {
                 _device.BinarySignals = db_connection.GetDeviceBinarySignalsInfo(_device.ID);
@@ -190,7 +192,7 @@ namespace EnMon_Driver_Manager.Modbus
             try
             {
                 ConnectToModbusDevices();
-                dbHelper.WriteValuesAtBufferToDatabase();
+                dbhelper.WriteValuesAtBufferToDatabase();
             }
             catch (Exception e)
             {
@@ -210,7 +212,7 @@ namespace EnMon_Driver_Manager.Modbus
             Log.Instance.Trace("GetLastValuesFromDatabase fonksiyonu cagrıldı");
 
             // Yeni bir database baglantı nesnesi olusturuluyor
-            DBHelper db_connection = new DBHelper();
+            MySqlDBHelper db_connection = new MySqlDBHelper();
 
             // Her device için donguye giriliyor
             foreach (Device device in Devices)
@@ -261,7 +263,7 @@ namespace EnMon_Driver_Manager.Modbus
             foreach (string s in _stationNames)
             {
                 Station _station = null;
-                _station = DBHelper.GetStationInfoByName(s);
+                _station = dbhelper.GetStationInfoByName(s);
                 if(_station != null)
                 {
                     _stations.Add(_station);
@@ -279,6 +281,7 @@ namespace EnMon_Driver_Manager.Modbus
         {
             var parser = new FileIniDataParser();
             IniData data = parser.ReadFile(_configFile);
+           
 
             var _stations = data["Stations"]["Names"];
             string[] _stationNames = null;

@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Timers;
+using EnMon_Driver_Manager.DataBase;
 
 namespace EnMon_Driver_Manager.Models
 {
@@ -65,6 +66,14 @@ namespace EnMon_Driver_Manager.Models
         /// </value>
         public string ipAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the port number.
+        /// </summary>
+        /// <value>
+        /// The port number.
+        /// </value>
+        public int PortNumber { get; set; }
+
         #endregion
 
         #region Private Properties
@@ -113,13 +122,7 @@ namespace EnMon_Driver_Manager.Models
 
         private DateTime dtDisconnected { get; set; }
 
-        /// <summary>
-        /// Gets or sets the port number.
-        /// </summary>
-        /// <value>
-        /// The port number.
-        /// </value>
-        public int PortNumber { get; set; }
+        private MySqlDBHelper dbhelper;
 
         #endregion
 
@@ -138,6 +141,7 @@ namespace EnMon_Driver_Manager.Models
             retryNumber = 1;
             pollingTime = 1000.0;
             MaxRegisterInOnePoll = 16;
+            dbhelper = new MySqlDBHelper();
         }
 
         public ModbusTCPMaster(string _ipAddress, int _readTimeOut, int _retryNumber, double _pollingtime) : this(_ipAddress)
@@ -524,7 +528,7 @@ namespace EnMon_Driver_Manager.Models
                                         if (d.Connected == false)
                                         {
                                             d.Connected = true;
-                                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
                                         }
                                         _queueIndexOfFirstSignalWillBeRead = index;
                                     }
@@ -537,7 +541,7 @@ namespace EnMon_Driver_Manager.Models
                                     if (d.Connected == false)
                                     {
                                         d.Connected = true;
-                                        DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                        dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
                                     }
                                 }
                             }
@@ -562,7 +566,7 @@ namespace EnMon_Driver_Manager.Models
                         {
                             Log.Instance.Error("{0}: {1} nolu device haberleşme hatası ", this.GetType().Name, d.ID);
                             d.Connected = false;
-                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
                         } 
                         
                         //throw;
@@ -617,7 +621,7 @@ namespace EnMon_Driver_Manager.Models
                                         if (d.Connected == false)
                                         {
                                             d.Connected = true;
-                                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
                                         }
                                         _queueIndexOfFirstSignalWillBeRead = index;
                                     }
@@ -630,7 +634,7 @@ namespace EnMon_Driver_Manager.Models
                                     if (d.Connected == false)
                                     {
                                         d.Connected = true;
-                                        DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                        dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
                                     }
                                 }
                             }
@@ -654,7 +658,7 @@ namespace EnMon_Driver_Manager.Models
                         {
                             Log.Instance.Error("{0}: {1} nolu device haberleşme hatası ", this.GetType().Name, d.ID);
                             d.Connected = false;
-                            DBHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
                         }
 
                         //throw;

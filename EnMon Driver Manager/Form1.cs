@@ -1,22 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Globalization;
-using MySql.Data;
-using MySql.Data.MySqlClient;
-using System.Resources;
-using Modbus.Device;
-using NLog;
-using IniParser;
-using IniParser.Model;
 using EnMon_Driver_Manager.Modbus;
 using System.IO;
+using EnMon_Driver_Manager.DataBase;
 
 namespace EnMon_Driver_Manager
 {
@@ -24,11 +14,13 @@ namespace EnMon_Driver_Manager
     {
         private frm_Devices frm;
         private ModbusTCP modbusTCP;
+        private MySqlDBHelper dbhelper;
         public MainForm()
         {
             InitializeComponent();
             InitializeLanguageSettings();
             timer_led_count = 0;
+            dbhelper = new MySqlDBHelper();
         }
         /// <summary>
         /// Programın dilini değiştirir
@@ -124,14 +116,14 @@ namespace EnMon_Driver_Manager
    
         }
 
-        private void headerPanel_MouseDown(object sender, MouseEventArgs e)
+        private void DragStart(object sender, MouseEventArgs e)
         {
             dragging = true;
             dragCursorPoint = Cursor.Position;
             dragFormPoint = this.Location;
         }
 
-        private void headerPanel_MouseMove(object sender, MouseEventArgs e)
+        private void OnDrag(object sender, MouseEventArgs e)
         {
             if (dragging)
             {
@@ -140,7 +132,7 @@ namespace EnMon_Driver_Manager
             }
         }
 
-        private void headerPanel_MouseUp(object sender, MouseEventArgs e)
+        private void DragEnd(object sender, MouseEventArgs e)
         {
             dragging = false;
         }
@@ -201,7 +193,7 @@ namespace EnMon_Driver_Manager
         {
             // DeviceInfo control'unden gönderilen eventteki args'lara göre ilgili device'ın haberleşme durumu değiştirilir.
             modbusTCP.Devices.Where(d => d.ID == args.deviceId).First().isActive = args.state;
-            DBHelper.UpdateDeviceActiveState(args.deviceId, args.state);
+            dbhelper.UpdateDeviceActiveState(args.deviceId, args.state);
             if(args.state)
             {
                 Log.Instance.Info("{0} nolu Device için haberleşme aktif edildi", args.deviceId);
@@ -213,7 +205,7 @@ namespace EnMon_Driver_Manager
             {
                 Log.Instance.Info("{0} nolu Device için haberleşme kapatıldı", args.deviceId);
                 modbusTCP.Devices.Where(d => d.ID == args.deviceId).First().Connected = false;
-                DBHelper.UpdateDeviceConnectedState(args.deviceId, args.state);
+                dbhelper.UpdateDeviceConnectedState(args.deviceId, args.state);
                 // Haberleşme kapatıldıgında haberleşme sağlanamayacağı için device.Connected burada false'a çekilir.
             }
         }

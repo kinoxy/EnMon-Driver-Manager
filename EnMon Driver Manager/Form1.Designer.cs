@@ -225,6 +225,9 @@ namespace EnMon_Driver_Manager
             this.logoPanel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.logoPanel.Size = new System.Drawing.Size(180, 54);
             this.logoPanel.TabIndex = 0;
+            this.logoPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragStart);
+            this.logoPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnDrag);
+            this.logoPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DragEnd);
             // 
             // headerPanel
             // 
@@ -238,9 +241,9 @@ namespace EnMon_Driver_Manager
             this.headerPanel.Name = "headerPanel";
             this.headerPanel.Size = new System.Drawing.Size(783, 54);
             this.headerPanel.TabIndex = 7;
-            this.headerPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.headerPanel_MouseDown);
-            this.headerPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.headerPanel_MouseMove);
-            this.headerPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.headerPanel_MouseUp);
+            this.headerPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragStart);
+            this.headerPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnDrag);
+            this.headerPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DragEnd);
             // 
             // pictureBox2
             // 
@@ -285,6 +288,9 @@ namespace EnMon_Driver_Manager
             this.lblHeader.TabIndex = 1;
             this.lblHeader.Text = "EnMon Driver Manager";
             this.lblHeader.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblHeader.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragStart);
+            this.lblHeader.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnDrag);
+            this.lblHeader.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DragEnd);
             // 
             // fileSystemWatcher1
             // 
