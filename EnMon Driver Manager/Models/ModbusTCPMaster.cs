@@ -19,19 +19,19 @@ namespace EnMon_Driver_Manager.Models
     /// </summary>
     /// <param name="source">The source.</param>
     /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-    public delegate void ModbusServerEventHandler(object source, ModbusServerEventArgs e);
+    public delegate void ModbusEventHandler(object source, ModbusEventArgs e);
 
     /// <summary>
     /// 
     /// </summary>
-    public class ModbusTCPMaster
+    public class ModbusTCPMaster: IDriverMaster
     {
         #region Public Properties
 
         /// <summary>
         /// The polling timer
         /// </summary>
-        public PollingTimer pollingTimer;
+        public PollingTimer pollingTimer { get; set; }
 
         /// <summary>
         /// Gets or sets the devices.
@@ -118,11 +118,12 @@ namespace EnMon_Driver_Manager.Models
         /// </value>
         private int retryNumber { get; set; }
 
+
         private DateTime dtNow { get; set; }
 
         private DateTime dtDisconnected { get; set; }
 
-        private MySqlDBHelper dbhelper;
+        
 
         #endregion
 
@@ -141,14 +142,21 @@ namespace EnMon_Driver_Manager.Models
             retryNumber = 1;
             pollingTime = 1000.0;
             MaxRegisterInOnePoll = 16;
-            dbhelper = new MySqlDBHelper();
         }
 
-        public ModbusTCPMaster(string _ipAddress, int _readTimeOut, int _retryNumber, double _pollingtime) : this(_ipAddress)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModbusTCPMaster"/> class.
+        /// </summary>
+        /// <param name="_ipAddress">The ip address.</param>
+        /// <param name="_readTimeOut">The read time out.</param>
+        /// <param name="_retryNumber">The retry number.</param>
+        /// <param name="_pollingtime">The pollingtime.</param>
+        public ModbusTCPMaster(string _ipAddress, int _readTimeOut, int _retryNumber, double _pollingtime, byte _maxregisterinonepoll) : this(_ipAddress)
         {
             readTimeOut = _readTimeOut;
             retryNumber = _retryNumber;
             pollingTime = _pollingtime;
+            MaxRegisterInOnePoll = _maxregisterinonepoll;
         }
 
         /// <summary>
@@ -167,23 +175,25 @@ namespace EnMon_Driver_Manager.Models
         /// <summary>
         /// Occurs when [any binary signal value changed].
         /// </summary>
-        public event ModbusServerEventHandler AnyBinarySignalValueChanged;
+        public event ModbusEventHandler AnyBinarySignalValueChanged;
 
         /// <summary>
         /// Occurs when [any analog signal value changed].
         /// </summary>
-        public event ModbusServerEventHandler AnyAnalogSignalValueChanged;
+        public event ModbusEventHandler AnyAnalogSignalValueChanged;
 
         /// <summary>
         /// Occurs when [cannot connect to device].
         /// </summary>
-        public event ModbusServerEventHandler DisconnectedFromServer;
+        public event ModbusEventHandler DisconnectedFromServer;
 
         /// <summary>
         /// Occurs when [communication established].
         /// </summary>
-        public event ModbusServerEventHandler ConnectedToServer;
-       
+        public event ModbusEventHandler ConnectedToServer;
+
+        public event ModbusEventHandler DeviceConnectionStateChanged;
+
         /// <summary>
         /// Called when [any binary signal value changed].
         /// </summary>
@@ -191,7 +201,7 @@ namespace EnMon_Driver_Manager.Models
         private void OnAnyBinarySignalValueChanged(List<BinarySignal> _valueChangedSignals)
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-            ModbusServerEventArgs ms = new ModbusServerEventArgs();
+            ModbusEventArgs ms = new ModbusEventArgs();
             ms.BinarySignals = _valueChangedSignals;
 
             if (AnyBinarySignalValueChanged != null)
@@ -206,11 +216,9 @@ namespace EnMon_Driver_Manager.Models
         /// <param name="_valueChangedSignals">Value changed signals.</param>
         private void OnAnyAnalogSignalValueChanged(List<AnalogSignal> _valueChangedSignals)
         {
-            // TODO: OnAnyAnalogSignalValueChanged eventi bir fazla çagrılıyor
-            // TODO: Aynı ip  adres altnda birden fazla cihaz varken cihazlardan birine erişim durdugunda diger cihazlara sorgulamayı kesiyor. Bununla ilgili çalışma yap.
-            // TODO: Sinyal listesini fazla fazla doldurup he birden fazla ip içiççn hem de birden fazla cihaz  için test yap.
+            // TODO: Sinyal listesini fazla fazla doldurup hem birden fazla ip için hem de birden fazla cihaz için test yap.
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-            ModbusServerEventArgs ms = new ModbusServerEventArgs();
+            ModbusEventArgs ms = new ModbusEventArgs();
             ms.AnalogSignals = _valueChangedSignals;
 
             if (AnyAnalogSignalValueChanged != null)
@@ -226,11 +234,11 @@ namespace EnMon_Driver_Manager.Models
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
 
-            Log.Instance.Error("ModbusTCPMaster: Driver baglantı hatası => {1} ip adresi ile bağlantı problemi", this.GetType().Name, ipAddress);
+            Log.Instance.Error("{0}: Driver baglantı hatası => {1} ip adresi ile bağlantı problemi", this.GetType().Name, ipAddress);
             
             
             dtDisconnected = DateTime.Now;
-            ModbusServerEventArgs ms = new ModbusServerEventArgs();
+            ModbusEventArgs ms = new ModbusEventArgs();
             ms.Devices = _devices;
             if (DisconnectedFromServer != null)
             {
@@ -251,8 +259,7 @@ namespace EnMon_Driver_Manager.Models
             }
             else
             {
-                // TODO: Her baglantı öncesi sinyalleri tekrardan sıraya  koymaya gerek yok. Bunu modusTCPmaster olustururken yap
-                // Sinyal okuma başlamadan önce tüm sinyaller liste içerisinde modbus adreslerine göre sıralanıyor.
+                
                 foreach (Device d in Devices)
                 {
                     if(d.BinarySignals.Count>0)
@@ -268,12 +275,22 @@ namespace EnMon_Driver_Manager.Models
             }
             if (ConnectedToServer != null)
             {
-                ModbusServerEventArgs ms = new ModbusServerEventArgs();
+                ModbusEventArgs ms = new ModbusEventArgs();
                 ms.ipAddress = ipAddress;
                 ConnectedToServer(this, ms);
             }  
         }
 
+        private void OnDeviceConnectionStateChanged(Device _device)
+        {
+            if (DeviceConnectionStateChanged != null)
+            {
+                ModbusEventArgs ms = new ModbusEventArgs();
+                ms.Device = _device;
+                DeviceConnectionStateChanged(this, ms);
+            }
+
+        }
         
         #endregion Events
 
@@ -331,8 +348,12 @@ namespace EnMon_Driver_Manager.Models
                         master.Transport.Retries = retryNumber;
                         master.Transport.ReadTimeout = readTimeOut;
                         IsConnected = true;
-                        //Log.Instance.Info("{0} ip adresi ile bağlantı kuruldu", ipAddress);
+                        Log.Instance.Info("{0} ip adresi ile bağlantı kuruldu", ipAddress);
                         OnConnectedToServer(); 
+                    }
+                    else
+                    {
+                        IsConnected = false;
                     }
                 }
                 // ModbusServer için daha önce timer olusturulmamışsa sinyalleri okumak icin timer olusturuluyor.
@@ -343,6 +364,7 @@ namespace EnMon_Driver_Manager.Models
                     pollingTimer.Elapsed += PollingTimer_Elapsed;
                     pollingTimer.AutoReset = true;
                     pollingTimer.Enabled = true;
+                    pollingTimer.Start();
                 }
             }
         }
@@ -350,7 +372,7 @@ namespace EnMon_Driver_Manager.Models
         /// <summary>
         /// Reads the values from modbus server.
         /// </summary>
-        public void ReadValuesFromModbusServer()
+        public void ReadValues()
         {
             try
             {
@@ -451,7 +473,7 @@ namespace EnMon_Driver_Manager.Models
         private void PollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             pollingTimer.Enabled = false;
-            ReadValuesFromModbusServer();
+            ReadValues();
             pollingTimer.Enabled = true;
         }
 
@@ -524,11 +546,11 @@ namespace EnMon_Driver_Manager.Models
                                     // Logiclerden herhangi biri false donerse okuma işlemi başlatılır.
                                     if (!(isSameFunctionCode & isModbusAddressSequential))
                                     {
-                                        d.AnalogSignals = ReadAnalogSignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
+                                        d.AnalogSignals = ReadAnalogSignalsValuesFromModbusDevice(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
                                         if (d.Connected == false)
                                         {
                                             d.Connected = true;
-                                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                            OnDeviceConnectionStateChanged(d);
                                         }
                                         _queueIndexOfFirstSignalWillBeRead = index;
                                     }
@@ -537,11 +559,12 @@ namespace EnMon_Driver_Manager.Models
                                 // Son for döngüsünden sonra degeri okunmamış sinyal varsa bu sinyaller için okuma işlemi for döngüşü bittikten sonra gerçeklenir.
                                 if (_queueIndexOfFirstSignalWillBeRead != d.AnalogSignals.Count)
                                 {
-                                    d.AnalogSignals = ReadAnalogSignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, d.AnalogSignals.Count - _queueIndexOfFirstSignalWillBeRead);
+                                    d.AnalogSignals = ReadAnalogSignalsValuesFromModbusDevice(d, _queueIndexOfFirstSignalWillBeRead, d.AnalogSignals.Count - _queueIndexOfFirstSignalWillBeRead);
                                     if (d.Connected == false)
                                     {
                                         d.Connected = true;
-                                        dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                        OnDeviceConnectionStateChanged(d);
+                                        
                                     }
                                 }
                             }
@@ -566,7 +589,8 @@ namespace EnMon_Driver_Manager.Models
                         {
                             Log.Instance.Error("{0}: {1} nolu device haberleşme hatası ", this.GetType().Name, d.ID);
                             d.Connected = false;
-                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                            OnDeviceConnectionStateChanged(d);
+                            
                         } 
                         
                         //throw;
@@ -617,11 +641,11 @@ namespace EnMon_Driver_Manager.Models
                                     // Logiclerden herhangi biri false donerse okuma işlemi başlatılır.
                                     if (!(isSameFunctionCode & isModbusAddressSequential))
                                     {
-                                        d.BinarySignals = ReadBinarySignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
+                                        d.BinarySignals = ReadBinarySignalsValuesFromModbusDevice(d, _queueIndexOfFirstSignalWillBeRead, index - _queueIndexOfFirstSignalWillBeRead);
                                         if (d.Connected == false)
                                         {
                                             d.Connected = true;
-                                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                            OnDeviceConnectionStateChanged(d);
                                         }
                                         _queueIndexOfFirstSignalWillBeRead = index;
                                     }
@@ -630,11 +654,11 @@ namespace EnMon_Driver_Manager.Models
                                 // Son for döngüsünden sonra degeri okunmamış sinyal varsa bu sinyaller için okuma işlemi for döngüşü bittikten sonra gerçeklenir.
                                 if (_queueIndexOfFirstSignalWillBeRead != d.BinarySignals.Count)
                                 {
-                                    d.BinarySignals = ReadBinarySignalsValuesFromModbusServer(d, _queueIndexOfFirstSignalWillBeRead, d.BinarySignals.Count - _queueIndexOfFirstSignalWillBeRead);
+                                    d.BinarySignals = ReadBinarySignalsValuesFromModbusDevice(d, _queueIndexOfFirstSignalWillBeRead, d.BinarySignals.Count - _queueIndexOfFirstSignalWillBeRead);
                                     if (d.Connected == false)
                                     {
                                         d.Connected = true;
-                                        dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                                        OnDeviceConnectionStateChanged(d);
                                     }
                                 }
                             }
@@ -658,7 +682,7 @@ namespace EnMon_Driver_Manager.Models
                         {
                             Log.Instance.Error("{0}: {1} nolu device haberleşme hatası ", this.GetType().Name, d.ID);
                             d.Connected = false;
-                            dbhelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                            OnDeviceConnectionStateChanged(d);
                         }
 
                         //throw;
@@ -677,7 +701,7 @@ namespace EnMon_Driver_Manager.Models
         /// <param name="_totalSignalCount">Okunacak toplam sinyal sayısı</param>
         /// <returns></returns>
         /// <exception cref="Exception">ModbusServer Hata: Yanlış tanımlanan adres veya Function Code bulundu</exception>
-        private List<AnalogSignal> ReadAnalogSignalsValuesFromModbusServer(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
+        private List<AnalogSignal> ReadAnalogSignalsValuesFromModbusDevice(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
         {
             List<AnalogSignal> _valueChangedSignals = new List<AnalogSignal>();
             AnalogSignal _firstSignal = _device.AnalogSignals[_numberOfFirstSignal];
@@ -715,9 +739,10 @@ namespace EnMon_Driver_Manager.Models
                             currentWordNumber++;
                             break;
                         case 2:
-                            if (_device.AnalogSignals[currentSignalNo].CurrentValue != words[currentWordNumber] + words[currentWordNumber+1] * 256)
+                            UInt32 _valueFromDevice = Convert.ToUInt32(words[currentWordNumber]) + Convert.ToUInt32(words[currentWordNumber + 1]) * 256;
+                            if (_device.AnalogSignals[currentSignalNo].CurrentValue != _valueFromDevice)
                             {
-                                _device.AnalogSignals[currentSignalNo].CurrentValue = words[currentWordNumber] + (words[currentWordNumber+1]*256);
+                                _device.AnalogSignals[currentSignalNo].CurrentValue = _valueFromDevice;
                                 _device.AnalogSignals[currentSignalNo].TimeTag = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                                 _valueChangedSignals.Add(_device.AnalogSignals[currentSignalNo]);
                                 
@@ -755,7 +780,7 @@ namespace EnMon_Driver_Manager.Models
         /// <param name="_totalSignalCount">The total signal count.</param>
         /// <returns></returns>
         /// <exception cref="Exception">ModbusServer Hata: Yanlış tanımlanan adres veya Function Code bulundu</exception>
-        private List<BinarySignal> ReadBinarySignalsValuesFromModbusServer(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
+        private List<BinarySignal> ReadBinarySignalsValuesFromModbusDevice(Device _device, int _numberOfFirstSignal, int _totalSignalCount)
         {
             List<BinarySignal> _valueChangedSignals = new List<BinarySignal>();
             BinarySignal _firstSignal = _device.BinarySignals[_numberOfFirstSignal];
@@ -909,7 +934,7 @@ namespace EnMon_Driver_Manager.Models
     /// 
     /// </summary>
     /// <seealso cref="System.EventArgs" />
-    public class ModbusServerEventArgs : EventArgs
+    public class ModbusEventArgs : EventArgs
     {
         /// <summary>
         /// The analog signals
@@ -927,5 +952,7 @@ namespace EnMon_Driver_Manager.Models
         public string ipAddress { get; internal set; }
 
         public List<Device> Devices {get; internal set;}
+
+        public Device Device { get; internal set; }
     }
 }

@@ -14,12 +14,22 @@ namespace EnMon_Driver_Manager.Modbus
             throw new NotImplementedException();
         }
 
-        protected override void VerifyProtocolofDevices()
+        protected override void ConnectToModbusDevices()
         {
             throw new NotImplementedException();
         }
 
-        protected override void ConnectToModbusDevices()
+        protected override List<Device> VerifyProtocolofDevices(List<Device> _devices)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void GetCommunicationParametersFromConfigFile(string _configFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void SetDefaultCommunicationParameters()
         {
             throw new NotImplementedException();
         }

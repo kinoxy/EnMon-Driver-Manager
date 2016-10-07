@@ -4,14 +4,14 @@ namespace EnMon_Driver_Manager
 {
     public class AnalogSignal : Signal
     {
-        private int currentValue;
+        private UInt32 currentValue;
         private byte dataTypeID;
         private int maxValue;
         private int minValue;
         private float scaleValue;
         public string TimeTag { get; set; }
         
-        public int CurrentValue
+        public UInt32 CurrentValue
         {
             get { return currentValue; }
             set { currentValue = value; }

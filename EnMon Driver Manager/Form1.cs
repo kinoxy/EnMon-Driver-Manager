@@ -12,15 +12,22 @@ namespace EnMon_Driver_Manager
 {
     public partial class MainForm: Form
     {
-        private frm_Devices frm;
+        private frm_Devices frm_devices;
+        private frm_SignalList frm_signallist;
         private ModbusTCP modbusTCP;
-        private MySqlDBHelper dbhelper;
+        public MySqlDBHelper dbhelper;
         public MainForm()
         {
             InitializeComponent();
             InitializeLanguageSettings();
+
             timer_led_count = 0;
-            dbhelper = new MySqlDBHelper();
+
+            Task t1 = new Task(CreateDatabaseHelperInstance);
+            t1.Start();
+            
+
+
         }
         /// <summary>
         /// Programın dilini değiştirir
@@ -63,46 +70,39 @@ namespace EnMon_Driver_Manager
         /// <param name="e"></param>
         private void timer_led_Tick(object sender, EventArgs e)
         {
-            if (timer_led_count % 2 == 1)
+            if (timer_led_count % 2 == 0)
             {
                 pct_led.Visible = false;
                 timer_led_count++;
                 //timer_led.Start();
             }
-            else if(timer_led_count % 2 == 0)
+            else if(timer_led_count % 2 == 1)
             {
                 pct_led.Visible = true;
                 timer_led_count++;
                 //timer_led.Start();
 
             }
-            if(timer_led_count == 7)
-            {
-                if(pct_led.Image == Properties.Resources.green)
-                {
-                    pct_led.Image = Properties.Resources.red;
-                }
-                else
-                {
-                    pct_led.Image = Properties.Resources.green;
-                }
-                timer_led.Stop();
-                timer_led_count = 0;
-                pct_led.Visible = true;
-            }
+            
         }
 
         private async void btn_start_Click(object sender, EventArgs e)
         {
+            btn_start.Enabled = false;
             timer_led.Start();
 
+            
+            // ModbusTCP Config dosyası okunuyor
             if (File.Exists("ModbusTCPConfig.ini"))
             {
-                Task t1 = Task.Factory.StartNew(() => modbusTCP = new ModbusTCP("ModbusTCPConfig.ini"));
+                Task t1 = Task.Factory.StartNew(() => modbusTCP = new ModbusTCP(("ModbusTCPConfig.ini"), dbhelper));
                 await t1;
-                if (modbusTCP.Devices.Count > 0)
+                if (modbusTCP.Devices.Count > 0 & !modbusTCP.IsError)
                 {
+                    timer_led.Stop();
                     pct_led.Image = EnMon_Driver_Manager.Properties.Resources.green;
+                    pct_led.Visible = true;
+                    btn_start.Text = res_man.GetString("btn_Stop", cul);
                     modbusTCP.StartCommunication();
                 }
             }
@@ -111,9 +111,10 @@ namespace EnMon_Driver_Manager
                 Log.Instance.Error("Driver config dosyası bulunamadı");
             }
             timer_led.Stop();
+            btn_start.Enabled = true;
             pct_led.Visible = true;
             
-   
+    
         }
 
         private void DragStart(object sender, MouseEventArgs e)
@@ -164,7 +165,7 @@ namespace EnMon_Driver_Manager
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if(frm == null)
+            if(frm_devices == null)
             {
                 frm_Devices frm = new frm_Devices();
                 frm.TopLevel = false;
@@ -232,6 +233,36 @@ namespace EnMon_Driver_Manager
         private void GetFormBack(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Normal;
+        }
+
+        private void btn_Signals_Click(object sender, EventArgs e)
+        {
+
+            frm_signallist = new frm_SignalList();
+           
+                frm_signallist.TopLevel = false;
+                frm_signallist.FormBorderStyle = FormBorderStyle.None;
+                frm_signallist.Dock = DockStyle.Fill;
+                frm_signallist.DbHelper = dbhelper;
+                panel_Main.Controls.Clear();
+                panel_Main.Controls.Add(frm_signallist);
+                frm_signallist.Visible = true;
+           
+                
+                //(sender as Button).BackColor = Color.FromArgb(0, 0, 196, 174);
+            
+
+        }
+
+        /// <summary>
+        /// Creates the database helper instance.
+        /// </summary>
+        private void CreateDatabaseHelperInstance()
+        {
+            if (dbhelper == null)
+            {
+                dbhelper = new MySqlDBHelper();
+            }
         }
     }
 }

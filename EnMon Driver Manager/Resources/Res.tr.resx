@@ -141,4 +141,7 @@
   <data name="EnMon_Driver_Manager" xml:space="preserve">
     <value>EnMon Sürücü Yöneticisi</value>
   </data>
+  <data name="btn_Stop" xml:space="preserve">
+    <value>Durdur</value>
+  </data>
 </root>

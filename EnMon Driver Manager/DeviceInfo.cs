@@ -12,6 +12,35 @@ namespace EnMon_Driver_Manager
 {
     public partial class DeviceInfo : UserControl
     {
+        private Color fontcolor;
+        private Color userbackgroundcolor;
+        public Color FontColor
+        {
+            get
+            {
+                return fontcolor;
+            }
+
+            set
+            {
+                lbl_DeviceName.ForeColor = value;
+                lbl_StationName.ForeColor = value;
+                lbl_SlaveId.ForeColor = value;
+            }
+        }
+
+        public Color UserControlBackColor
+        {
+            get
+            {
+                return userbackgroundcolor;
+            }
+            set
+            {
+                BackColor = value;
+            }
+
+        }
         public ushort DeviceId { get; set; }
         public DeviceInfo()
         {

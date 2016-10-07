@@ -36,14 +36,15 @@ namespace EnMon_Driver_Manager
                     {
                         deviceInfo.pictureBox_ConnectionStatus.Image = Properties.Resources.red;
                     }
+                    deviceInfo.DeviceId = d.ID;
+                    //deviceInfo.switchButton_DeviceIsActive.Click += this.DeviceInfo_SwitchButtonStateChanged;
+                    // deviceInfo.Anchor = (AnchorStyles)(AnchorStyles.Left | AnchorStyles.Top|AnchorStyles.Right);
                     deviceInfo.Location = new Point(0, 0);
                     deviceInfo.Name = "deviceInfo" + index.ToString();
                     deviceInfo.Size = new Size(402, 40);
                     deviceInfo.Dock = DockStyle.Top;
-                    deviceInfo.TabIndex = 0;
-                    deviceInfo.DeviceId = d.ID;
-                    //deviceInfo.switchButton_DeviceIsActive.Click += this.DeviceInfo_SwitchButtonStateChanged;
-                    // deviceInfo.Anchor = (AnchorStyles)(AnchorStyles.Left | AnchorStyles.Top|AnchorStyles.Right);
+                    deviceInfo.FontColor = Color.FromArgb(153, 147, 145);
+                    deviceInfo.BackColor = Color.FromArgb(42, 45, 55);
                     deviceInfo.SwitchButtonStateChanged += DeviceInfo_SwitchButtonStateChanged;
                     
                     this.Controls.Add(deviceInfo);

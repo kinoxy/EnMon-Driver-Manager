@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using EnMon_Driver_Manager.DataBase;
+using System.Text;
 
 namespace EnMon_Driver_Manager.Modbus
 {
@@ -54,7 +55,11 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The polling time.
         /// </value>
-        public int PollingTime { get; set; }
+        public int PollingTime
+        {
+            get { return pollingTime; }
+            protected set { pollingTime = value; }
+        }
 
         /// <summary>
         /// Gets or sets the read time out.
@@ -62,7 +67,11 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The read time out.
         /// </value>
-        public int ReadTimeOut { get; set; }
+        public int ReadTimeOut
+        {
+            get { return readTimeOut; }
+            protected set { readTimeOut = value; }
+        }
 
         /// <summary>
         /// Gets or sets the retry number.
@@ -70,16 +79,48 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The retry number.
         /// </value>
-        public int RetryNumber { get; set; }
+        public int RetryNumber
+        {
+            get { return retryNumber; }
+            protected set { retryNumber = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is error.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is error; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsError { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [maximum register in one pool].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [maximum register in one pool]; otherwise, <c>false</c>.
+        /// </value>
+        public byte MaxRegisterInOnePoll
+        {
+            get { return maxRegisterInOnePoll; }
+            protected set { maxRegisterInOnePoll = value; }
+        }
+        /// <summary>
+        /// Gets or sets the database helper.
+        /// </summary>
+        /// <value>
+        /// The database helper.
+        /// </value>
+        protected static AbstractDBHelper dbHelper { get; set; }
 
         #endregion Public Properties
 
         #region Private Properties
 
-        public static int pollingTime;
-        public static int portNumber;
-        public static int readTimeOut;
-        public static int retryNumber;
+        private static int pollingTime;
+        private static int readTimeOut;
+        private static int retryNumber;
+        private static byte maxRegisterInOnePoll;
+
         private List<AnalogSignal> analogSignals;
         private List<BinarySignal> binarySignals;
         private Thread thread_ReadAnalogValues;
@@ -93,7 +134,7 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The database helper.
         /// </value>
-        protected static MySqlDBHelper dbhelper { get; set; }
+        //protected static MySqlDBHelper dbhelper { get; set; }
 
         #endregion Private Properties
 
@@ -108,62 +149,59 @@ namespace EnMon_Driver_Manager.Modbus
         /// Initializes a new instance of the <see cref="AbstractDriver"/> class.
         /// </summary>
         /// <param name="_configFile">The configuration file.</param>
-        public AbstractDriver(string _configFile)
+        /// <param name="_dbHelper">The database helper.</param>
+        public AbstractDriver(string _configFile, AbstractDBHelper _dbHelper)
         {
-            dbhelper = new MySqlDBHelper();
+            dbHelper = _dbHelper;
             Devices = new List<Device>();
             Stations = new List<Station>();
 
-            string[] _stationNames = GetStationNamesFromConfigFile(_configFile);
-            Stations = VerifyStationNames(_stationNames);
-            
-            if (Stations != null)
+            //Default haberleşme ayarları
+            SetDefaultCommunicationParameters();
+            // Config dosyasından haberleşme ayarları ve istasyon isimleri çekiliyor
+            ReadDriverConfigFile(_configFile);
+
+            if (Stations.Count > 0)
             {
                 foreach (Station s in Stations)
                 {
-                    List<Device> _stationDevices = dbhelper.GetStationDevices(s.Name);
+                    List<Device> _stationDevices = dbHelper.GetStationDevices(s.Name);
+ 
+                    _stationDevices = VerifyProtocolofDevices(_stationDevices);
 
                     if (_stationDevices.Count > 0)
                     {
                         foreach (Device d in _stationDevices)
                         {
-                            d.BinarySignals = dbhelper.GetDeviceBinarySignalsInfo(d.ID);
-                            d.AnalogSignals = dbhelper.GetDeviceAnalogSignalsInfo(d.ID);
+                            d.BinarySignals = dbHelper.GetDeviceBinarySignalsInfo(d.ID);
+                            d.AnalogSignals = dbHelper.GetDeviceAnalogSignalsInfo(d.ID);
                         }
-
+                        s.Devices = _stationDevices;
                         Devices.AddRange(_stationDevices);
                     }
                     else
                     {
-                        Log.Instance.Info("{0} adlı station için herhang bir device bulunamadı", s.Name);
+                        Log.Instance.Info("{0} adlı station için device bulunamadı", s.Name);
                     }
                 }
-
-                if (Devices != null)
+                if (Devices.Count > 0)
                 {
-                    VerifyProtocolofDevices();
+                    InitializeDriver();
+                }
 
-                    if (Devices != null)
-                    {
-                        InitializeDriver();
-                    }
-                    else
-                    {
-                        Log.Instance.Error("{0} Hata: İstasyon cihazları haberleşme protokolü hatası.", this.GetType().Name);
-                    }
-                    }
                 else
                 {
-                    Log.Instance.Error("{0} Hata: İstasyonlara ait modbus cihazı bulunamadı.", this.GetType().Name);
+                    Log.Instance.Error("{0} Hata: İstasyonlar altında kayıtlı modbus cihazı bulunamadı. Driver başlatılamıyor...", this.GetType().Name);
+                    IsError = true;
                 }
             }
             else
             {
-                Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyasında kayıtlı istasyon adı bulunamadı.", this.GetType().Name);
+                Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyasında geçerli istasyon adı bulunamadı. Driver başlatılamıyor...", this.GetType().Name);
+                IsError = true;
             }
             
         }
-
         #endregion Constructors
 
         #region Public Methods
@@ -171,28 +209,29 @@ namespace EnMon_Driver_Manager.Modbus
         /// <summary>
         /// Gets the signal list for driver devices.
         /// </summary>
-        public void GetSignalListForDriverDevices()
-        {
-            Log.Instance.Trace("GetSignalListForDriverDevices fonksiyonu cagrıldı");
+        //public void GetSignalListOfDriverDevices()
+        //{
+        //    Log.Instance.Trace("GetSignalListForDriverDevices fonksiyonu cagrıldı");
 
-            MySqlDBHelper db_connection = new MySqlDBHelper();
-            foreach (Device _device in Devices)
-            {
-                _device.BinarySignals = db_connection.GetDeviceBinarySignalsInfo(_device.ID);
-                _device.AnalogSignals = db_connection.GetDeviceAnalogSignalsInfo(_device.ID);
-            }
-        }
+        //    MySqlDBHelper db_connection = new MySqlDBHelper();
+        //    foreach (Device _device in Devices)
+        //    {
+        //        _device.BinarySignals = db_connection.GetDeviceBinarySignalsInfo(_device.ID);
+        //        _device.AnalogSignals = db_connection.GetDeviceAnalogSignalsInfo(_device.ID);
+        //    }
+        //}
 
         /// <summary>
         /// Starts the communication.
         /// </summary>
         public void StartCommunication()
         {
-            Log.Instance.Trace("{0}: {1} methodu çağrıldı cagrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Log.Instance.Trace("{0}: {1} methodu çağrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 ConnectToModbusDevices();
-                dbhelper.WriteValuesAtBufferToDatabase();
+                //TODO: Database'in değil de driverın kendi bufferı olması daha mantıklı.
+                dbHelper.WriteValuesAtBufferToDatabase();
             }
             catch (Exception e)
             {
@@ -225,8 +264,8 @@ namespace EnMon_Driver_Manager.Modbus
                 {
                     foreach (BinarySignal signal in device.BinarySignals)
                     {
-                        signal.CurrentValue = _binarySignals.First(s => s.Name == signal.Name).CurrentValue;
-                        signal.TimeTag = _binarySignals.First(s => s.Name == signal.Name).TimeTag;
+                        signal.CurrentValue = _binarySignals.First(s => s.ID == signal.ID).CurrentValue;
+                        signal.TimeTag = _binarySignals.First(s => s.ID == signal.ID).TimeTag;
                     }
                 }
                 else
@@ -242,7 +281,7 @@ namespace EnMon_Driver_Manager.Modbus
                 {
                     foreach (AnalogSignal signal in device.AnalogSignals)
                     {
-                        signal.CurrentValue = _analogSignals.First(s => s.Name == signal.Name).CurrentValue;
+                        signal.CurrentValue = _analogSignals.First(s => s.ID == signal.ID).CurrentValue;
                     }
                 }
                 else
@@ -257,13 +296,13 @@ namespace EnMon_Driver_Manager.Modbus
         /// </summary>
         /// <param name="_stationNames">The station names.</param>
         /// <returns></returns>
-        private List<Station> VerifyStationNames(string[] _stationNames)
+        private List<Station> VerifyStationNames(List<string> _stationNames)
         {
             List<Station> _stations = new List<Station>();
             foreach (string s in _stationNames)
             {
                 Station _station = null;
-                _station = dbhelper.GetStationInfoByName(s);
+                _station = dbHelper.GetStationInfoByName(s);
                 if(_station != null)
                 {
                     _stations.Add(_station);
@@ -277,28 +316,43 @@ namespace EnMon_Driver_Manager.Modbus
         /// </summary>
         /// <param name="_configFile">The configuration file.</param>
         /// <returns></returns>
-        private string[] GetStationNamesFromConfigFile(string _configFile)
+        private List<string> GetStationNamesFromConfigFile(string _configFile)
         {
             var parser = new FileIniDataParser();
-            IniData data = parser.ReadFile(_configFile);
-           
+            IniData data = parser.ReadFile(_configFile, Encoding.UTF8);
+            var _stations = data["Stations"];
 
-            var _stations = data["Stations"]["Names"];
-            string[] _stationNames = null;
+            List<string> _stationNames = new List<string>();
             if (_stations != null)
             {
-                _stationNames = _stations.Split(',');
-                for (int i = 0; i < _stationNames.Length; i++)
+                foreach (KeyData kd in _stations) 
                 {
-                    _stationNames[i] = _stationNames[i].Trim();
+                    _stationNames.Add(kd.Value.Trim());
                 }
             }
 
             return _stationNames;
         }
+
+        /// <summary>
+        /// Reads the configuration file.
+        /// </summary>
+        /// <param name="_configFile">The configuration file.</param>
+        private void ReadDriverConfigFile(string _configFile)
+        {
+
+            GetCommunicationParametersFromConfigFile(_configFile);
+
+            // Config dosyasından station isimleri okunuyor
+            List<string> _stationNames = GetStationNamesFromConfigFile(_configFile);
+
+            // Config dosyasındaki station isimleri database'de yer alan station isimleri ile karşılaştırılıyor. Database'de kayıtlı olmayan isimler siliniyor.
+            Stations = VerifyStationNames(_stationNames);
+        }
+
         #endregion Private Methods
 
-        #region Abstract Methods
+        #region Protected Abstract Methods
 
         /// <summary>
         /// Device'tan istenilen sinyalin degerini okur
@@ -330,12 +384,16 @@ namespace EnMon_Driver_Manager.Modbus
         /// Devices listesindeki tüm cihazların dogru protokol ile haberleşip haberleşmediğini kontrol eder.
         /// Protokolü yanlış seçilmiş device varsa onu driver'in devices listesinden çıkartır ve o device ile baglantı kurmaz.
         /// </summary>
-        protected abstract void VerifyProtocolofDevices();
-        /// <summary>
-        /// Starts to read values.
-        /// </summary>
-        //abstract public void StartToReadValues();
+        protected abstract List<Device> VerifyProtocolofDevices(List<Device> _devices);
 
+        /// <summary>
+        /// Gets the communication parameters from configuration file.
+        /// </summary>
+        /// <param name="_configFile">The configuration file.</param>
+        protected abstract void GetCommunicationParametersFromConfigFile(string _configFile);
+
+        //
+        protected abstract void SetDefaultCommunicationParameters();
         #endregion Abstract Methods
     }
 }

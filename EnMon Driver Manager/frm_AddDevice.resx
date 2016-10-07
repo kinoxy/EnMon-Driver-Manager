@@ -117,31 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="btn_Start" xml:space="preserve">
-    <value>Start</value>
-  </data>
-  <data name="chkBox_runOnStartup" xml:space="preserve">
-    <value>Start EnMon Driver Manager automaticly when Windows starts.</value>
-  </data>
-  <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-  <data name="English" xml:space="preserve">
-    <value>English</value>
-  </data>
-  <data name="File" xml:space="preserve">
-    <value>File</value>
-  </data>
-  <data name="Language" xml:space="preserve">
-    <value>Language</value>
-  </data>
-  <data name="Turkish" xml:space="preserve">
-    <value>Turkish</value>
-  </data>
-  <data name="EnMon_Driver_Manager" xml:space="preserve">
-    <value>EnMon Driver Manager</value>
-  </data>
-  <data name="btn_Stop" xml:space="preserve">
-    <value>Stop</value>
-  </data>
 </root>

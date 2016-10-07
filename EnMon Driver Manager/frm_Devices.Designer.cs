@@ -41,7 +41,7 @@ namespace EnMon_Driver_Manager
             // 
             // frm_Devices
             // 
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
             this.ClientSize = new System.Drawing.Size(402, 253);
             this.Name = "frm_Devices";
             this.ResumeLayout(false);
