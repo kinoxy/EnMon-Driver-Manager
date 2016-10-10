@@ -46,9 +46,9 @@ namespace EnMon_Driver_Manager
             this.timer_led = new System.Windows.Forms.Timer(this.components);
             this.chkBox_runOnStartup = new System.Windows.Forms.CheckBox();
             this.sidePanel = new System.Windows.Forms.Panel();
-            this.button4 = new System.Windows.Forms.Button();
+            this.btn_MailSettings = new System.Windows.Forms.Button();
             this.btn_Signals = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btn_Cihazlar = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.logoPanel = new System.Windows.Forms.Panel();
             this.headerPanel = new System.Windows.Forms.Panel();
@@ -59,6 +59,11 @@ namespace EnMon_Driver_Manager
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.pct_led = new System.Windows.Forms.PictureBox();
             this.panel_Main = new System.Windows.Forms.Panel();
+            this.tabControl1 = new MetroFramework.Controls.MetroTabControl();
+            this.tabPage1 = new MetroFramework.Controls.MetroTabPage();
+            this.button3 = new System.Windows.Forms.Button();
+            this.tabPage2 = new MetroFramework.Controls.MetroTabPage();
+            this.button5 = new System.Windows.Forms.Button();
             this.sidePanel.SuspendLayout();
             this.headerPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -66,6 +71,9 @@ namespace EnMon_Driver_Manager
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pct_led)).BeginInit();
             this.panel_Main.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_start
@@ -99,9 +107,9 @@ namespace EnMon_Driver_Manager
             // 
             this.sidePanel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.sidePanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            this.sidePanel.Controls.Add(this.button4);
+            this.sidePanel.Controls.Add(this.btn_MailSettings);
             this.sidePanel.Controls.Add(this.btn_Signals);
-            this.sidePanel.Controls.Add(this.button2);
+            this.sidePanel.Controls.Add(this.btn_Cihazlar);
             this.sidePanel.Controls.Add(this.button1);
             this.sidePanel.Controls.Add(this.logoPanel);
             this.sidePanel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(42)))), ((int)(((byte)(61)))));
@@ -111,23 +119,23 @@ namespace EnMon_Driver_Manager
             this.sidePanel.Size = new System.Drawing.Size(180, 564);
             this.sidePanel.TabIndex = 6;
             // 
-            // button4
+            // btn_MailSettings
             // 
-            this.button4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(62)))), ((int)(((byte)(71)))));
-            this.button4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.button4.FlatAppearance.BorderSize = 0;
-            this.button4.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(75)))), ((int)(((byte)(82)))), ((int)(((byte)(98)))));
-            this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button4.Font = new System.Drawing.Font("Century Gothic", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.button4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(147)))), ((int)(((byte)(145)))));
-            this.button4.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.button4.Location = new System.Drawing.Point(5, 204);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(169, 46);
-            this.button4.TabIndex = 11;
-            this.button4.Text = "            Başlat";
-            this.button4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.button4.UseVisualStyleBackColor = false;
+            this.btn_MailSettings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(62)))), ((int)(((byte)(71)))));
+            this.btn_MailSettings.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.btn_MailSettings.FlatAppearance.BorderSize = 0;
+            this.btn_MailSettings.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(75)))), ((int)(((byte)(82)))), ((int)(((byte)(98)))));
+            this.btn_MailSettings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_MailSettings.Font = new System.Drawing.Font("Century Gothic", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.btn_MailSettings.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(147)))), ((int)(((byte)(145)))));
+            this.btn_MailSettings.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_MailSettings.Location = new System.Drawing.Point(5, 204);
+            this.btn_MailSettings.Name = "btn_MailSettings";
+            this.btn_MailSettings.Size = new System.Drawing.Size(169, 46);
+            this.btn_MailSettings.TabIndex = 11;
+            this.btn_MailSettings.Text = "Email";
+            this.btn_MailSettings.UseVisualStyleBackColor = false;
+            this.btn_MailSettings.Click += new System.EventHandler(this.btn_MailSettings_Click);
             // 
             // btn_Signals
             // 
@@ -143,30 +151,28 @@ namespace EnMon_Driver_Manager
             this.btn_Signals.Name = "btn_Signals";
             this.btn_Signals.Size = new System.Drawing.Size(169, 46);
             this.btn_Signals.TabIndex = 10;
-            this.btn_Signals.Text = "      Sinyal Listesi";
-            this.btn_Signals.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_Signals.Text = "Sinyal Listesi";
             this.btn_Signals.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btn_Signals.UseVisualStyleBackColor = false;
             this.btn_Signals.Click += new System.EventHandler(this.btn_Signals_Click);
             // 
-            // button2
+            // btn_Cihazlar
             // 
-            this.button2.AutoSize = true;
-            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(62)))), ((int)(((byte)(71)))));
-            this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.button2.FlatAppearance.BorderSize = 0;
-            this.button2.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(75)))), ((int)(((byte)(82)))), ((int)(((byte)(98)))));
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button2.Font = new System.Drawing.Font("Century Gothic", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.button2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(147)))), ((int)(((byte)(145)))));
-            this.button2.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.button2.Location = new System.Drawing.Point(5, 152);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(169, 46);
-            this.button2.TabIndex = 9;
-            this.button2.Text = "            Başlat";
-            this.button2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.button2.UseVisualStyleBackColor = false;
+            this.btn_Cihazlar.AutoSize = true;
+            this.btn_Cihazlar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(62)))), ((int)(((byte)(71)))));
+            this.btn_Cihazlar.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.btn_Cihazlar.FlatAppearance.BorderSize = 0;
+            this.btn_Cihazlar.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(75)))), ((int)(((byte)(82)))), ((int)(((byte)(98)))));
+            this.btn_Cihazlar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Cihazlar.Font = new System.Drawing.Font("Century Gothic", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.btn_Cihazlar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(147)))), ((int)(((byte)(145)))));
+            this.btn_Cihazlar.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_Cihazlar.Location = new System.Drawing.Point(5, 152);
+            this.btn_Cihazlar.Name = "btn_Cihazlar";
+            this.btn_Cihazlar.Size = new System.Drawing.Size(169, 46);
+            this.btn_Cihazlar.TabIndex = 9;
+            this.btn_Cihazlar.Text = "Cihazlar";
+            this.btn_Cihazlar.UseVisualStyleBackColor = false;
             // 
             // button1
             // 
@@ -294,6 +300,7 @@ namespace EnMon_Driver_Manager
             // panel_Main
             // 
             this.panel_Main.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
+            this.panel_Main.Controls.Add(this.tabControl1);
             this.panel_Main.Controls.Add(this.chkBox_runOnStartup);
             this.panel_Main.Controls.Add(this.pct_led);
             this.panel_Main.Controls.Add(this.btn_start);
@@ -301,6 +308,64 @@ namespace EnMon_Driver_Manager
             this.panel_Main.Name = "panel_Main";
             this.panel_Main.Size = new System.Drawing.Size(783, 510);
             this.panel_Main.TabIndex = 14;
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.CustomBackground = true;
+            this.tabControl1.Location = new System.Drawing.Point(3, 182);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 1;
+            this.tabControl1.Size = new System.Drawing.Size(777, 302);
+            this.tabControl1.TabIndex = 5;
+            this.tabControl1.UseStyleColors = true;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.button3);
+            this.tabPage1.HorizontalScrollbarBarColor = true;
+            this.tabPage1.Location = new System.Drawing.Point(4, 38);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(769, 260);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "tabPage1";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabPage1.VerticalScrollbarBarColor = true;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(44, 68);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 2;
+            this.button3.Text = "button3";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.tabPage2.Controls.Add(this.button5);
+            this.tabPage2.ForeColor = System.Drawing.Color.Gray;
+            this.tabPage2.HorizontalScrollbarBarColor = true;
+            this.tabPage2.Location = new System.Drawing.Point(4, 38);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(769, 260);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "tabPage2";
+            this.tabPage2.VerticalScrollbarBarColor = true;
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(340, 97);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 2;
+            this.button5.Text = "button5";
+            this.button5.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -326,6 +391,9 @@ namespace EnMon_Driver_Manager
             ((System.ComponentModel.ISupportInitialize)(this.pct_led)).EndInit();
             this.panel_Main.ResumeLayout(false);
             this.panel_Main.PerformLayout();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -360,13 +428,19 @@ namespace EnMon_Driver_Manager
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.IO.FileSystemWatcher fileSystemWatcher1;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button btn_MailSettings;
         private System.Windows.Forms.Button btn_Signals;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btn_Cihazlar;
         private System.Windows.Forms.Label lblHeader;
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Panel panel_Main;
+        private MetroFramework.Controls.MetroTabControl tabControl1;
+        private MetroFramework.Controls.MetroTabPage tabPage1;
+        private MetroFramework.Controls.MetroTabPage tabPage2;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button5;
+        
     }
 }
 

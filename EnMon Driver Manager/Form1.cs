@@ -14,6 +14,7 @@ namespace EnMon_Driver_Manager
     {
         private frm_Devices frm_devices;
         private frm_SignalList frm_signallist;
+        private frm_EmailSettings frm_emailsettings;
         private ModbusTCP modbusTCP;
         public MySqlDBHelper dbhelper;
         public MainForm()
@@ -263,6 +264,19 @@ namespace EnMon_Driver_Manager
             {
                 dbhelper = new MySqlDBHelper();
             }
+        }
+
+        private void btn_MailSettings_Click(object sender, EventArgs e)
+        {
+            frm_emailsettings = new frm_EmailSettings();
+
+            frm_emailsettings.TopLevel = false;
+            frm_emailsettings.FormBorderStyle = FormBorderStyle.None;
+            frm_emailsettings.Dock = DockStyle.Fill;
+            //frm_signallist.DbHelper = dbhelper;
+            panel_Main.Controls.Clear();
+            panel_Main.Controls.Add(frm_emailsettings);
+            frm_emailsettings.Visible = true;
         }
     }
 }

@@ -48,7 +48,8 @@ namespace EnMon_Driver_Manager
 
             fileName = "";
             stations = new List<Station>();
-            analogSignalsCSVFileHeaders = new string[] { "Analog Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Data Type Id","Unit", "Scale Value", "Max Value", "Min Value", "Max Alarm ID", "Min Alarm ID", "Alarm", "Event", "Archive", "Archive Period ID" };
+            analogSignalsCSVFileHeaders = new string[] { "Analog Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Data Type Id","Unit", "Scale Value", "Max Value", "Min Value", "Max Alarm ID", "Min Alarm ID", "Alarm", "Event", "Archive", "Archive Period ID", "Send Mail", "Mail Message" };
+            binarySignalsCSVFileHeaders = new string[] { "Binary Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Bit Number", "Alarm", "Event", "Reverse", "Alarm ID", "Send Mail", "Mail Message" };
             MessageBoxHeader = "EnMOn Sürücü Yöneticisi";
             importSettings = ImportSettings.DoNotDeleteOrOverWriteOldSignals;
         }
@@ -73,11 +74,18 @@ namespace EnMon_Driver_Manager
             string folderName = GetFolderName();
             if (folderName != null)
             {
-                ExportDigitalSignalsInfoAsCSVFromDatabase(folderName, "digital_signals");
+                if(ExportDigitalSignalsInfoAsCSVFromDatabase(folderName, "digital_signals"))
+                {
+                    MessageBox.Show("Digital Sinyaller başarılı bir şekilde dışarı aktarıldı", MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Digital Sinyaller dışarı aktarılamadı. Ayrıntılı bilgi için lütfen log dosyasını kontrol ediniz.", MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
-        private void ExportDigitalSignalsInfoAsCSVFromDatabase(string pathName, string fileName)
+        private bool ExportDigitalSignalsInfoAsCSVFromDatabase(string pathName, string fileName)
         {
             try
             {
@@ -89,14 +97,16 @@ namespace EnMon_Driver_Manager
                 string query = String.Format("CALL exportAllBinarySignals()");
                 DataTable dt = dbHelper.ExecuteQuery(query);
                 dt.WriteToCSVFile(String.Format("{0}\\{1}_{2}.csv", pathName, fileName, time));
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Instance.Error("Binary sinyalleri dışarı aktarırken bir sorun oluştu => {0}", ex.Message);
+                return false;
             }
         }
 
-        private void ExportAnalogSignalsInfoAsCSVFromDatabase(string pathName, string fileName)
+        private bool ExportAnalogSignalsInfoAsCSVFromDatabase(string pathName, string fileName)
         {
             try
             {
@@ -108,10 +118,12 @@ namespace EnMon_Driver_Manager
                 string query = String.Format("CALL exportAllAnalogSignals()");
                 DataTable dt = dbHelper.ExecuteQuery(query);
                 dt.WriteToCSVFile(String.Format("{0}\\{1}_{2}.csv", pathName, fileName, time));
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Instance.Error("Analog sinyalleri dışarı aktarırken bir sorun oluştu => {0}", ex.Message);
+                return false;
             }
         }
 
@@ -135,9 +147,9 @@ namespace EnMon_Driver_Manager
                             DialogResult result = MessageBox.Show("Devam ederseniz mevcut tüm sinyaller silinip CSV dosyasındaki sinyaller eklenecektir. İşlem geri döndürülemez. Arşivdeki verilere erişirken bazı sorunlar yaşayabilirsiniz. Yedek almadan devam etmeniz tavsiye edilmez. \n Devam etmek istiyor musunuz?", "EnMon Sürücü Yöneticisi", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                             if (result == DialogResult.Yes)
                             {
-                                if (ImportAllAnalogSignalsToDataBase(fileName))
+                                if (DeleteExistingsAndImportAllAnalogSignalsToDataBase(fileName))
                                 {
-                                    MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    MessageBox.Show("Sinyal dosyasındaki değişiklikler başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                     Log.Instance.Info("{0} adlı dosya başarılı bir şekilde içeri aktarıldı", fileName);
                                 }
                                 else
@@ -154,7 +166,7 @@ namespace EnMon_Driver_Manager
                         case ImportSettings.DoNotDeleteOrOverWriteOldSignals:
                             if (ImportOnlyNewSignals(fileName))
                             {
-                                MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MessageBox.Show("Sinyal dosyasındaki değişiklikler başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 Log.Instance.Info("{0} adlı dosya başarılı bir şekilde içeri aktarıldı", fileName);
                             }
                             else
@@ -166,7 +178,7 @@ namespace EnMon_Driver_Manager
                         case ImportSettings.OverWriteOldSignals:
                             if (UpdateExistingSignalsandImportNewSignals(fileName))
                             {
-                                MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MessageBox.Show("Sinyal dosyasındaki değişiklikler başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 Log.Instance.Info("{0} adlı dosya başarılı bir şekilde içeri aktarıldı", fileName);
                             }
                             else
@@ -206,7 +218,7 @@ namespace EnMon_Driver_Manager
                             DialogResult result = MessageBox.Show("Devam ederseniz mevcut tüm sinyaller silinip CSV dosyasındaki sinyaller eklenecektir. İşlem geri döndürülemez. Arşivdeki verilere erişirken bazı sorunlar yaşayabilirsiniz. Yedek almadan devam etmeniz tavsiye edilmez. \n Devam etmek istiyor musunuz?", "EnMon Sürücü Yöneticisi", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                             if (result == DialogResult.Yes)
                             {
-                                if (ImportAllAnalogSignalsToDataBase(fileName))
+                                if (DeleteExistingsAndImportAllBinarySignalsToDataBase(fileName))
                                 {
                                     MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                     Log.Instance.Info("{0} adlı dosya başarılı bir şekilde içeri aktarıldı", fileName);
@@ -255,6 +267,153 @@ namespace EnMon_Driver_Manager
                     MessageBox.Show("Database baglantısı kurulamadı. Lütfen önce database ile olan bağlantıyı kontrol ediniz");
                 }
             }
+        }
+
+        private bool DeleteExistingsAndImportAllBinarySignalsToDataBase(string _fileName)
+        {
+            using (dt_CSV = ReadCSVFileForBinarySignals(_fileName))
+            {
+                if (dt_CSV.Rows.Count > 0)
+                {
+                    return ImportBinarySignalsToDataBase(dt_CSV, true);
+                }
+            }
+
+            return false;
+        }
+
+        private DataTable ReadCSVFileForBinarySignals(string _fileName)
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                using (CsvReader csv = new CsvReader(new StreamReader(_fileName, System.Text.Encoding.Default), true, ';'))
+
+                {
+                    string[] headers = new string[] { };
+                    headers = csv.GetFieldHeaders();
+
+                    if (ValidateCSVFileHeaders(headers, binarySignalsCSVFileHeaders))
+                    {
+                        for (int c = 0; c < headers.Length; c++)
+                        {
+                            dt.Columns.Add(headers[c]);
+                        }
+                        int fieldCount = csv.FieldCount;
+                        string[] columns = new string[fieldCount];
+                        while (csv.ReadNextRecord())
+                        {
+                            csv.CopyCurrentRecordTo(columns);
+                            dt.Rows.Add(columns);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("CSV dosyası okunurken  bir hata ile  karşılaşıldı! Lütfen CSV dosyasını kontrol ediniz.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        dt.Clear();
+                        return dt;
+                    }
+
+                    return dt;
+                }
+            }
+            catch (FileNotFoundException ex)
+            {
+                Log.Instance.Error("CSV dosyası okurken bir sorunla karşılaşıldı => {0}", ex.Message);
+                DialogResult result = MessageBox.Show("CSV dosyası bulunamadı. Lütfen kontrol ediniz... ", "Hata", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error, MessageBoxDefaultButton.Button2);
+                if (result == DialogResult.Retry)
+                {
+                    return ReadCSVFileForAnalogSignals(_fileName);
+                }
+                else
+                {
+                    dt.Clear();
+                    return dt;
+                }
+                //MessageBox.Show();
+            }
+            catch (IOException ex)
+            {
+                Log.Instance.Warn("CSV dosyası başka bir program tarafından kullanılıyor => {0}", ex.Message);
+                DialogResult result = MessageBox.Show("CSV dosyası başka bir program tarafından kullanılıyor.", "Hata", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                if (result == DialogResult.Retry)
+                {
+                    return ReadCSVFileForAnalogSignals(_fileName);
+                }
+                else
+                {
+                    dt.Clear();
+                    return dt;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Warn("CSV dosyası okunurken  bir hata ile  karşılaşıldı! => {0}", ex.Message);
+                MessageBox.Show("CSV dosyası okunurken  bir hata ile  karşılaşıldı! Lütfen CSV dosyasını kontrol ediniz.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                dt.Clear();
+                return dt;
+            }
+        }
+
+        private bool ImportBinarySignalsToDataBase(DataTable _dt, bool _deleteAll)
+        {
+            if (_dt.Rows.Count > 0)
+            {
+                // Kayıtlı station'lar CSV dosyasındakiler ile karşılaştırılır
+                DataTable dt_stationNames = _dt.DefaultView.ToTable(true, "Station Name");
+                if (dt_stationNames.Rows.Count > 0)
+                {
+                    // Database'den istasyonlara ait bilgiler çekiliyor.
+                    stations = dbHelper.GetAllStationsInfoWithDeviceInfo();
+                    foreach (DataRow dr in dt_stationNames.Rows)
+                    {
+                        string stationName = dr[0].ToString();
+                        // Database'de hiç istasyon kayıtlı değilse
+                        if (stations.Count == 0)
+                        {
+                            AddStationToDataBaseOrRemoveFromCSVTable(stationName);
+                        }
+                        // Database'de kayıtlı istasyonlar var ama CSV dosyasındaki istasyon ismi database'de kayıtlı değilse;
+                        else if (!(stations.Exists((s) => s.Name == stationName)))
+                        {
+                            AddStationToDataBaseOrRemoveFromCSVTable(stationName);
+                        }
+                        // İstasyon database'de kayıtlı ise sadece cihazların kayıtlı olup olmadığı kontrol edilir ve sinyaller eklenir
+                        else
+                        {
+                            Station station = stations.Find((s) => s.Name == stationName);
+
+                            // CSV dosyasında istasyona ait cihaz isimlerini al,
+                            var deviceNames = (from DataRow row in _dt.AsEnumerable() where stationName == row["Station Name"].ToString() select row["Device Name"].ToString()).Distinct();
+                            foreach (string deviceName in deviceNames.ToList())
+                            {
+                                // Cihaz istasyona kayıtlı değilse sinyalleri eklemeden önce kullanıcıya ne yapmak istedigini sor
+                                if (!(station.Devices.Exists((d) => d.Name == deviceName)))
+                                {
+                                    AddDeviceToDataBaseOrRemoveFromCSVTable(stationName, deviceName);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+
+                // Datatable'ın sutun isimleri ile station name ve device name isimleri id numaları ile değiştiriliyor.
+                PrepareDataTableForDataBase(_dt);
+
+                // Database'e kayıt yapmadan önce database'deki tüm sinyaller siliniyor.
+                if (_deleteAll)
+                {
+                    DeleteAllBinarySignals();
+                }
+
+                return dbHelper.AddBinarySignalsToDataBase(_dt);
+            }
+            return false;
         }
 
         private string GetFolderName()
@@ -498,12 +657,12 @@ namespace EnMon_Driver_Manager
                     DeleteAllAnalogSignals();
                 }
 
-                return dbHelper.AddAnalogSignalToDataBase(_dt);
+                return dbHelper.AddAnalogSignalsToDataBase(_dt);
             }
             return false;
         }
 
-        private bool ImportAllAnalogSignalsToDataBase(string _fileName)
+        private bool DeleteExistingsAndImportAllAnalogSignalsToDataBase(string _fileName)
         {
             using (dt_CSV = ReadCSVFileForAnalogSignals(_fileName))
             {
@@ -561,12 +720,12 @@ namespace EnMon_Driver_Manager
 
         private DataTable PrepareDataTableForDataBase(DataTable dt_CSV)
         {
-            // Datatable'daki device isimleri istasyon isimleriyle beraber çekiliyor.
+            // Datatable'daki her bir device ismi istasyon ismi ile beraber çekiliyor.
             DataTable dt_uniqueRowsByDeviceNameAndStationName = dt_CSV.DefaultView.ToTable(true, "Station Name", "Device Name");
-            // Database'den tüm istasyonlar istasyonda  kayıtlı device isimleri ile beraber okunuyor
+            // Database'deki tüm istasyonlar istasyonda altında kayıtlı deviceların isimleri ile beraber okunuyor
             List<Station> newStationList = dbHelper.GetAllStationsInfoWithDeviceInfo();
             
-            // Her satır içiçn Device Name ve  Station Name, Device ID ve Station ID bilgileri ile değiştiriliyor.
+            // Her satır için Device Name ve Station Name bilgileri, Device ID ve Station ID bilgileri ile değiştiriliyor.
             foreach (DataRow dr in dt_CSV.Rows)
             {
                 dr["Device Name"] = newStationList.Where((s) => s.Name == dr["Station Name"].ToString()).First().Devices.Where((d) => d.Name == dr["Device Name"].ToString()).First().ID;
@@ -794,10 +953,26 @@ namespace EnMon_Driver_Manager
             string folderName = GetFolderName();
             if (folderName != null)
             {
-                ExportAnalogSignalsInfoAsCSVFromDatabase(folderName, "analog_signals");
+                if(ExportAnalogSignalsInfoAsCSVFromDatabase(folderName, "analog_signals"))
+                {
+                    MessageBox.Show("Analog Sinyaller başarılı bir şekilde dışarı aktarıldı", MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Analog Sinyaller dışarı aktarılamadı. Ayrıntılı bilgi için lütfen log dosyasını kontrol ediniz.", MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
             }
         }
 
-        
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void groupBox3_Enter(object sender, EventArgs e)
+        {
+
+        }
     }
 }
