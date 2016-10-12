@@ -56,5 +56,17 @@ namespace EnMon_Driver_Manager.Extensions
             }
             return _datatable;
         }
+
+        public static bool HasRow(this DataTable _dt)
+        {
+            if(_dt.Rows.Count>0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

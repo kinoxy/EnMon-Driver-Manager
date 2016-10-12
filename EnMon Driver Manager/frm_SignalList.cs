@@ -752,7 +752,7 @@ namespace EnMon_Driver_Manager
                 usedModbusSlaveAddresses.Add(1);
                 using (frm_AddDevice frm_addDevice = new frm_AddDevice(stationName, deviceName, _protocols, usedModbusSlaveAddresses))
                 {
-                    frm_addDevice.ClickedAddDeviceButton += Frm_addDevice_ClickedAddDeviceButton;
+                    frm_addDevice.ClickedAddDeviceButton += frm_addDevice_ClickedAddDeviceButton;
                     DialogResult result = frm_addDevice.ShowDialog();
                     if (result != DialogResult.OK)
                     {
@@ -767,7 +767,7 @@ namespace EnMon_Driver_Manager
             }
         }
 
-        private void Frm_addDevice_ClickedAddDeviceButton(object source, AddDeviceEventArgs e)
+        private void frm_addDevice_ClickedAddDeviceButton(object source, AddDeviceEventArgs e)
         {
             switch (e.ProtocolName)
             {

@@ -311,13 +311,14 @@ namespace EnMon_Driver_Manager
             // 
             // tabControl1
             // 
-            this.tabControl1.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
+            this.tabControl1.Appearance = System.Windows.Forms.TabAppearance.Buttons;
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.CustomBackground = true;
             this.tabControl1.Location = new System.Drawing.Point(3, 182);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(0);
             this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 1;
+            this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(777, 302);
             this.tabControl1.TabIndex = 5;
             this.tabControl1.UseStyleColors = true;
@@ -325,10 +326,11 @@ namespace EnMon_Driver_Manager
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.button3);
+            this.tabPage1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             this.tabPage1.HorizontalScrollbarBarColor = true;
             this.tabPage1.Location = new System.Drawing.Point(4, 38);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(769, 260);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";

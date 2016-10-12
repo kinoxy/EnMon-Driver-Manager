@@ -97,9 +97,9 @@ namespace EnMon_Driver_Manager
             this.chkBox_AddTimeInformation.MouseState = MaterialSkin.MouseState.HOVER;
             this.chkBox_AddTimeInformation.Name = "chkBox_AddTimeInformation";
             this.chkBox_AddTimeInformation.Ripple = true;
-            this.chkBox_AddTimeInformation.Size = new System.Drawing.Size(209, 30);
+            this.chkBox_AddTimeInformation.Size = new System.Drawing.Size(224, 30);
             this.chkBox_AddTimeInformation.TabIndex = 1;
-            this.chkBox_AddTimeInformation.Text = "Dosya ismi tarih bilgisini ekle";
+            this.chkBox_AddTimeInformation.Text = "Dosya ismine tarih bilgisini ekle";
             this.chkBox_AddTimeInformation.UseVisualStyleBackColor = false;
             // 
             // btn_ExportDigitalSignalsAsCSV
@@ -111,7 +111,7 @@ namespace EnMon_Driver_Manager
             this.btn_ExportDigitalSignalsAsCSV.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_ExportDigitalSignalsAsCSV.ForeColor = System.Drawing.Color.Black;
             this.btn_ExportDigitalSignalsAsCSV.Icon = null;
-            this.btn_ExportDigitalSignalsAsCSV.Location = new System.Drawing.Point(49, 178);
+            this.btn_ExportDigitalSignalsAsCSV.Location = new System.Drawing.Point(49, 136);
             this.btn_ExportDigitalSignalsAsCSV.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ExportDigitalSignalsAsCSV.Name = "btn_ExportDigitalSignalsAsCSV";
             this.btn_ExportDigitalSignalsAsCSV.Primary = true;
@@ -130,7 +130,7 @@ namespace EnMon_Driver_Manager
             this.btn_ExportAnalogSignalsAsCSV.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_ExportAnalogSignalsAsCSV.ForeColor = System.Drawing.Color.Black;
             this.btn_ExportAnalogSignalsAsCSV.Icon = null;
-            this.btn_ExportAnalogSignalsAsCSV.Location = new System.Drawing.Point(49, 136);
+            this.btn_ExportAnalogSignalsAsCSV.Location = new System.Drawing.Point(49, 178);
             this.btn_ExportAnalogSignalsAsCSV.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ExportAnalogSignalsAsCSV.Name = "btn_ExportAnalogSignalsAsCSV";
             this.btn_ExportAnalogSignalsAsCSV.Primary = true;
@@ -313,7 +313,7 @@ namespace EnMon_Driver_Manager
             this.materialRaisedButton3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.materialRaisedButton3.ForeColor = System.Drawing.Color.Black;
             this.materialRaisedButton3.Icon = null;
-            this.materialRaisedButton3.Location = new System.Drawing.Point(16, 103);
+            this.materialRaisedButton3.Location = new System.Drawing.Point(402, 19);
             this.materialRaisedButton3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialRaisedButton3.Name = "materialRaisedButton3";
             this.materialRaisedButton3.Primary = true;
@@ -330,7 +330,7 @@ namespace EnMon_Driver_Manager
             this.materialRaisedButton2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.materialRaisedButton2.ForeColor = System.Drawing.Color.Black;
             this.materialRaisedButton2.Icon = null;
-            this.materialRaisedButton2.Location = new System.Drawing.Point(16, 61);
+            this.materialRaisedButton2.Location = new System.Drawing.Point(211, 19);
             this.materialRaisedButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialRaisedButton2.Name = "materialRaisedButton2";
             this.materialRaisedButton2.Primary = true;
@@ -378,7 +378,7 @@ namespace EnMon_Driver_Manager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(45)))), ((int)(((byte)(55)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
             this.ClientSize = new System.Drawing.Size(729, 469);
             this.Controls.Add(this.tableLayoutPanel1);
             this.ForeColor = System.Drawing.SystemColors.Control;

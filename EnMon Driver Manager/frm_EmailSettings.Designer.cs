@@ -28,13 +28,24 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.tab_EmailSettings = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.tab_EmailSettings = new GrayIris.Utilities.UI.Controls.YaTabControl();
+            this.tabPage1 = new GrayIris.Utilities.UI.Controls.YaTabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.txt_Message = new System.Windows.Forms.TextBox();
-            this.btn_Send = new System.Windows.Forms.Button();
+            this.grp_MailGroups = new System.Windows.Forms.GroupBox();
+            this.lstBox_UsersAddedToGroup = new System.Windows.Forms.ListBox();
+            this.lstBox__UsersNotAddedToGroup = new System.Windows.Forms.ListBox();
+            this.btn_ChangeGroupName = new System.Windows.Forms.Button();
+            this.btn_RemoveAllUsersFromGroup = new System.Windows.Forms.Button();
+            this.btn_RemoveSelectedUserFromGroup = new System.Windows.Forms.Button();
+            this.btn_AddAllUsersToGroup = new System.Windows.Forms.Button();
+            this.btn_AddSelectedUserToGroup = new System.Windows.Forms.Button();
+            this.label10 = new System.Windows.Forms.Label();
+            this.btn_NewGroup = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.grp_ServerSettings = new System.Windows.Forms.GroupBox();
+            this.chkBox_ShowPassword = new System.Windows.Forms.CheckBox();
             this.txt_Password = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txt_UserName = new System.Windows.Forms.TextBox();
@@ -43,358 +54,442 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.txt_MailServerName = new System.Windows.Forms.TextBox();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.textBox5 = new System.Windows.Forms.TextBox();
-            this.dgv_AlarmList = new System.Windows.Forms.DataGridView();
+            this.btn_Send = new System.Windows.Forms.Button();
+            this.tabPage2 = new GrayIris.Utilities.UI.Controls.YaTabPage();
+            this.materialRaisedButton2 = new MaterialSkin.Controls.MaterialRaisedButton();
+            this.btn_AddNewAlarm = new MaterialSkin.Controls.MaterialRaisedButton();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.tab_EmailSettings.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.grp_MailGroups.SuspendLayout();
+            this.grp_ServerSettings.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.tableLayoutPanel2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
-            this.groupBox4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_AlarmList)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // tab_EmailSettings
             // 
+            this.tab_EmailSettings.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
+            this.tab_EmailSettings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
+            this.tab_EmailSettings.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
+            this.tab_EmailSettings.CloseButton = false;
             this.tab_EmailSettings.Controls.Add(this.tabPage1);
             this.tab_EmailSettings.Controls.Add(this.tabPage2);
             this.tab_EmailSettings.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tab_EmailSettings.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
+            this.tab_EmailSettings.HoverColor = System.Drawing.Color.Silver;
+            this.tab_EmailSettings.ImageIndex = -1;
+            this.tab_EmailSettings.ImageList = null;
+            this.tab_EmailSettings.InactiveColor = System.Drawing.Color.White;
             this.tab_EmailSettings.Location = new System.Drawing.Point(0, 0);
             this.tab_EmailSettings.Name = "tab_EmailSettings";
+            this.tab_EmailSettings.NewTabButton = false;
+            this.tab_EmailSettings.OverIndex = -1;
+            this.tab_EmailSettings.ScrollButtonStyle = GrayIris.Utilities.UI.Controls.YaScrollButtonStyle.Always;
             this.tab_EmailSettings.SelectedIndex = 0;
+            this.tab_EmailSettings.SelectedTab = this.tabPage1;
             this.tab_EmailSettings.Size = new System.Drawing.Size(739, 450);
+            this.tab_EmailSettings.TabDock = System.Windows.Forms.DockStyle.Top;
+            this.tab_EmailSettings.TabDrawer = null;
+            this.tab_EmailSettings.TabFont = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.tab_EmailSettings.TabIndex = 0;
             // 
             // tabPage1
             // 
+            this.tabPage1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
             this.tabPage1.Controls.Add(this.tableLayoutPanel1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabPage1.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage1.ImageIndex = -1;
+            this.tabPage1.Location = new System.Drawing.Point(4, 30);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(731, 424);
+            this.tabPage1.Size = new System.Drawing.Size(731, 416);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Email Ayarları";
-            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel1
             // 
+            this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
             this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.Controls.Add(this.groupBox2, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 0, 0);
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.grp_MailGroups, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.grp_ServerSettings, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btn_Send, 0, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(725, 418);
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 26.84662F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 73.15337F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 43F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(725, 410);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
-            // groupBox2
+            // grp_MailGroups
             // 
-            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(3, 212);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(719, 203);
-            this.groupBox2.TabIndex = 1;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "groupBox2";
+            this.grp_MailGroups.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
+            this.grp_MailGroups.Controls.Add(this.lstBox_UsersAddedToGroup);
+            this.grp_MailGroups.Controls.Add(this.lstBox__UsersNotAddedToGroup);
+            this.grp_MailGroups.Controls.Add(this.btn_ChangeGroupName);
+            this.grp_MailGroups.Controls.Add(this.btn_RemoveAllUsersFromGroup);
+            this.grp_MailGroups.Controls.Add(this.btn_RemoveSelectedUserFromGroup);
+            this.grp_MailGroups.Controls.Add(this.btn_AddAllUsersToGroup);
+            this.grp_MailGroups.Controls.Add(this.btn_AddSelectedUserToGroup);
+            this.grp_MailGroups.Controls.Add(this.label10);
+            this.grp_MailGroups.Controls.Add(this.btn_NewGroup);
+            this.grp_MailGroups.Controls.Add(this.label9);
+            this.grp_MailGroups.Controls.Add(this.comboBox1);
+            this.grp_MailGroups.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grp_MailGroups.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.grp_MailGroups.Location = new System.Drawing.Point(3, 101);
+            this.grp_MailGroups.Name = "grp_MailGroups";
+            this.grp_MailGroups.Size = new System.Drawing.Size(719, 262);
+            this.grp_MailGroups.TabIndex = 1;
+            this.grp_MailGroups.TabStop = false;
+            this.grp_MailGroups.Text = "E-Posta Grupları";
             // 
-            // groupBox1
+            // lstBox_UsersAddedToGroup
             // 
-            this.groupBox1.Controls.Add(this.txt_Message);
-            this.groupBox1.Controls.Add(this.btn_Send);
-            this.groupBox1.Controls.Add(this.txt_Password);
-            this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.txt_UserName);
-            this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.txt_MailServerPort);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.txt_MailServerName);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(3, 3);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(719, 203);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "groupBox1";
+            this.lstBox_UsersAddedToGroup.DisplayMember = "Email";
+            this.lstBox_UsersAddedToGroup.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.lstBox_UsersAddedToGroup.FormattingEnabled = true;
+            this.lstBox_UsersAddedToGroup.ItemHeight = 16;
+            this.lstBox_UsersAddedToGroup.Location = new System.Drawing.Point(402, 75);
+            this.lstBox_UsersAddedToGroup.Name = "lstBox_UsersAddedToGroup";
+            this.lstBox_UsersAddedToGroup.Size = new System.Drawing.Size(181, 180);
+            this.lstBox_UsersAddedToGroup.TabIndex = 21;
+            this.lstBox_UsersAddedToGroup.ValueMember = "ID";
             // 
-            // txt_Message
+            // lstBox__UsersNotAddedToGroup
             // 
-            this.txt_Message.Location = new System.Drawing.Point(99, 99);
-            this.txt_Message.Name = "txt_Message";
-            this.txt_Message.Size = new System.Drawing.Size(100, 20);
-            this.txt_Message.TabIndex = 9;
+            this.lstBox__UsersNotAddedToGroup.DisplayMember = "Email";
+            this.lstBox__UsersNotAddedToGroup.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.lstBox__UsersNotAddedToGroup.FormattingEnabled = true;
+            this.lstBox__UsersNotAddedToGroup.ItemHeight = 16;
+            this.lstBox__UsersNotAddedToGroup.Location = new System.Drawing.Point(118, 75);
+            this.lstBox__UsersNotAddedToGroup.Name = "lstBox__UsersNotAddedToGroup";
+            this.lstBox__UsersNotAddedToGroup.Size = new System.Drawing.Size(181, 180);
+            this.lstBox__UsersNotAddedToGroup.TabIndex = 19;
+            this.lstBox__UsersNotAddedToGroup.ValueMember = "MailGroupID";
             // 
-            // btn_Send
+            // btn_ChangeGroupName
             // 
-            this.btn_Send.Location = new System.Drawing.Point(330, 152);
-            this.btn_Send.Name = "btn_Send";
-            this.btn_Send.Size = new System.Drawing.Size(75, 23);
-            this.btn_Send.TabIndex = 8;
-            this.btn_Send.Text = "button1";
-            this.btn_Send.UseVisualStyleBackColor = true;
-            this.btn_Send.Click += new System.EventHandler(this.btn_Send_Click);
+            this.btn_ChangeGroupName.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_ChangeGroupName.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.btn_ChangeGroupName.Location = new System.Drawing.Point(315, 22);
+            this.btn_ChangeGroupName.Name = "btn_ChangeGroupName";
+            this.btn_ChangeGroupName.Size = new System.Drawing.Size(183, 32);
+            this.btn_ChangeGroupName.TabIndex = 18;
+            this.btn_ChangeGroupName.Text = "Grup Adını Değiştir";
+            this.btn_ChangeGroupName.UseVisualStyleBackColor = true;
+            this.btn_ChangeGroupName.Click += new System.EventHandler(this.btn_ChangeGroupName_Click);
+            // 
+            // btn_RemoveAllUsersFromGroup
+            // 
+            this.btn_RemoveAllUsersFromGroup.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_RemoveAllUsersFromGroup.Location = new System.Drawing.Point(329, 216);
+            this.btn_RemoveAllUsersFromGroup.Name = "btn_RemoveAllUsersFromGroup";
+            this.btn_RemoveAllUsersFromGroup.Size = new System.Drawing.Size(49, 32);
+            this.btn_RemoveAllUsersFromGroup.TabIndex = 16;
+            this.btn_RemoveAllUsersFromGroup.Text = "<<";
+            this.btn_RemoveAllUsersFromGroup.UseVisualStyleBackColor = true;
+            this.btn_RemoveAllUsersFromGroup.Click += new System.EventHandler(this.btn_RemoveAllUsersFromGroup_Click);
+            // 
+            // btn_RemoveSelectedUserFromGroup
+            // 
+            this.btn_RemoveSelectedUserFromGroup.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_RemoveSelectedUserFromGroup.Location = new System.Drawing.Point(329, 173);
+            this.btn_RemoveSelectedUserFromGroup.Name = "btn_RemoveSelectedUserFromGroup";
+            this.btn_RemoveSelectedUserFromGroup.Size = new System.Drawing.Size(49, 32);
+            this.btn_RemoveSelectedUserFromGroup.TabIndex = 15;
+            this.btn_RemoveSelectedUserFromGroup.Text = "<";
+            this.btn_RemoveSelectedUserFromGroup.UseVisualStyleBackColor = true;
+            this.btn_RemoveSelectedUserFromGroup.Click += new System.EventHandler(this.btn_RemoveSelectedUserFromGroup_Click);
+            // 
+            // btn_AddAllUsersToGroup
+            // 
+            this.btn_AddAllUsersToGroup.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_AddAllUsersToGroup.Location = new System.Drawing.Point(329, 130);
+            this.btn_AddAllUsersToGroup.Name = "btn_AddAllUsersToGroup";
+            this.btn_AddAllUsersToGroup.Size = new System.Drawing.Size(49, 32);
+            this.btn_AddAllUsersToGroup.TabIndex = 14;
+            this.btn_AddAllUsersToGroup.Text = ">>";
+            this.btn_AddAllUsersToGroup.UseVisualStyleBackColor = true;
+            this.btn_AddAllUsersToGroup.Click += new System.EventHandler(this.btn_AddAllUsersToGroup_Click);
+            // 
+            // btn_AddSelectedUserToGroup
+            // 
+            this.btn_AddSelectedUserToGroup.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_AddSelectedUserToGroup.Location = new System.Drawing.Point(329, 87);
+            this.btn_AddSelectedUserToGroup.Name = "btn_AddSelectedUserToGroup";
+            this.btn_AddSelectedUserToGroup.Size = new System.Drawing.Size(49, 32);
+            this.btn_AddSelectedUserToGroup.TabIndex = 13;
+            this.btn_AddSelectedUserToGroup.Text = ">";
+            this.btn_AddSelectedUserToGroup.UseVisualStyleBackColor = true;
+            this.btn_AddSelectedUserToGroup.Click += new System.EventHandler(this.btn_AddSelectedUserToGroup_Click);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(19, 75);
+            this.label10.Name = "label10";
+            this.label10.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label10.Size = new System.Drawing.Size(93, 13);
+            this.label10.TabIndex = 12;
+            this.label10.Text = ": E-Posta Adresleri";
+            // 
+            // btn_NewGroup
+            // 
+            this.btn_NewGroup.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_NewGroup.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.btn_NewGroup.Location = new System.Drawing.Point(510, 22);
+            this.btn_NewGroup.Name = "btn_NewGroup";
+            this.btn_NewGroup.Size = new System.Drawing.Size(183, 32);
+            this.btn_NewGroup.TabIndex = 10;
+            this.btn_NewGroup.Text = "Yeni Grup Ekle";
+            this.btn_NewGroup.UseVisualStyleBackColor = true;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(55, 32);
+            this.label9.Name = "label9";
+            this.label9.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label9.Size = new System.Drawing.Size(54, 13);
+            this.label9.TabIndex = 10;
+            this.label9.Text = ": Grup Adı";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.DisplayMember = "Name";
+            this.comboBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(118, 27);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(181, 24);
+            this.comboBox1.TabIndex = 0;
+            this.comboBox1.DropDown += new System.EventHandler(this.comboBox1_DropDown);
+            this.comboBox1.SelectionChangeCommitted += new System.EventHandler(this.comboBox1_SelectionChangeCommitted);
+            // 
+            // grp_ServerSettings
+            // 
+            this.grp_ServerSettings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
+            this.grp_ServerSettings.Controls.Add(this.chkBox_ShowPassword);
+            this.grp_ServerSettings.Controls.Add(this.txt_Password);
+            this.grp_ServerSettings.Controls.Add(this.label4);
+            this.grp_ServerSettings.Controls.Add(this.txt_UserName);
+            this.grp_ServerSettings.Controls.Add(this.label3);
+            this.grp_ServerSettings.Controls.Add(this.txt_MailServerPort);
+            this.grp_ServerSettings.Controls.Add(this.label2);
+            this.grp_ServerSettings.Controls.Add(this.label1);
+            this.grp_ServerSettings.Controls.Add(this.txt_MailServerName);
+            this.grp_ServerSettings.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grp_ServerSettings.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.grp_ServerSettings.Location = new System.Drawing.Point(3, 3);
+            this.grp_ServerSettings.Name = "grp_ServerSettings";
+            this.grp_ServerSettings.Size = new System.Drawing.Size(719, 92);
+            this.grp_ServerSettings.TabIndex = 0;
+            this.grp_ServerSettings.TabStop = false;
+            this.grp_ServerSettings.Text = "Sunucu Ayarları";
+            // 
+            // chkBox_ShowPassword
+            // 
+            this.chkBox_ShowPassword.AutoSize = true;
+            this.chkBox_ShowPassword.Location = new System.Drawing.Point(605, 58);
+            this.chkBox_ShowPassword.Name = "chkBox_ShowPassword";
+            this.chkBox_ShowPassword.Size = new System.Drawing.Size(88, 17);
+            this.chkBox_ShowPassword.TabIndex = 9;
+            this.chkBox_ShowPassword.Text = "Şifreyi Göster";
+            this.chkBox_ShowPassword.UseVisualStyleBackColor = true;
+            this.chkBox_ShowPassword.CheckedChanged += new System.EventHandler(this.chkBox_ShowPassword_CheckedChanged);
             // 
             // txt_Password
             // 
-            this.txt_Password.Location = new System.Drawing.Point(354, 52);
+            this.txt_Password.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.txt_Password.Location = new System.Drawing.Point(402, 53);
             this.txt_Password.Name = "txt_Password";
-            this.txt_Password.Size = new System.Drawing.Size(100, 20);
+            this.txt_Password.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.txt_Password.Size = new System.Drawing.Size(181, 22);
             this.txt_Password.TabIndex = 7;
+            this.txt_Password.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txt_Password.UseSystemPasswordChar = true;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(270, 52);
+            this.label4.Location = new System.Drawing.Point(359, 58);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label4.Size = new System.Drawing.Size(34, 13);
             this.label4.TabIndex = 6;
-            this.label4.Text = "label4";
+            this.label4.Text = ": Şifre";
             // 
             // txt_UserName
             // 
-            this.txt_UserName.Location = new System.Drawing.Point(354, 22);
+            this.txt_UserName.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.txt_UserName.Location = new System.Drawing.Point(402, 17);
             this.txt_UserName.Name = "txt_UserName";
-            this.txt_UserName.Size = new System.Drawing.Size(100, 20);
+            this.txt_UserName.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.txt_UserName.Size = new System.Drawing.Size(181, 22);
             this.txt_UserName.TabIndex = 5;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(270, 22);
+            this.label3.Location = new System.Drawing.Point(315, 22);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
+            this.label3.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label3.Size = new System.Drawing.Size(81, 13);
             this.label3.TabIndex = 4;
-            this.label3.Text = "label3";
+            this.label3.Text = ": E-posta Adresi";
             // 
             // txt_MailServerPort
             // 
-            this.txt_MailServerPort.Location = new System.Drawing.Point(99, 57);
+            this.txt_MailServerPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.txt_MailServerPort.Location = new System.Drawing.Point(118, 53);
             this.txt_MailServerPort.Name = "txt_MailServerPort";
-            this.txt_MailServerPort.Size = new System.Drawing.Size(100, 20);
+            this.txt_MailServerPort.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.txt_MailServerPort.Size = new System.Drawing.Size(181, 22);
             this.txt_MailServerPort.TabIndex = 3;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(15, 57);
+            this.label2.Location = new System.Drawing.Point(30, 58);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(35, 13);
+            this.label2.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label2.Size = new System.Drawing.Size(79, 13);
             this.label2.TabIndex = 2;
-            this.label2.Text = "label2";
+            this.label2.Text = ": Port Numarası";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(15, 26);
+            this.label1.Location = new System.Drawing.Point(30, 22);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
+            this.label1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label1.Size = new System.Drawing.Size(82, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "label1";
+            this.label1.Text = ": Sunucu Adresi";
             // 
             // txt_MailServerName
             // 
-            this.txt_MailServerName.Location = new System.Drawing.Point(99, 19);
+            this.txt_MailServerName.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.txt_MailServerName.Location = new System.Drawing.Point(118, 17);
             this.txt_MailServerName.Name = "txt_MailServerName";
-            this.txt_MailServerName.Size = new System.Drawing.Size(100, 20);
+            this.txt_MailServerName.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.txt_MailServerName.Size = new System.Drawing.Size(181, 22);
             this.txt_MailServerName.TabIndex = 0;
+            // 
+            // btn_Send
+            // 
+            this.btn_Send.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btn_Send.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Send.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.btn_Send.Location = new System.Drawing.Point(541, 369);
+            this.btn_Send.Name = "btn_Send";
+            this.btn_Send.Size = new System.Drawing.Size(181, 38);
+            this.btn_Send.TabIndex = 8;
+            this.btn_Send.Text = "Değişiklikleri Güncelle";
+            this.btn_Send.UseVisualStyleBackColor = true;
+            this.btn_Send.Click += new System.EventHandler(this.btn_Send_Click);
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.tableLayoutPanel2);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Controls.Add(this.materialRaisedButton2);
+            this.tabPage2.Controls.Add(this.btn_AddNewAlarm);
+            this.tabPage2.Controls.Add(this.dataGridView1);
+            this.tabPage2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabPage2.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.tabPage2.ImageIndex = -1;
+            this.tabPage2.Location = new System.Drawing.Point(4, 30);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(731, 424);
+            this.tabPage2.Size = new System.Drawing.Size(731, 416);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Alarm Ayarları";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.tabPage2.Text = "Alarmlar";
             // 
-            // tableLayoutPanel2
+            // materialRaisedButton2
             // 
-            this.tableLayoutPanel2.ColumnCount = 1;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Controls.Add(this.groupBox3, 0, 1);
-            this.tableLayoutPanel2.Controls.Add(this.groupBox4, 0, 0);
-            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 3);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 2;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(725, 418);
-            this.tableLayoutPanel2.TabIndex = 1;
+            this.materialRaisedButton2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.materialRaisedButton2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialRaisedButton2.Depth = 0;
+            this.materialRaisedButton2.Icon = null;
+            this.materialRaisedButton2.Location = new System.Drawing.Point(543, 376);
+            this.materialRaisedButton2.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialRaisedButton2.Name = "materialRaisedButton2";
+            this.materialRaisedButton2.Primary = true;
+            this.materialRaisedButton2.Size = new System.Drawing.Size(185, 35);
+            this.materialRaisedButton2.TabIndex = 2;
+            this.materialRaisedButton2.Text = "Seçili Alarmı Sil";
+            this.materialRaisedButton2.UseVisualStyleBackColor = true;
             // 
-            // groupBox3
+            // btn_AddNewAlarm
             // 
-            this.groupBox3.Controls.Add(this.dgv_AlarmList);
-            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox3.Location = new System.Drawing.Point(3, 212);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(719, 203);
-            this.groupBox3.TabIndex = 1;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "groupBox3";
+            this.btn_AddNewAlarm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_AddNewAlarm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btn_AddNewAlarm.Depth = 0;
+            this.btn_AddNewAlarm.Icon = null;
+            this.btn_AddNewAlarm.Location = new System.Drawing.Point(347, 376);
+            this.btn_AddNewAlarm.MouseState = MaterialSkin.MouseState.HOVER;
+            this.btn_AddNewAlarm.Name = "btn_AddNewAlarm";
+            this.btn_AddNewAlarm.Primary = true;
+            this.btn_AddNewAlarm.Size = new System.Drawing.Size(185, 35);
+            this.btn_AddNewAlarm.TabIndex = 1;
+            this.btn_AddNewAlarm.Text = "Yeni Alarm Ekle";
+            this.btn_AddNewAlarm.UseVisualStyleBackColor = true;
+            this.btn_AddNewAlarm.Click += new System.EventHandler(this.btn_AddNewAlarm_Click);
             // 
-            // groupBox4
+            // dataGridView1
             // 
-            this.groupBox4.Controls.Add(this.textBox1);
-            this.groupBox4.Controls.Add(this.button1);
-            this.groupBox4.Controls.Add(this.textBox2);
-            this.groupBox4.Controls.Add(this.label5);
-            this.groupBox4.Controls.Add(this.textBox3);
-            this.groupBox4.Controls.Add(this.label6);
-            this.groupBox4.Controls.Add(this.textBox4);
-            this.groupBox4.Controls.Add(this.label7);
-            this.groupBox4.Controls.Add(this.label8);
-            this.groupBox4.Controls.Add(this.textBox5);
-            this.groupBox4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox4.Location = new System.Drawing.Point(3, 3);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(719, 203);
-            this.groupBox4.TabIndex = 0;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "groupBox4";
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(99, 99);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 9;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(330, 152);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(354, 52);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(100, 20);
-            this.textBox2.TabIndex = 7;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(270, 52);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(35, 13);
-            this.label5.TabIndex = 6;
-            this.label5.Text = "label5";
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(354, 22);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(100, 20);
-            this.textBox3.TabIndex = 5;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(270, 22);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(35, 13);
-            this.label6.TabIndex = 4;
-            this.label6.Text = "label6";
-            // 
-            // textBox4
-            // 
-            this.textBox4.Location = new System.Drawing.Point(99, 57);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(100, 20);
-            this.textBox4.TabIndex = 3;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(15, 57);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(35, 13);
-            this.label7.TabIndex = 2;
-            this.label7.Text = "label7";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(15, 26);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(35, 13);
-            this.label8.TabIndex = 1;
-            this.label8.Text = "label8";
-            // 
-            // textBox5
-            // 
-            this.textBox5.Location = new System.Drawing.Point(99, 19);
-            this.textBox5.Name = "textBox5";
-            this.textBox5.Size = new System.Drawing.Size(100, 20);
-            this.textBox5.TabIndex = 0;
-            // 
-            // dgv_AlarmList
-            // 
-            this.dgv_AlarmList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgv_AlarmList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgv_AlarmList.Location = new System.Drawing.Point(3, 16);
-            this.dgv_AlarmList.Name = "dgv_AlarmList";
-            this.dgv_AlarmList.Size = new System.Drawing.Size(713, 184);
-            this.dgv_AlarmList.TabIndex = 0;
+            this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridView1.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Location = new System.Drawing.Point(0, 6);
+            this.dataGridView1.Margin = new System.Windows.Forms.Padding(0, 0, 0, 3);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(728, 364);
+            this.dataGridView1.TabIndex = 0;
             // 
             // frm_EmailSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(50)))), ((int)(((byte)(56)))));
             this.ClientSize = new System.Drawing.Size(739, 450);
             this.Controls.Add(this.tab_EmailSettings);
+            this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.Name = "frm_EmailSettings";
             this.Text = "EmailSettings";
+            this.Load += new System.EventHandler(this.frm_EmailSettings_Load);
             this.tab_EmailSettings.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.grp_MailGroups.ResumeLayout(false);
+            this.grp_MailGroups.PerformLayout();
+            this.grp_ServerSettings.ResumeLayout(false);
+            this.grp_ServerSettings.PerformLayout();
             this.tabPage2.ResumeLayout(false);
-            this.tableLayoutPanel2.ResumeLayout(false);
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_AlarmList)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.TabControl tab_EmailSettings;
-        private System.Windows.Forms.TabPage tabPage1;
+        private GrayIris.Utilities.UI.Controls.YaTabControl tab_EmailSettings;
+        //private System.Windows.Forms.TabControl tab_EmailSettings;
+        private GrayIris.Utilities.UI.Controls.YaTabPage tabPage1;
+        private GrayIris.Utilities.UI.Controls.YaTabPage tabPage2;
+        //private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.TextBox txt_Message;
+        private System.Windows.Forms.GroupBox grp_MailGroups;
+        private System.Windows.Forms.GroupBox grp_ServerSettings;
         private System.Windows.Forms.Button btn_Send;
         private System.Windows.Forms.TextBox txt_Password;
         private System.Windows.Forms.Label label4;
@@ -404,21 +499,22 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txt_MailServerName;
-        private System.Windows.Forms.TabPage tabPage2;
+        //private System.Windows.Forms.TabPage tabPage2;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-        private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox textBox4;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.TextBox textBox5;
-        private System.Windows.Forms.DataGridView dgv_AlarmList;
+        private System.Windows.Forms.CheckBox chkBox_ShowPassword;
+        private System.Windows.Forms.Button btn_RemoveAllUsersFromGroup;
+        private System.Windows.Forms.Button btn_RemoveSelectedUserFromGroup;
+        private System.Windows.Forms.Button btn_AddAllUsersToGroup;
+        private System.Windows.Forms.Button btn_AddSelectedUserToGroup;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Button btn_NewGroup;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Button btn_ChangeGroupName;
+        private System.Windows.Forms.ListBox lstBox_UsersAddedToGroup;
+        private System.Windows.Forms.ListBox lstBox__UsersNotAddedToGroup;
+        private System.Windows.Forms.DataGridView dataGridView1;
+        private MaterialSkin.Controls.MaterialRaisedButton materialRaisedButton2;
+        private MaterialSkin.Controls.MaterialRaisedButton btn_AddNewAlarm;
     }
 }
