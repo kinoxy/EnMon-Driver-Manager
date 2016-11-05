@@ -43,7 +43,7 @@
             this.lbl_StationName.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.lbl_StationName.Location = new System.Drawing.Point(3, 10);
             this.lbl_StationName.Name = "lbl_StationName";
-            this.lbl_StationName.Size = new System.Drawing.Size(91, 18);
+            this.lbl_StationName.Size = new System.Drawing.Size(90, 18);
             this.lbl_StationName.TabIndex = 0;
             this.lbl_StationName.Text = "Station Name";
             this.lbl_StationName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -55,7 +55,7 @@
             this.lbl_DeviceName.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.lbl_DeviceName.Location = new System.Drawing.Point(133, 10);
             this.lbl_DeviceName.Name = "lbl_DeviceName";
-            this.lbl_DeviceName.Size = new System.Drawing.Size(90, 18);
+            this.lbl_DeviceName.Size = new System.Drawing.Size(86, 18);
             this.lbl_DeviceName.TabIndex = 1;
             this.lbl_DeviceName.Text = "Device Name";
             this.lbl_DeviceName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -67,7 +67,7 @@
             this.lbl_SlaveId.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.lbl_SlaveId.Location = new System.Drawing.Point(261, 10);
             this.lbl_SlaveId.Name = "lbl_SlaveId";
-            this.lbl_SlaveId.Size = new System.Drawing.Size(57, 18);
+            this.lbl_SlaveId.Size = new System.Drawing.Size(55, 18);
             this.lbl_SlaveId.TabIndex = 3;
             this.lbl_SlaveId.Text = "Slave ID";
             this.lbl_SlaveId.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -91,13 +91,14 @@
             this.switchButton_DeviceIsActive.Margin = new System.Windows.Forms.Padding(0);
             this.switchButton_DeviceIsActive.Name = "switchButton_DeviceIsActive";
             this.switchButton_DeviceIsActive.Size = new System.Drawing.Size(83, 34);
-            this.switchButton_DeviceIsActive.Click += SwitchButton_DeviceIsActive_Click;
             this.switchButton_DeviceIsActive.TabIndex = 2;
+            this.switchButton_DeviceIsActive.Click += SwitchButton_DeviceIsActive_Click;
             // 
             // DeviceInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.SteelBlue;
             this.Controls.Add(this.pictureBox_ConnectionStatus);
             this.Controls.Add(this.lbl_SlaveId);
             this.Controls.Add(this.switchButton_DeviceIsActive);
@@ -112,16 +113,31 @@
 
         }
 
+      
+
         #endregion
 
         private Device _device;
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.lbl_StationName'
         public System.Windows.Forms.Label lbl_StationName;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.lbl_StationName'
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.lbl_DeviceName'
         public System.Windows.Forms.Label lbl_DeviceName;
-        public SwitchButton switchButton_DeviceIsActive;
-        public System.Windows.Forms.Label lbl_SlaveId;
-        public System.Windows.Forms.PictureBox pictureBox_ConnectionStatus;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.lbl_DeviceName'
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.switchButton_DeviceIsActive'
+        public SwitchButton switchButton_DeviceIsActive;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.switchButton_DeviceIsActive'
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.lbl_SlaveId'
+        public System.Windows.Forms.Label lbl_SlaveId;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.lbl_SlaveId'
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.pictureBox_ConnectionStatus'
+        public System.Windows.Forms.PictureBox pictureBox_ConnectionStatus;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.pictureBox_ConnectionStatus'
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.device'
         public Device device
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.device'
         {
             private get { return _device; }
             set

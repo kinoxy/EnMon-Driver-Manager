@@ -13,7 +13,9 @@ namespace EnMon_Driver_Manager.DataBase
     {
         #region Private Properties
 
-        private static MySqlConnection conn { get; set; }
+        private MySqlConnection conn { get; set; }
+
+        private Object thisLock = new Object();
 
         #endregion Private Properties
 
@@ -24,10 +26,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// </summary>
         public MySqlDBHelper() : base()
         {
-            if (conn == null)
-            {
-                conn = new MySqlConnection(ConnectionString);
-            }
+            
         }
 
         /// <summary>
@@ -39,10 +38,16 @@ namespace EnMon_Driver_Manager.DataBase
         /// <param name="_password">The password.</param>
         public MySqlDBHelper(string _serverAddres, string _databaseName, string _username, string _password) : this()
         {
+
             str_serverAddress = _serverAddres;
             str_databaseName = _databaseName;
             str_userName = _username;
             str_password = _password;
+
+            if (conn == null)
+            {
+                conn = new MySqlConnection(ConnectionString);
+            }
         }
 
         #endregion Constructors
@@ -89,14 +94,14 @@ namespace EnMon_Driver_Manager.DataBase
             // database'e baglan
             try
             {
-                if (conn.State == System.Data.ConnectionState.Closed)
+                if (conn.State == ConnectionState.Closed)
                 {
                     conn.Open();
                     IsConnected = true;
                     Log.Instance.Info("Database'e baglanıldı");
                 }
 
-                if (conn.State == System.Data.ConnectionState.Open)
+                if (conn.State == ConnectionState.Open)
                 {
                     return true;
                 }
@@ -109,7 +114,7 @@ namespace EnMon_Driver_Manager.DataBase
             {
                 if (IsConnected)
                 {
-                    Log.Instance.Error("Database baglantısında sorun: {0}", ex.Message);
+                    Log.Instance.Error("Database baglantısı sorunu: {0}", ex.Message);
                     IsConnected = false;
                 }
                 return false;
@@ -155,14 +160,25 @@ namespace EnMon_Driver_Manager.DataBase
         {
             try
             {
-                OpenConnection();
-                using (MySqlCommand cmd = new MySqlCommand())
+                if(OpenConnection())
                 {
-                    cmd.Connection = conn;
-                    cmd.CommandText = _query;
-                    cmd.Prepare();
-                    return cmd.ExecuteNonQuery();
+
+                    lock (thisLock)
+                    {
+                        using (MySqlCommand cmd = new MySqlCommand())
+                        {
+                            cmd.Connection = conn;
+                            cmd.CommandText = _query;
+                            cmd.Prepare();
+                            return cmd.ExecuteNonQuery();
+                        } 
+                    }
                 }
+                else
+                {
+                    throw new Exception("Database baglantısı kurulumadı");
+                }
+                
             }
             catch
             {
@@ -178,17 +194,23 @@ namespace EnMon_Driver_Manager.DataBase
         /// <exception cref="NotImplementedException"></exception>
         public override DataTable ExecuteQuery(string _query)
         {
+            DataSet ds = new DataSet();
             try
             {
-                OpenConnection();
-                using (MySqlCommand cmd = new MySqlCommand(_query, conn))
+                if (OpenConnection())
                 {
-                    MySqlDataAdapter da = new MySqlDataAdapter();
-                    da.SelectCommand = cmd;
-                    DataSet ds = new DataSet();
-                    da.Fill(ds);
-                    return ds.Tables[0];
+                    lock (thisLock)
+                    {
+                        using (MySqlCommand cmd = new MySqlCommand(_query, conn))
+                        {
+                            MySqlDataAdapter da = new MySqlDataAdapter();
+                            da.SelectCommand = cmd;
+                            da.Fill(ds);
+                            return ds.Tables[0];
+                        }  
+                    }
                 }
+                return null;
             }
             catch (Exception)
             {

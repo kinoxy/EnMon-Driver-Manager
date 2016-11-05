@@ -1,18 +1,25 @@
-﻿using System;
+﻿using EnMon_Driver_Manager.Models;
+using System;
 
 namespace EnMon_Driver_Manager
 {
     public class AnalogSignal : Signal
     {
         private UInt32 currentValue;
-        private byte dataTypeID;
-        private int maxValue;
-        private int minValue;
+
+        private uint maxValue;
+        private uint minValue;
         private float scaleValue;
+
+        public AnalogSignal()
+        {
+            dataType = new DataType();
+            archivePeriod = new ArchivePeriod();
+        }
         public string TimeTag { get; set; }
         
         public UInt32 CurrentValue
-        {
+      {
             get { return currentValue; }
             set { currentValue = value; }
         }
@@ -23,11 +30,7 @@ namespace EnMon_Driver_Manager
         /// <value>
         /// The datatype identifier.
         /// </value>
-        public byte DatatypeID
-        {
-            get { return dataTypeID; }
-            set { dataTypeID = value; }
-        }
+        public DataType dataType { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum value.
@@ -35,7 +38,7 @@ namespace EnMon_Driver_Manager
         /// <value>
         /// The maximum value.
         /// </value>
-        public int MaxValue
+        public uint MaxAlarmValue
         {
             get { return maxValue; }
             set { maxValue = value; }
@@ -47,7 +50,7 @@ namespace EnMon_Driver_Manager
         /// <value>
         /// The minimum value.
         /// </value>
-        public int MinValue
+        public uint MinAlarmValue
         {
             get { return minValue; }
             set { minValue = value; }
@@ -64,6 +67,22 @@ namespace EnMon_Driver_Manager
             get { return scaleValue; }
             set { scaleValue = value; }
         }
+
+        public bool HasMaxAlarm { get; set; }
+
+        public bool HasMinAlarm { get; set; }
+
+
+
+        public uint MaxAlarmStatusID { get; set; }
+
+        public uint MinAlarmStatusID { get; set; }
+
+        public string Unit { get; set; }
+
+        public bool isArchive { get; set; }
+
+        public ArchivePeriod archivePeriod { get; set; }
 
     }
 }

@@ -2,7 +2,9 @@
 
 namespace EnMon_Driver_Manager
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'BinarySignal'
     public class BinarySignal : Signal
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'BinarySignal'
     {
         private bool currentValue;
         private bool is_reversed;
@@ -51,5 +53,12 @@ namespace EnMon_Driver_Manager
             get { return timetag; }
             set { timetag = value; }
         }
+
+
+        public uint StatusID { get; set; }
+
+        public bool IsAlarm { get; set; }
+
+
     }
 }

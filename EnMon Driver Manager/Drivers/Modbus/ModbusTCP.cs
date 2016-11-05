@@ -1,23 +1,24 @@
-﻿using EnMon_Driver_Manager.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using EnMon_Driver_Manager.DataBase;
+﻿using EnMon_Driver_Manager.DataBase;
+using EnMon_Driver_Manager.Models;
 using IniParser;
 using IniParser.Model;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace EnMon_Driver_Manager.Modbus
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="EnMon_Driver_Manager.Modbus.AbstractDriver" />
     public class ModbusTCP : AbstractDriver
     {
-
         #region Private Properties
 
         private List<string> ipAddresses { get; set; }
@@ -28,7 +29,7 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The modbus TCP masters.
         /// </value>
-        private List<ModbusTCPMaster> modbusTCPMasters { get; set; }
+        public List<ModbusTCPClient> modbusTCPClients { get; set; }
 
         /// <summary>
         /// Gets or sets the loop result.
@@ -40,6 +41,8 @@ namespace EnMon_Driver_Manager.Modbus
 
         private int portNumber;
 
+        private Timer cycleForCommands;
+
         #endregion Private Properties
 
         #region Public Properties
@@ -50,35 +53,46 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The port number.
         /// </value>
-        /// 
+        ///
         public int PortNumber
         {
             get { return portNumber; }
             set { portNumber = value; }
         }
 
-        #endregion
+        #endregion Public Properties
 
-        #region Constructors        
+        #region Constructors
 
+#pragma warning disable CS1573 // Parameter '_dbHelper' has no matching param tag in the XML comment for 'ModbusTCP.ModbusTCP(string, AbstractDBHelper)' (but other parameters do)
         /// <summary>
         /// Initializes a new instance of the <see cref="ModbusTCP"/> class.
         /// </summary>
         /// <param name="_configFile">The configuration file.</param>
         public ModbusTCP(string _configFile, AbstractDBHelper _dbHelper) : base(_configFile, _dbHelper) { }
+#pragma warning restore CS1573 // Parameter '_dbHelper' has no matching param tag in the XML comment for 'ModbusTCP.ModbusTCP(string, AbstractDBHelper)' (but other parameters do)
 
-        #endregion Constructors  
+        #endregion Constructors
 
         #region Private Methods
 
         /// <summary>
         /// Gets the ip list from devices.
         /// </summary>
-        private void GetIpAddressesFromDevices()
+        private List<string> GetIpAddressesFromDevices()
         {
             Log.Instance.Trace("{0}: {1} methodu çağrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-            ipAddresses = new List<string>();
-            ipAddresses = Devices.Select(d => d.IpAddress).Distinct().ToList();
+            List<string> _ipAddresses = new List<string>();
+            try
+            {
+                _ipAddresses = Devices.Select(d => d.IpAddress).Distinct().ToList();
+                return _ipAddresses;
+            }
+            catch (Exception)
+            {
+                return null;
+                //throw;
+            }
         }
 
         /// <summary>
@@ -93,13 +107,13 @@ namespace EnMon_Driver_Manager.Modbus
             try
             {
                 // Verilen IP adresi icin modbusTCPMaster olusturuluyor
-                ModbusTCPMaster _modbusTCPmaster = new ModbusTCPMaster(_ipAddress, ReadTimeOut, RetryNumber, PollingTime, MaxRegisterInOnePoll);
+                ModbusTCPClient _modbusTCPClient = new ModbusTCPClient(_ipAddress, ReadTimeOut, RetryNumber, PollingTime, MaxRegisterInOnePoll);
 
                 // modbusTCPMaster'ın aynı ip adresi üzerinden haberleşeceği cihazlar ekleniyor.
-                _modbusTCPmaster.Devices = (from d in Devices where d.IpAddress == _ipAddress select d).ToList();
+                _modbusTCPClient.Devices = (from d in Devices where d.IpAddress == _ipAddress select d).ToList();
 
                 // Sinyal okumayı hızlandırmak için tüm sinyaller liste içerisinde modbus adreslerine göre sıralanıyor.
-                foreach (Device d in _modbusTCPmaster.Devices)
+                foreach (Device d in _modbusTCPClient.Devices)
                 {
                     if (d.BinarySignals.Count > 0)
                     {
@@ -109,24 +123,21 @@ namespace EnMon_Driver_Manager.Modbus
                     {
                         d.AnalogSignals = d.AnalogSignals.OrderBy(a => a.Address).ToList();
                     }
-
+                    if (d.CommandSignals.Count > 0)
+                    {
+                        d.CommandSignals = d.CommandSignals.OrderBy(a => a.Address).ToList();
+                    }
                 }
 
                 // Eventler ayarlanıyor
-                _modbusTCPmaster.ConnectedToServer += _modbusServer_ConnectedToServer;
-                _modbusTCPmaster.DisconnectedFromServer += _modbusServer_DisconnectedFromServer;
-                _modbusTCPmaster.AnyBinarySignalValueChanged += _modbusServer_AnyBinarySignalValueChanged;
-                _modbusTCPmaster.AnyAnalogSignalValueChanged += _modbusServer_AnyAnalogSignalValueChanged;
-                _modbusTCPmaster.DeviceConnectionStateChanged += _modbusTCPmaster_DeviceConnectionStateChanged;
-                modbusTCPMasters.Add(_modbusTCPmaster);
+                _modbusTCPClient.ConnectedToServer += _modbusServer_ConnectedToServer;
+                _modbusTCPClient.DisconnectedFromServer += _modbusServer_DisconnectedFromServer;
+                _modbusTCPClient.AnyBinarySignalValueChanged += _modbusServer_AnyBinarySignalValueChanged;
+                _modbusTCPClient.AnyAnalogSignalValueChanged += _modbusServer_AnyAnalogSignalValueChanged;
+                _modbusTCPClient.DeviceConnectionStateChanged += _modbusTCPmaster_DeviceConnectionStateChanged;
+                modbusTCPClients.Add(_modbusTCPClient);
 
-                _modbusTCPmaster.Connect();
-                
-                if(_modbusTCPmaster.IsConnected)
-                {
-                    _modbusTCPmaster.ReadValues();
-                }
-
+                _modbusTCPClient.Connect();
             }
             catch (Exception e)
             {
@@ -136,7 +147,7 @@ namespace EnMon_Driver_Manager.Modbus
 
         private void _modbusTCPmaster_DeviceConnectionStateChanged(object source, ModbusEventArgs e)
         {
-            dbHelper.UpdateDeviceConnectedState(e.Device.ID, e.Device.Connected);
+            DBHelper_Driver.UpdateDeviceConnectedState(e.Device.ID, e.Device.Connected);
         }
 
         /// <summary>
@@ -146,12 +157,12 @@ namespace EnMon_Driver_Manager.Modbus
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private static void _modbusServer_AnyAnalogSignalValueChanged(object sender, ModbusEventArgs e)
         {
-            dbHelper.AddAnalogSignalsToDataBaseWriteBuffer(e.AnalogSignals);
+            DBHelper_Driver.AddAnalogSignalsToDataBaseWriteBuffer(e.AnalogSignals);
         }
 
         private static void _modbusServer_AnyBinarySignalValueChanged(object sender, ModbusEventArgs e)
         {
-            dbHelper.AddBinarySignalsToDataBaseWriteBuffer(e.BinarySignals);
+            DBHelper_Driver.AddBinarySignalsToDataBaseWriteBuffer(e.BinarySignals);
         }
 
         private static void _modbusServer_DisconnectedFromServer(object sender, ModbusEventArgs e)
@@ -161,7 +172,7 @@ namespace EnMon_Driver_Manager.Modbus
                 if (d.Connected == true)
                 {
                     d.Connected = false;
-                    dbHelper.UpdateDeviceConnectedState(d.ID, d.Connected);
+                    DBHelper_Driver.UpdateDeviceConnectedState(d.ID, d.Connected);
                 }
             }
             //Log.Instance.Error("{0} ile bağlantı koptu", e.ipAddress);
@@ -170,15 +181,15 @@ namespace EnMon_Driver_Manager.Modbus
 
         private static void _modbusServer_ConnectedToServer(object sender, ModbusEventArgs e)
         {
-            Log.Instance.Trace("{0}: {1} baglantı kuruldu", MethodBase.GetCurrentMethod().Name, e.ipAddress );
+            Log.Instance.Trace("{0}: {1} baglantı kuruldu", MethodBase.GetCurrentMethod().Name, e.ipAddress);
             //_modbusTCPmaster.ReadValuesFromModbusServer();
             //throw new NotImplementedException();
         }
 
         #endregion Private Methods
 
-        #region Protected Override Methods                
-        
+        #region Protected Override Methods
+
         /// <summary>
         /// Devices listesindeki tüm cihazların dogru protokol ile haberleşip haberleşmediğini kontrol eder.
         /// Protokolü yanlış seçilmiş device varsa onu driver'in devices listesinden çıkartır ve o device ile baglantı kurmaz.
@@ -201,9 +212,52 @@ namespace EnMon_Driver_Manager.Modbus
         /// </summary>
         protected override void ConnectToModbusDevices()
         {
-            
             loopResult = Parallel.ForEach(ipAddresses, ConnectToModbusServer);
 
+            InitializeTimerForCheckingActiveCommandsFromDatabase();
+        }
+
+        private void InitializeTimerForCheckingActiveCommandsFromDatabase()
+        {
+            cycleForCommands = new Timer(1000);
+            cycleForCommands.Elapsed += CycleForCommands_Elapsed;
+            cycleForCommands.Start();
+        }
+
+        private void CycleForCommands_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            cycleForCommands.Stop();
+            DataTable dt_activeCommands = DBHelper_Driver.GetActiveCommands();
+            if (dt_activeCommands.Rows.Count > 0)
+            {
+                foreach (DataRow dr in dt_activeCommands.Rows)
+                {
+                    SendCommand(dr);
+                }
+            }
+            cycleForCommands.Start();
+        }
+
+        private void SendCommand(DataRow dr)
+        {
+            Device _device;
+            CommandSignal _command;
+            _device = Devices.Where((d) => d.CommandSignals.Exists((c) => c.ID == dr.Field<uint>("command_signal_id"))).First();
+            _command = _device.CommandSignals.Where((c) => c.ID == dr.Field<uint>("command_signal_id")).First();
+            _command.CommandValue = dr.Field<float>("value");
+            try
+            {
+                if (_command != null && _device != null)
+                {
+                    ModbusTCPClient modbusTCPClient = modbusTCPClients.Where((m) => m.Devices.Exists((d) => d.ID == _device.ID)).First();
+                    modbusTCPClient.WriteValue(_device, _command);
+                    DBHelper_Driver.DeleteActiveCommand(dr.Field<uint>("command_signal_id"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0} adlı cihaza {1} komutu gönderirirken hata  oluştu => {2}", _device.Name, _command.Name, ex.Message);
+            }
         }
 
         /// <summary>
@@ -211,13 +265,13 @@ namespace EnMon_Driver_Manager.Modbus
         /// </summary>
         protected override void InitializeDriver()
         {
-            GetIpAddressesFromDevices();
+            ipAddresses = GetIpAddressesFromDevices();
 
-            if(ipAddresses!=null)
+            if (ipAddresses != null)
             {
-                if (ipAddresses.Count>0)
+                // if (ipAddresses.Count>0)
                 {
-                    modbusTCPMasters = new List<ModbusTCPMaster>();
+                    modbusTCPClients = new List<ModbusTCPClient>();
                     Log.Instance.Trace("{0}: Modbus driver olusturuldu.", this.GetType().Name);
                     IsError = false;
                 }
@@ -229,39 +283,47 @@ namespace EnMon_Driver_Manager.Modbus
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ModbusTCP.GetCommunicationParametersFromConfigFile(string)'
         protected override void GetCommunicationParametersFromConfigFile(string _configFile)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ModbusTCP.GetCommunicationParametersFromConfigFile(string)'
         {
             var parser = new FileIniDataParser();
             IniData data = parser.ReadFile(_configFile, Encoding.UTF8);
             var _parameters = data["Communication Parameters"];
 
-            foreach( KeyData kd in _parameters)
+            foreach (KeyData kd in _parameters)
             {
-                switch(kd.KeyName.Trim())
+                switch (kd.KeyName.Trim())
                 {
                     case "ReadTimeOut":
                         ReadTimeOut = Convert.ToInt32(kd.Value.Trim());
                         break;
+
                     case "RetryNumber":
                         RetryNumber = Convert.ToInt32(kd.Value.Trim());
                         break;
+
                     case "PollingTime":
                         PollingTime = Convert.ToInt32(kd.Value.Trim());
                         break;
+
                     case "PortNumber":
                         PortNumber = Convert.ToInt32(kd.Value.Trim());
                         break;
+
                     case "MaxRegisterInOnePoll":
                         MaxRegisterInOnePoll = Convert.ToByte(kd.Value.Trim());
                         break;
+
                     default:
                         break;
                 }
             }
-
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ModbusTCP.SetDefaultCommunicationParameters()'
         protected override void SetDefaultCommunicationParameters()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ModbusTCP.SetDefaultCommunicationParameters()'
         {
             ReadTimeOut = 1000;
             RetryNumber = 1;
@@ -270,6 +332,6 @@ namespace EnMon_Driver_Manager.Modbus
             MaxRegisterInOnePoll = 16;
         }
 
-        #endregion Public Override Methods
+        #endregion Protected Override Methods
     }
 }

@@ -6,15 +6,23 @@ using System.Threading.Tasks;
 
 namespace EnMon_Driver_Manager.MysqlHelper
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString'
     public class ConnectionString
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString'
     {
         #region Variables
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.connectionAttemps'
         public int connectionAttemps = 3;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.connectionAttemps'
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.allowUserVariables'
         public bool allowUserVariables = true;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.allowUserVariables'
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.connectionSleep'
         public int connectionSleep = 50;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.connectionSleep'
 
         /// <summary>
         /// Database'den cevap gelmesi için beklenen Timeout süresi
@@ -46,7 +54,9 @@ namespace EnMon_Driver_Manager.MysqlHelper
         /// </summary>
         public uint port = 3306;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.pooling'
         public bool pooling = false;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ConnectionString.pooling'
 
         #endregion
         /// <summary>

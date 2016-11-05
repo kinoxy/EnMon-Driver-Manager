@@ -110,7 +110,7 @@ namespace EnMon_Driver_Manager.Modbus
         /// <value>
         /// The database helper.
         /// </value>
-        protected static AbstractDBHelper dbHelper { get; set; }
+        protected static AbstractDBHelper DBHelper_Driver { get; set; }
 
         #endregion Public Properties
 
@@ -128,7 +128,9 @@ namespace EnMon_Driver_Manager.Modbus
 
 
 
-        /// <summary>
+        
+#pragma warning disable CS1587 // XML comment is not placed on a valid language element
+/// <summary>
         /// Gets or sets the database helper.
         /// </summary>
         /// <value>
@@ -144,6 +146,7 @@ namespace EnMon_Driver_Manager.Modbus
         /// Initializes a new instance of the <see cref="AbstractDriver"/> class.
         /// </summary>
         public AbstractDriver() { }
+#pragma warning restore CS1587 // XML comment is not placed on a valid language element
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractDriver"/> class.
@@ -152,7 +155,7 @@ namespace EnMon_Driver_Manager.Modbus
         /// <param name="_dbHelper">The database helper.</param>
         public AbstractDriver(string _configFile, AbstractDBHelper _dbHelper)
         {
-            dbHelper = _dbHelper;
+            DBHelper_Driver = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
             Devices = new List<Device>();
             Stations = new List<Station>();
 
@@ -165,7 +168,7 @@ namespace EnMon_Driver_Manager.Modbus
             {
                 foreach (Station s in Stations)
                 {
-                    List<Device> _stationDevices = dbHelper.GetStationDevices(s.Name);
+                    List<Device> _stationDevices = DBHelper_Driver.GetStationDevices(s.Name);
  
                     _stationDevices = VerifyProtocolofDevices(_stationDevices);
 
@@ -173,8 +176,9 @@ namespace EnMon_Driver_Manager.Modbus
                     {
                         foreach (Device d in _stationDevices)
                         {
-                            d.BinarySignals = dbHelper.GetDeviceBinarySignalsInfo(d.ID);
-                            d.AnalogSignals = dbHelper.GetDeviceAnalogSignalsInfo(d.ID);
+                            d.BinarySignals = DBHelper_Driver.GetDeviceBinarySignalsInfo(d.ID);
+                            d.AnalogSignals = DBHelper_Driver.GetDeviceAnalogSignalsInfo(d.ID);
+                            d.CommandSignals = DBHelper_Driver.GetDeviceCommandSignalsInfo(d.ID);
                         }
                         s.Devices = _stationDevices;
                         Devices.AddRange(_stationDevices);
@@ -197,7 +201,7 @@ namespace EnMon_Driver_Manager.Modbus
             }
             else
             {
-                Log.Instance.Error("{0} Hata: ModbusDriverConfig.ini dosyasında geçerli istasyon adı bulunamadı. Driver başlatılamıyor...", this.GetType().Name);
+                Log.Instance.Error("{0} Hata: ModbusTCPConfig.ini dosyasında geçerli istasyon adı bulunamadı. Driver başlatılamıyor...", this.GetType().Name);
                 IsError = true;
             }
             
@@ -206,7 +210,9 @@ namespace EnMon_Driver_Manager.Modbus
 
         #region Public Methods
 
-        /// <summary>
+        
+#pragma warning disable CS1587 // XML comment is not placed on a valid language element
+/// <summary>
         /// Gets the signal list for driver devices.
         /// </summary>
         //public void GetSignalListOfDriverDevices()
@@ -225,17 +231,18 @@ namespace EnMon_Driver_Manager.Modbus
         /// Starts the communication.
         /// </summary>
         public void StartCommunication()
+#pragma warning restore CS1587 // XML comment is not placed on a valid language element
         {
             Log.Instance.Trace("{0}: {1} methodu çağrıldı", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 ConnectToModbusDevices();
                 //TODO: Database'in değil de driverın kendi bufferı olması daha mantıklı.
-                dbHelper.WriteValuesAtBufferToDatabase();
+                DBHelper_Driver.WriteValuesAtBufferToDatabase();
             }
             catch (Exception e)
             {
-                Log.Instance.Fatal("{0}: Driver baglantı hatası => ", this.GetType().Name, e.Message);
+                Log.Instance.Fatal("{0}: Driver baglantı hatası => {1} ", this.GetType().Name, e.Message);
             }
         }
 
@@ -302,7 +309,7 @@ namespace EnMon_Driver_Manager.Modbus
             foreach (string s in _stationNames)
             {
                 Station _station = null;
-                _station = dbHelper.GetStationInfoByName(s);
+                _station = DBHelper_Driver.GetStationInfoByName(s);
                 if(_station != null)
                 {
                     _stations.Add(_station);
@@ -354,18 +361,23 @@ namespace EnMon_Driver_Manager.Modbus
 
         #region Protected Abstract Methods
 
-        /// <summary>
+        
+
         /// Device'tan istenilen sinyalin degerini okur
         /// </summary>
         /// <returns></returns>
         //abstract public void ReadBinaryValuesFromDevice();
 
-        /// <summary>
+        
+#pragma warning disable CS1587 // XML comment is not placed on a valid language element
+/// <summary>
         /// Reads the analog values from device.
         /// </summary>
         //abstract public void ReadAnalogValuesfromDevice();
 
-        /// <summary>
+        
+#pragma warning disable CS1587 // XML comment is not placed on a valid language element
+/// <summary>
         /// Writes the value to device.
         /// </summary>
         //abstract public void WriteValueToDevice();
@@ -374,6 +386,9 @@ namespace EnMon_Driver_Manager.Modbus
         /// Connects this instance.
         /// </summary>
         protected abstract void ConnectToModbusDevices();
+#pragma warning restore CS1587 // XML comment is not placed on a valid language element
+#pragma warning restore CS1587 // XML comment is not placed on a valid language element
+#pragma warning restore CS1587 // XML comment is not placed on a valid language element
 
         /// <summary>
         /// Initializes the driver.
@@ -392,7 +407,9 @@ namespace EnMon_Driver_Manager.Modbus
         /// <param name="_configFile">The configuration file.</param>
         protected abstract void GetCommunicationParametersFromConfigFile(string _configFile);
 
-        //
+        /// <summary>
+        /// 
+        /// </summary>
         protected abstract void SetDefaultCommunicationParameters();
         #endregion Abstract Methods
     }

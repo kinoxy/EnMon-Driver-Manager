@@ -6,82 +6,96 @@ using System.Reflection;
 using System.Text;
 using System;
 using EnMon_Driver_Manager.Drivers.Mail;
+using System.Collections.Generic;
 
 namespace EnMon_Driver_Manager
 {
-    public class StaticHelper
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper'
+    public static class StaticHelper
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper'
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeDatabase(string)'
         public static AbstractDBHelper InitializeDatabase(string _fileName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeDatabase(string)'
         {
-            if (File.Exists(_fileName))
+            try
             {
-                string _databaseType = string.Empty;
-                string _serverAddress = string.Empty;
-                string _databaseName = string.Empty;
-                string _userName = string.Empty;
-                string _password = string.Empty;
-                var parser = new FileIniDataParser();
-
-                IniData data = parser.ReadFile(_fileName, Encoding.UTF8);
-
-                var _parameters = data["DataBase Parameters"];
-
-                foreach (KeyData kd in _parameters)
+                if (File.Exists(_fileName))
                 {
-                    switch (kd.KeyName.Trim())
+                    string _databaseType = string.Empty;
+                    string _serverAddress = string.Empty;
+                    string _databaseName = string.Empty;
+                    string _userName = string.Empty;
+                    string _password = string.Empty;
+                    var parser = new FileIniDataParser();
+
+                    IniData data = parser.ReadFile(_fileName, Encoding.UTF8);
+
+                    var _parameters = data["DataBase Parameters"];
+
+                    foreach (KeyData kd in _parameters)
                     {
-                        case "DatabaseType":
-                            _databaseType = kd.Value.Trim();
-                            break;
+                        switch (kd.KeyName.Trim())
+                        {
+                            case "DatabaseType":
+                                _databaseType = kd.Value.Trim();
+                                break;
 
-                        case "ServerAddress":
-                            _serverAddress = kd.Value.Trim();
-                            break;
+                            case "ServerAddress":
+                                _serverAddress = kd.Value.Trim();
+                                break;
 
-                        case "DatabaseName":
-                            _databaseName = kd.Value.Trim();
-                            break;
+                            case "DatabaseName":
+                                _databaseName = kd.Value.Trim();
+                                break;
 
-                        case "UserName":
-                            _userName = kd.Value.Trim();
-                            break;
+                            case "UserName":
+                                _userName = kd.Value.Trim();
+                                break;
 
-                        case "Password":
-                            _password = kd.Value.Trim();
-                            break;
+                            case "Password":
+                                _password = kd.Value.Trim();
+                                break;
 
-                        default:
-                            break;
+                            default:
+                                break;
+                        }
                     }
-                }
-                if (_databaseType != string.Empty & _serverAddress != string.Empty & _databaseType != string.Empty & _userName != string.Empty & _password !=  string.Empty)
-                {
-                    switch (_databaseType)
+                    if (_databaseType != string.Empty & _serverAddress != string.Empty & _databaseType != string.Empty & _userName != string.Empty & _password != string.Empty)
                     {
-                        case "MySQL":
-                            return new MySqlDBHelper(_serverAddress, _databaseName, _userName, _password);
+                        switch (_databaseType)
+                        {
+                            case "MySQL":
+                                return new MySqlDBHelper(_serverAddress, _databaseName, _userName, _password);
 
-                        default:
-                            Log.Instance.Error("{0} database tipi için driver bulunamadı.", _databaseType);
-                            return null;
-                    } 
+                            default:
+                                Log.Instance.Error("{0} database tipi için driver bulunamadı.", _databaseType);
+                                return null;
+                        }
+                    }
+                    else
+                    {
+                        Log.Instance.Trace("{0}", MethodBase.GetCurrentMethod().Name);
+                        Log.Instance.Error("Database baglantısı olusturulamadı");
+                        return null;
+                    }
+
                 }
                 else
                 {
-                    Log.Instance.Trace("{0}",MethodBase.GetCurrentMethod().Name);
-                    Log.Instance.Error("Database baglantısı olusturulamadı");
+                    Log.Instance.Error("DatabaseConfig dosyası okunamadı");
                     return null;
                 }
-                
             }
-            else
+            catch (Exception)
             {
-                Log.Instance.Error("MailClient config dosyası okunamadı");
-                return null;
+                throw;
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeMailClient(string)'
         public static MailClient InitializeMailClient(string _fileName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeMailClient(string)'
         {
             if (File.Exists(_fileName))
             {
@@ -141,6 +155,29 @@ namespace EnMon_Driver_Manager
                 Log.Instance.Error("MailClient config dosyası okunamadı");
                 return null;
             }
+        }
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.GetStringsBetweenGivenChar(string, char)'
+        public static List<string> GetStringsBetweenGivenChar(string text, char v)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.GetStringsBetweenGivenChar(string, char)'
+        {
+            List<string> strings = new List<string>();
+            int c = 0;
+            while (c != text.Length)
+            {
+                if (text[c] == v)
+                {
+                    int startPosition = ++c;
+                    while (text[c] != v)
+                    {
+                        ++c;
+                    }
+                    strings.Add(text.Substring(startPosition, c - startPosition));
+                }
+                ++c;
+            }
+
+            return strings;
         }
 
     }

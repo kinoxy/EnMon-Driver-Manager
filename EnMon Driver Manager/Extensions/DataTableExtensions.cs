@@ -6,9 +6,13 @@ using System.Text;
 
 namespace EnMon_Driver_Manager.Extensions
 {
+
     public static class DataTableExtensions
+
     {
-        public static void WriteToCSVFile(this DataTable _datatable, string filePath)
+
+        public static void WriteToCSVFile(this DataTable _datatable, string filePath, string seperator  = ";")
+
         {
             try
             {
@@ -16,19 +20,19 @@ namespace EnMon_Driver_Manager.Extensions
 
                 foreach (var col in _datatable.Columns)
                 {
-                    fileContent.Append(col.ToString() + ",");
+                    fileContent.Append(col.ToString() + seperator);
                 }
 
-                fileContent.Replace(",", System.Environment.NewLine, fileContent.Length - 1, 1);
+                fileContent.Replace(seperator, System.Environment.NewLine, fileContent.Length - 1, 1);
 
                 foreach (DataRow dr in _datatable.Rows)
                 {
                     foreach (var column in dr.ItemArray)
                     {
-                        fileContent.Append("\"" + column.ToString() + "\",");
+                        fileContent.Append(column.ToString() + seperator);
                     }
 
-                    fileContent.Replace(",", System.Environment.NewLine, fileContent.Length - 1, 1);
+                    fileContent.Replace(seperator, System.Environment.NewLine, fileContent.Length - 1, 1);
                 }
 
                 System.IO.File.WriteAllText(filePath, fileContent.ToString(), Encoding.Default);
@@ -39,7 +43,9 @@ namespace EnMon_Driver_Manager.Extensions
             }
         }
 
+
         public static DataTable RemoveRows(this DataTable _datatable, DataRow[] _rowsWillBeRemoved)
+
         {
             for (int i = 0; i < _rowsWillBeRemoved.Count(); i++)
             {
@@ -47,8 +53,10 @@ namespace EnMon_Driver_Manager.Extensions
             }
             return _datatable;
         }
+
 
         public static DataTable RemoveRows(this DataTable _datatable, List<DataRow> _rowsWillBeRemoved)
+
         {
             for (int i = 0; i < _rowsWillBeRemoved.Count(); i++)
             {
@@ -57,7 +65,9 @@ namespace EnMon_Driver_Manager.Extensions
             return _datatable;
         }
 
+
         public static bool HasRow(this DataTable _dt)
+
         {
             if(_dt.Rows.Count>0)
             {
@@ -67,6 +77,26 @@ namespace EnMon_Driver_Manager.Extensions
             {
                 return false;
             }
+        }
+
+
+        public static DataTable addColumn(this DataTable _datatable, string[] columnNames)
+
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                for (int c = 0; c < columnNames.Length; c++)
+                {
+                    dt.Columns.Add(columnNames[c]);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error(ex.Message);
+                throw ex;
+            }
+            return dt;
         }
     }
 }
