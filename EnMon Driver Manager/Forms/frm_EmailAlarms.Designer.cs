@@ -31,8 +31,8 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.btn_DeleteAlarm = new MaterialSkin.Controls.MaterialRaisedButton();
-            this.btn_AddNewAlarm = new MaterialSkin.Controls.MaterialRaisedButton();
+            this.btn_DeleteAlarm = new System.Windows.Forms.Button();
+            this.btn_AddNewAlarm = new System.Windows.Forms.Button();
             this.dgv_MailAlarms = new System.Windows.Forms.DataGridView();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_MailAlarms)).BeginInit();
             this.SuspendLayout();
@@ -41,15 +41,11 @@
             // 
             this.btn_DeleteAlarm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btn_DeleteAlarm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.btn_DeleteAlarm.Depth = 0;
             this.btn_DeleteAlarm.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_DeleteAlarm.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.btn_DeleteAlarm.Icon = null;
+            this.btn_DeleteAlarm.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.btn_DeleteAlarm.Location = new System.Drawing.Point(516, 389);
             this.btn_DeleteAlarm.Margin = new System.Windows.Forms.Padding(1);
-            this.btn_DeleteAlarm.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_DeleteAlarm.Name = "btn_DeleteAlarm";
-            this.btn_DeleteAlarm.Primary = false;
             this.btn_DeleteAlarm.Size = new System.Drawing.Size(185, 35);
             this.btn_DeleteAlarm.TabIndex = 2;
             this.btn_DeleteAlarm.Text = "Seçili Alarmı Sil";
@@ -60,15 +56,11 @@
             // 
             this.btn_AddNewAlarm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btn_AddNewAlarm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.btn_AddNewAlarm.Depth = 0;
             this.btn_AddNewAlarm.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_AddNewAlarm.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.btn_AddNewAlarm.Icon = null;
-            this.btn_AddNewAlarm.Location = new System.Drawing.Point(325, 389);
+            this.btn_AddNewAlarm.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.btn_AddNewAlarm.Location = new System.Drawing.Point(320, 389);
             this.btn_AddNewAlarm.Margin = new System.Windows.Forms.Padding(1);
-            this.btn_AddNewAlarm.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_AddNewAlarm.Name = "btn_AddNewAlarm";
-            this.btn_AddNewAlarm.Primary = false;
             this.btn_AddNewAlarm.Size = new System.Drawing.Size(185, 35);
             this.btn_AddNewAlarm.TabIndex = 1;
             this.btn_AddNewAlarm.Text = "Yeni Alarm Ekle";
@@ -135,7 +127,7 @@
         //private System.Windows.Forms.TabPage tabPage2;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.DataGridView dgv_MailAlarms;
-        private MaterialSkin.Controls.MaterialRaisedButton btn_DeleteAlarm;
-        private MaterialSkin.Controls.MaterialRaisedButton btn_AddNewAlarm;
+        private System.Windows.Forms.Button btn_DeleteAlarm;
+        private System.Windows.Forms.Button btn_AddNewAlarm;
     }
 }

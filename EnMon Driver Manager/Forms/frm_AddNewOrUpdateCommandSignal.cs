@@ -13,7 +13,7 @@ namespace EnMon_Driver_Manager
 
         private AbstractDBHelper DBHelper_AddNewOrUpdateCommandSignalForm;
 
-        private CommandSignal commandSignal;
+        private ModbusCommandSignal commandSignal;
 
         #endregion Private Properties
 
@@ -27,7 +27,7 @@ namespace EnMon_Driver_Manager
 
             InitializeControlProperties();
 
-            commandSignal = new CommandSignal();
+            commandSignal = new ModbusCommandSignal();
         }
 
         #endregion Constructors
@@ -37,7 +37,7 @@ namespace EnMon_Driver_Manager
         private void cbx_StationName_SelectionChangeCommitted(object sender, EventArgs e)
         {
             cbx_DeviceName.Items.Clear();
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).Devices.ToArray());
+            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
             cbx_DeviceName.Enabled = true;
             cbx_DeviceName.ResetText();
             cbx_DeviceName.SelectedIndex = -1;
@@ -209,7 +209,7 @@ namespace EnMon_Driver_Manager
             List<Station> stations = new List<Station>();
             try
             {
-                stations = DBHelper_AddNewOrUpdateCommandSignalForm.GetAllStationsInfoWithDeviceInfo();
+                stations = DBHelper_AddNewOrUpdateCommandSignalForm.GetAllStationsInfo();
                 return stations;
             }
             catch (Exception ex)
@@ -235,11 +235,11 @@ namespace EnMon_Driver_Manager
             switch (cbx_FunctionCode.SelectedItem.ToString())
             {
                 case "FC 5":
-                    commandSignal.commandType = CommandSignal.CommandType.Binary;
+                    commandSignal.commandType = ModbusCommandSignal.CommandType.Binary;
                     break;
 
                 case "FC 6":
-                    commandSignal.commandType = CommandSignal.CommandType.Analog; ;
+                    commandSignal.commandType = ModbusCommandSignal.CommandType.Analog; ;
                     break;
 
                 default:
@@ -250,7 +250,7 @@ namespace EnMon_Driver_Manager
         private void GetGeneralInfo()
         {
             commandSignal.ID = uint.Parse(txt_SignalID.Text);
-            commandSignal.DeviceID = ((Device)cbx_DeviceName.SelectedItem).ID;
+            commandSignal.DeviceID = ((AbstractDevice)cbx_DeviceName.SelectedItem).ID;
             commandSignal.Name = txt_SignalName.Text;
             commandSignal.Identification = txt_SignalIdentification.Text;
         }
@@ -268,7 +268,7 @@ namespace EnMon_Driver_Manager
 
         private void SetTextAtIdentificationTextBox()
         {
-            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((Device)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
+            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((AbstractDevice)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
         }
 
         #endregion Private Methods

@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -24,7 +25,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -39,6 +39,9 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\EnMon_Driver_Manager.XML</DocumentationFile>
     <NoWarn>1591,</NoWarn>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,6 +51,21 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>ENMON2.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
@@ -61,18 +79,11 @@
     <Reference Include="LumenWorks.Framework.IO">
       <HintPath>..\packages\LumenWorks.Framework.IO.dll</HintPath>
     </Reference>
-    <Reference Include="MailKit, Version=1.8.0.0, Culture=neutral, PublicKeyToken=4e064fe7c44a8f1b, processorArchitecture=MSIL">
-      <HintPath>..\packages\MailKit.1.8.1\lib\net451\MailKit.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="MaterialSkin, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\GitHub\MaterialSkin\MaterialSkin\bin\Debug\MaterialSkin.dll</HintPath>
     </Reference>
-    <Reference Include="MimeKit, Version=1.8.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
-      <HintPath>..\packages\MimeKit.1.8.0\lib\net451\MimeKit.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="Microsoft.VisualStudio.DebuggerVisualizers, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
       <Private>True</Private>
@@ -82,50 +93,31 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.3.8\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.3.11\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NModbus4, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NModbus4.2.1.0\lib\net40\NModbus4.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PopupControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AdamsLair.WinForms.PopupControl.1.0.0.0\lib\net40\PopupControl.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+    <Reference Include="SharpSnmpLib.Full, Version=9.0.41120.1, Culture=neutral, PublicKeyToken=db32884da8b9d0dd, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lextm.SharpSnmpLib.9.0.4\lib\net45\SharpSnmpLib.Full.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Sprache, Version=2.0.0.50, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Sprache.2.0.0.50\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch\Sprache.dll</HintPath>
+    <Reference Include="SharpSnmpLib.Portable, Version=9.0.41120.1, Culture=neutral, PublicKeyToken=db32884da8b9d0dd, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lextm.SharpSnmpLib.9.0.4\lib\net45\SharpSnmpLib.Portable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sprache, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sprache.2.1.0\lib\net40\Sprache.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Interfaces.3.0.0\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Linq.3.0.0\lib\net45\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.PlatformServices.3.0.0\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Windows.Threading, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Windows.Threading.3.0.0\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Windows.Forms.DataVisualization.Design" />
     <Reference Include="System.Xaml" />
@@ -169,8 +161,33 @@
     <Compile Include="3rd Party Codes\YaTabControl\YaTabPage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Customer.cs" />
+    <Compile Include="Drivers\Abstract\AbstractDriver.cs" />
+    <Compile Include="Drivers\Abstract\ITCPDriver.cs" />
+    <Compile Include="Drivers\ICommunicationDriver.cs" />
+    <Compile Include="Drivers\Modbus\ModbusDriverDatabaseConnection.cs" />
+    <Compile Include="Drivers\Modbus\Modbus_DBHelper.cs" />
+    <Compile Include="Drivers\SNMP\SNMPClient.cs" />
+    <Compile Include="Drivers\SNMP\SNMPDriver.cs" />
+    <Compile Include="Drivers\Abstract\TCPClientEventArgs.cs" />
     <Compile Include="Extensions\ComboBoxExtensions.cs" />
+    <Compile Include="Forms\deneme.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\deneme.Designer.cs">
+      <DependentUpon>deneme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Form2.Designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frm_AddNewMailGroup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_AddNewMailGroup.Designer.cs">
+      <DependentUpon>frm_AddNewMailGroup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\frm_AddNewOrUpdateCommandSignal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -246,8 +263,14 @@
     </Compile>
     <Compile Include="Drivers\Modbus\ModbusRTU.cs" />
     <Compile Include="Drivers\Modbus\ModbusTCP.cs" />
-    <Compile Include="Drivers\Modbus\AbstractDriver.cs" />
+    <Compile Include="Drivers\Modbus\AbstractModbusDriver.cs" />
     <Compile Include="Drivers\Modbus\SocketUtils.cs" />
+    <Compile Include="Forms\frm_GetEmailAddress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_GetEmailAddress.Designer.cs">
+      <DependentUpon>frm_GetEmailAddress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\frm_OnlineValues.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -267,24 +290,36 @@
       <DependentUpon>frm_SignalList.cs</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Models\Device\AbstractTCPDevice.cs" />
+    <Compile Include="Models\Device\IModbusTCP.cs" />
+    <Compile Include="Models\Device\ModbusTCPDevice.cs" />
+    <Compile Include="Models\Device\SNMPDevice.cs" />
+    <Compile Include="Models\Signals\Modbus\AbstractModbusSignal.cs" />
+    <Compile Include="Models\Signals\SNMP\AbstractSNMPSignal.cs" />
     <Compile Include="Models\AlarmMail.cs" />
     <Compile Include="Models\ArchivePeriod.cs" />
-    <Compile Include="Models\CommandSignal.cs" />
-    <Compile Include="DataBase\IMaster.cs" />
+    <Compile Include="Models\Signals\IAnalogSignal.cs" />
+    <Compile Include="Models\Signals\IBinarySignal.cs" />
+    <Compile Include="Models\Signals\ICommandSignal.cs" />
+    <Compile Include="Models\Signals\Modbus\ModbusCommandSignal.cs" />
+    <Compile Include="Drivers\Abstract\AbstractTCPClient.cs" />
     <Compile Include="Models\DataType.cs" />
     <Compile Include="Models\MailGroup.cs" />
     <Compile Include="Drivers\Modbus\ModbusTCPClient.cs" />
     <Compile Include="Models\PollingTimer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Models\Protocol.cs" />
-    <Compile Include="Models\Signal.cs" />
+    <Compile Include="Models\CommunicationProtocol.cs" />
+    <Compile Include="Models\Signals\AbstractSignal.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\Alarm.cs" />
-    <Compile Include="Models\Device.cs" />
+    <Compile Include="Models\Device\AbstractDevice.cs" />
+    <Compile Include="Models\Signals\SNMP\SNMPAnalogSignal.cs" />
+    <Compile Include="Models\Signals\SNMP\SNMPBinarySignal.cs" />
+    <Compile Include="Models\Signals\SNMP\SNMPCommandSignal.cs" />
     <Compile Include="Models\Station.cs" />
-    <Compile Include="Models\AnalogSignal.cs" />
-    <Compile Include="Models\BinarySignal.cs" />
+    <Compile Include="Models\Signals\Modbus\ModbusAnalogSignal.cs" />
+    <Compile Include="Models\Signals\Modbus\ModbusBinarySignal.cs" />
     <Compile Include="DataBase\MySqlDBHelper.cs" />
     <Compile Include="Forms\Form1.cs">
       <SubType>Form</SubType>
@@ -295,7 +330,6 @@
     <Compile Include="Log.cs" />
     <Compile Include="DataBase\ConnectionString.cs" />
     <Compile Include="Models\StatusText.cs" />
-    <Compile Include="Models\test.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -314,6 +348,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Res.tr.resx</DependentUpon>
     </Compile>
+    <Compile Include="Settings.cs" />
     <Compile Include="StaticHelper.cs" />
     <Compile Include="SwitchButton.cs">
       <SubType>UserControl</SubType>
@@ -321,15 +356,25 @@
     <Compile Include="SwitchButton.Designer.cs">
       <DependentUpon>SwitchButton.cs</DependentUpon>
     </Compile>
-    <Compile Include="UserControl1.xaml.cs">
-      <DependentUpon>UserControl1.xaml</DependentUpon>
-    </Compile>
+    <None Include="NLog.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\app.manifest" />
     <None Include="Resources\Icons\switchbutton_on.png" />
     <EmbeddedResource Include="3rd Party Codes\YaTabControl\YaTabControl.resx">
       <DependentUpon>YaTabControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="3rd Party Codes\YaTabControl\YaTabPage.resx">
       <DependentUpon>YaTabPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\deneme.resx">
+      <DependentUpon>deneme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Form2.resx">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_AddNewMailGroup.resx">
+      <DependentUpon>frm_AddNewMailGroup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\frm_AddNewOrUpdateCommandSignal.resx">
       <DependentUpon>frm_AddNewOrUpdateCommandSignal.cs</DependentUpon>
@@ -361,6 +406,9 @@
     <EmbeddedResource Include="Forms\frm_Devices.resx">
       <DependentUpon>frm_Devices.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_GetEmailAddress.resx">
+      <DependentUpon>frm_GetEmailAddress.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\frm_OnlineValues.resx">
       <DependentUpon>frm_OnlineValues.cs</DependentUpon>
     </EmbeddedResource>
@@ -391,11 +439,8 @@
     <None Include="Resources\logoTR.png" />
     <None Include="ClassDiagram1.cd" />
     <None Include="config.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>config.Designer.cs</LastGenOutput>
-    </None>
-    <None Include="NLog.xsd">
-      <SubType>Designer</SubType>
     </None>
     <None Include="Resources\green.png" />
     <None Include="Resources\red.png" />
@@ -407,6 +452,8 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Content Include="3rd Party Codes\SharpSnmpLib\SharpSnmpLib.Portable.csproj" />
+    <Content Include="ENMON2.ico" />
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
@@ -421,7 +468,7 @@
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Compile Include="Properties\Settings.Designer.cs">
@@ -445,12 +492,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Page Include="UserControl1.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

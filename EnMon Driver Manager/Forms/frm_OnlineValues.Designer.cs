@@ -246,7 +246,6 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frm_OnlineValues";
-            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Online Degerler";
             this.Load += new System.EventHandler(this.frm_OnlineValues_Load);

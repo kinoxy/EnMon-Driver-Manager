@@ -13,29 +13,20 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices'
     public partial class frm_Devices : Form
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices'
     {
-#pragma warning restore CS0169 // The field 'frm_Devices._driver' is never used
         private AbstractDBHelper DBHelper_Devices;
         private List<Station> stations;
         private int index;
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.frm_Devices()'
         public frm_Devices()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.frm_Devices()'
         {
             InitializeComponent();
             index = 0;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.timer'
         public Timer timer;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.timer'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.AddDevicesToForm()'
         public async void AddDevicesToForm()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.AddDevicesToForm()'
         {
             try
             {
@@ -62,12 +53,12 @@ namespace EnMon_Driver_Manager
         {
             foreach (Station s in stations)
             {
-                foreach (Device d in s.Devices)
+                foreach (AbstractDevice d in s.ModbusTCPDevices)
                 {
                     DeviceInfo deviceInfo = new DeviceInfo();
                     deviceInfo.lbl_StationName.Text = s.Name;
                     deviceInfo.lbl_DeviceName.Text = d.Name;
-                    deviceInfo.lbl_SlaveId.Text = d.SlaveID.ToString();
+                    deviceInfo.lbl_ID.Text = d.ID.ToString();
                     deviceInfo.switchButton_DeviceIsActive.SetState(d.isActive);
                     if (!d.Connected)
                     {
@@ -95,9 +86,7 @@ namespace EnMon_Driver_Manager
             OnStateChanged(_deviceInfo.DeviceId, _deviceInfo.switchButton_DeviceIsActive.GetState());
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.StateChanged'
         public frm_DevicesEventHandler StateChanged;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_Devices.StateChanged'
 
         private void OnStateChanged(ushort _deviceID, bool _state)
         {
@@ -130,7 +119,7 @@ namespace EnMon_Driver_Manager
                     if (c is DeviceInfo)
                     {
 
-                        if (stations.Where((s) => (s.Devices.Any((d) => d.ID == (c as DeviceInfo).DeviceId))).First().Devices.Find((d) => d.ID == (c as DeviceInfo).DeviceId).Connected)
+                        if (stations.Where((s) => (s.ModbusTCPDevices.Any((d) => d.ID == (c as DeviceInfo).DeviceId))).First().ModbusTCPDevices.Find((d) => d.ID == (c as DeviceInfo).DeviceId).Connected)
                         {
                             (c as DeviceInfo).pictureBox_ConnectionStatus.Image = Properties.Resources.green;
                         }
@@ -154,20 +143,12 @@ namespace EnMon_Driver_Manager
             AddDevicesToForm();
         }        
     }
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventHandler'
     public delegate void frm_DevicesEventHandler(object source, frm_DevicesEventArgs args);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventHandler'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventArgs'
     public class frm_DevicesEventArgs : EventArgs
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventArgs'
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventArgs.state'
         public bool state { get; internal set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventArgs.state'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventArgs.deviceId'
         public ushort deviceId { get; internal set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_DevicesEventArgs.deviceId'
     }
 }

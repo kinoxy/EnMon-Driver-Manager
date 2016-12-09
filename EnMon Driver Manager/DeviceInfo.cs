@@ -35,7 +35,7 @@ namespace EnMon_Driver_Manager
             {
                 lbl_DeviceName.ForeColor = value;
                 lbl_StationName.ForeColor = value;
-                lbl_SlaveId.ForeColor = value;
+                lbl_ID.ForeColor = value;
             }
         }
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'DeviceInfo.isConnected'

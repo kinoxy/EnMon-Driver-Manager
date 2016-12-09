@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Globalization;
 using System.Resources;
+using GrayIris.Utilities.UI.Controls;
 
 namespace EnMon_Driver_Manager
 {
@@ -12,7 +13,7 @@ namespace EnMon_Driver_Manager
         private System.ComponentModel.IContainer components = null;
         private ResourceManager res_man;    // Programda çeşitli dilleri kullanabilmek için resourcemanager yaratılıyor
         private CultureInfo cul;            // CultureInfo variable yaratılıyor;
-        private int timer_led_count;            // timer_led içinde sayacak olan counter
+
 
         // Drag & Drop variables
         private bool dragging = false;
@@ -52,9 +53,8 @@ namespace EnMon_Driver_Manager
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.pct_led = new System.Windows.Forms.PictureBox();
             this.panel_Main = new System.Windows.Forms.Panel();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button5 = new System.Windows.Forms.Button();
-            this.tabControl = new GrayIris.Utilities.UI.Controls.YaTabControl();
+            this.cbx_AutoStart = new System.Windows.Forms.CheckBox();
+            this.mainTabControl = new GrayIris.Utilities.UI.Controls.YaTabControl();
             this.tab_DriverSettings = new GrayIris.Utilities.UI.Controls.YaTabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.chkBox_AlarmMailingActivated = new System.Windows.Forms.CheckBox();
@@ -76,13 +76,15 @@ namespace EnMon_Driver_Manager
             this.panel_Email = new System.Windows.Forms.Panel();
             this.tabPage4 = new GrayIris.Utilities.UI.Controls.YaTabPage();
             this.panel_EmailAlarms = new System.Windows.Forms.Panel();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             this.headerPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pct_led)).BeginInit();
             this.panel_Main.SuspendLayout();
-            this.tabControl.SuspendLayout();
+            this.mainTabControl.SuspendLayout();
             this.tab_DriverSettings.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -203,7 +205,8 @@ namespace EnMon_Driver_Manager
             // panel_Main
             // 
             this.panel_Main.BackColor = System.Drawing.Color.SteelBlue;
-            this.panel_Main.Controls.Add(this.tabControl);
+            this.panel_Main.Controls.Add(this.cbx_AutoStart);
+            this.panel_Main.Controls.Add(this.mainTabControl);
             this.panel_Main.Controls.Add(this.pct_led);
             this.panel_Main.Controls.Add(this.btn_start);
             this.panel_Main.Location = new System.Drawing.Point(2, 37);
@@ -211,53 +214,48 @@ namespace EnMon_Driver_Manager
             this.panel_Main.Size = new System.Drawing.Size(783, 616);
             this.panel_Main.TabIndex = 14;
             // 
-            // button3
+            // cbx_AutoStart
             // 
-            this.button3.Location = new System.Drawing.Point(44, 68);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 2;
-            this.button3.Text = "button3";
-            this.button3.UseVisualStyleBackColor = true;
+            this.cbx_AutoStart.AutoSize = true;
+            this.cbx_AutoStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.cbx_AutoStart.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.cbx_AutoStart.Location = new System.Drawing.Point(10, 57);
+            this.cbx_AutoStart.Name = "cbx_AutoStart";
+            this.cbx_AutoStart.Size = new System.Drawing.Size(350, 20);
+            this.cbx_AutoStart.TabIndex = 20;
+            this.cbx_AutoStart.Text = "EnMon Sürücü Yöneticisi\'ni açıldığında otomatik başlat";
+            this.cbx_AutoStart.UseVisualStyleBackColor = true;
+            this.cbx_AutoStart.CheckedChanged += new System.EventHandler(this.cbx_AutoStart_CheckedChanged);
             // 
-            // button5
+            // mainTabControl
             // 
-            this.button5.Location = new System.Drawing.Point(340, 97);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(75, 23);
-            this.button5.TabIndex = 2;
-            this.button5.Text = "button5";
-            this.button5.UseVisualStyleBackColor = true;
-            // 
-            // tabControl
-            // 
-            this.tabControl.ActiveColor = System.Drawing.Color.SteelBlue;
-            this.tabControl.BackColor = System.Drawing.Color.SteelBlue;
-            this.tabControl.BorderColor = System.Drawing.Color.SteelBlue;
-            this.tabControl.CloseButton = false;
-            this.tabControl.Controls.Add(this.tab_DriverSettings);
-            this.tabControl.Controls.Add(this.tabPage1);
-            this.tabControl.Controls.Add(this.tabPage2);
-            this.tabControl.Controls.Add(this.tabPage3);
-            this.tabControl.Controls.Add(this.tabPage4);
-            this.tabControl.HoverColor = System.Drawing.Color.Azure;
-            this.tabControl.ImageIndex = -1;
-            this.tabControl.ImageList = null;
-            this.tabControl.InactiveColor = System.Drawing.Color.Azure;
-            this.tabControl.Location = new System.Drawing.Point(0, 63);
-            this.tabControl.Name = "tabControl";
-            this.tabControl.NewTabButton = false;
-            this.tabControl.OverIndex = -1;
-            this.tabControl.ScrollButtonStyle = GrayIris.Utilities.UI.Controls.YaScrollButtonStyle.Always;
-            this.tabControl.SelectedIndex = 0;
-            this.tabControl.SelectedTab = this.tab_DriverSettings;
-            this.tabControl.Size = new System.Drawing.Size(783, 553);
-            this.tabControl.TabDock = System.Windows.Forms.DockStyle.Top;
-            this.tabControl.TabDrawer = null;
-            this.tabControl.TabFont = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.tabControl.TabIndex = 4;
-            this.tabControl.Text = "tabControl";
-            this.tabControl.TabChanged += new System.EventHandler(this.yaTabControl1_TabChanged);
+            this.mainTabControl.ActiveColor = System.Drawing.Color.SteelBlue;
+            this.mainTabControl.BackColor = System.Drawing.Color.SteelBlue;
+            this.mainTabControl.BorderColor = System.Drawing.Color.SteelBlue;
+            this.mainTabControl.CloseButton = false;
+            this.mainTabControl.Controls.Add(this.tab_DriverSettings);
+            this.mainTabControl.Controls.Add(this.tabPage1);
+            this.mainTabControl.Controls.Add(this.tabPage2);
+            this.mainTabControl.Controls.Add(this.tabPage3);
+            this.mainTabControl.Controls.Add(this.tabPage4);
+            this.mainTabControl.HoverColor = System.Drawing.Color.Azure;
+            this.mainTabControl.ImageIndex = -1;
+            this.mainTabControl.ImageList = null;
+            this.mainTabControl.InactiveColor = System.Drawing.Color.Azure;
+            this.mainTabControl.Location = new System.Drawing.Point(0, 83);
+            this.mainTabControl.Name = "mainTabControl";
+            this.mainTabControl.NewTabButton = false;
+            this.mainTabControl.OverIndex = -1;
+            this.mainTabControl.ScrollButtonStyle = GrayIris.Utilities.UI.Controls.YaScrollButtonStyle.Always;
+            this.mainTabControl.SelectedIndex = 0;
+            this.mainTabControl.SelectedTab = this.tab_DriverSettings;
+            this.mainTabControl.Size = new System.Drawing.Size(783, 533);
+            this.mainTabControl.TabDock = System.Windows.Forms.DockStyle.Top;
+            this.mainTabControl.TabDrawer = null;
+            this.mainTabControl.TabFont = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.mainTabControl.TabIndex = 4;
+            this.mainTabControl.Text = "tabControl";
+            this.mainTabControl.TabChanged += new System.EventHandler(this.yaTabControl1_TabChanged);
             // 
             // tab_DriverSettings
             // 
@@ -268,7 +266,7 @@ namespace EnMon_Driver_Manager
             this.tab_DriverSettings.ImageIndex = -1;
             this.tab_DriverSettings.Location = new System.Drawing.Point(4, 31);
             this.tab_DriverSettings.Name = "tab_DriverSettings";
-            this.tab_DriverSettings.Size = new System.Drawing.Size(775, 518);
+            this.tab_DriverSettings.Size = new System.Drawing.Size(775, 498);
             this.tab_DriverSettings.TabIndex = 0;
             this.tab_DriverSettings.Text = "Sürücü Ayarları";
             // 
@@ -278,6 +276,7 @@ namespace EnMon_Driver_Manager
             this.groupBox3.Controls.Add(this.txt_MailClientConfigFileLocation);
             this.groupBox3.Controls.Add(this.label2);
             this.groupBox3.Controls.Add(this.btn_ChangeMailClientConfigFileLocation);
+            this.groupBox3.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.groupBox3.Location = new System.Drawing.Point(6, 168);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(762, 98);
@@ -291,6 +290,7 @@ namespace EnMon_Driver_Manager
             this.chkBox_AlarmMailingActivated.Checked = true;
             this.chkBox_AlarmMailingActivated.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkBox_AlarmMailingActivated.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.chkBox_AlarmMailingActivated.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.chkBox_AlarmMailingActivated.Location = new System.Drawing.Point(128, 60);
             this.chkBox_AlarmMailingActivated.Name = "chkBox_AlarmMailingActivated";
             this.chkBox_AlarmMailingActivated.Size = new System.Drawing.Size(290, 20);
@@ -310,6 +310,7 @@ namespace EnMon_Driver_Manager
             // label2
             // 
             this.label2.AutoSize = true;
+            this.label2.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.label2.Location = new System.Drawing.Point(6, 24);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(116, 13);
@@ -318,6 +319,7 @@ namespace EnMon_Driver_Manager
             // 
             // btn_ChangeMailClientConfigFileLocation
             // 
+            this.btn_ChangeMailClientConfigFileLocation.ForeColor = System.Drawing.SystemColors.WindowText;
             this.btn_ChangeMailClientConfigFileLocation.Location = new System.Drawing.Point(655, 17);
             this.btn_ChangeMailClientConfigFileLocation.Name = "btn_ChangeMailClientConfigFileLocation";
             this.btn_ChangeMailClientConfigFileLocation.Size = new System.Drawing.Size(86, 27);
@@ -329,6 +331,7 @@ namespace EnMon_Driver_Manager
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.chkBox_ArchivingActivated);
+            this.groupBox2.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.groupBox2.Location = new System.Drawing.Point(6, 107);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(762, 55);
@@ -342,6 +345,7 @@ namespace EnMon_Driver_Manager
             this.chkBox_ArchivingActivated.Checked = true;
             this.chkBox_ArchivingActivated.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkBox_ArchivingActivated.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.chkBox_ArchivingActivated.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.chkBox_ArchivingActivated.Location = new System.Drawing.Point(128, 19);
             this.chkBox_ArchivingActivated.Name = "chkBox_ArchivingActivated";
             this.chkBox_ArchivingActivated.Size = new System.Drawing.Size(199, 20);
@@ -356,6 +360,7 @@ namespace EnMon_Driver_Manager
             this.groupBox1.Controls.Add(this.txt_ModbusTCPConfigFileLocation);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.btn_ChangeModbusDriverConfigFileLocation);
+            this.groupBox1.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.groupBox1.Location = new System.Drawing.Point(6, 3);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(762, 98);
@@ -369,6 +374,7 @@ namespace EnMon_Driver_Manager
             this.chkBox_ModbusTCPCommunicationActivated.Checked = true;
             this.chkBox_ModbusTCPCommunicationActivated.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkBox_ModbusTCPCommunicationActivated.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.chkBox_ModbusTCPCommunicationActivated.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.chkBox_ModbusTCPCommunicationActivated.Location = new System.Drawing.Point(128, 60);
             this.chkBox_ModbusTCPCommunicationActivated.Name = "chkBox_ModbusTCPCommunicationActivated";
             this.chkBox_ModbusTCPCommunicationActivated.Size = new System.Drawing.Size(306, 20);
@@ -388,6 +394,7 @@ namespace EnMon_Driver_Manager
             // label1
             // 
             this.label1.AutoSize = true;
+            this.label1.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.label1.Location = new System.Drawing.Point(6, 24);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(116, 13);
@@ -396,6 +403,7 @@ namespace EnMon_Driver_Manager
             // 
             // btn_ChangeModbusDriverConfigFileLocation
             // 
+            this.btn_ChangeModbusDriverConfigFileLocation.ForeColor = System.Drawing.SystemColors.WindowText;
             this.btn_ChangeModbusDriverConfigFileLocation.Location = new System.Drawing.Point(655, 17);
             this.btn_ChangeModbusDriverConfigFileLocation.Name = "btn_ChangeModbusDriverConfigFileLocation";
             this.btn_ChangeModbusDriverConfigFileLocation.Size = new System.Drawing.Size(86, 27);
@@ -412,7 +420,7 @@ namespace EnMon_Driver_Manager
             this.tabPage1.Location = new System.Drawing.Point(4, 31);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Size = new System.Drawing.Size(775, 518);
+            this.tabPage1.Size = new System.Drawing.Size(775, 498);
             this.tabPage1.TabIndex = 4;
             this.tabPage1.Text = "Cihazlar";
             // 
@@ -422,7 +430,7 @@ namespace EnMon_Driver_Manager
             this.panel_Devices.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_Devices.Location = new System.Drawing.Point(0, 0);
             this.panel_Devices.Name = "panel_Devices";
-            this.panel_Devices.Size = new System.Drawing.Size(775, 518);
+            this.panel_Devices.Size = new System.Drawing.Size(775, 498);
             this.panel_Devices.TabIndex = 0;
             // 
             // tabPage2
@@ -433,7 +441,7 @@ namespace EnMon_Driver_Manager
             this.tabPage2.ImageIndex = -1;
             this.tabPage2.Location = new System.Drawing.Point(4, 31);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Size = new System.Drawing.Size(775, 518);
+            this.tabPage2.Size = new System.Drawing.Size(775, 498);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Sinyaller";
             // 
@@ -443,7 +451,7 @@ namespace EnMon_Driver_Manager
             this.panel_SignalList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_SignalList.Location = new System.Drawing.Point(0, 0);
             this.panel_SignalList.Name = "panel_SignalList";
-            this.panel_SignalList.Size = new System.Drawing.Size(775, 518);
+            this.panel_SignalList.Size = new System.Drawing.Size(775, 498);
             this.panel_SignalList.TabIndex = 1;
             // 
             // tabPage3
@@ -453,7 +461,7 @@ namespace EnMon_Driver_Manager
             this.tabPage3.ImageIndex = -1;
             this.tabPage3.Location = new System.Drawing.Point(4, 31);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(775, 518);
+            this.tabPage3.Size = new System.Drawing.Size(775, 498);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "E-Posta Ayarları";
             // 
@@ -463,7 +471,7 @@ namespace EnMon_Driver_Manager
             this.panel_Email.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_Email.Location = new System.Drawing.Point(0, 0);
             this.panel_Email.Name = "panel_Email";
-            this.panel_Email.Size = new System.Drawing.Size(775, 518);
+            this.panel_Email.Size = new System.Drawing.Size(775, 498);
             this.panel_Email.TabIndex = 1;
             // 
             // tabPage4
@@ -473,7 +481,7 @@ namespace EnMon_Driver_Manager
             this.tabPage4.ImageIndex = -1;
             this.tabPage4.Location = new System.Drawing.Point(4, 31);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(775, 518);
+            this.tabPage4.Size = new System.Drawing.Size(775, 498);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "E-Posta Alarmları";
             // 
@@ -482,15 +490,33 @@ namespace EnMon_Driver_Manager
             this.panel_EmailAlarms.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_EmailAlarms.Location = new System.Drawing.Point(0, 0);
             this.panel_EmailAlarms.Name = "panel_EmailAlarms";
-            this.panel_EmailAlarms.Size = new System.Drawing.Size(775, 518);
+            this.panel_EmailAlarms.Size = new System.Drawing.Size(775, 498);
             this.panel_EmailAlarms.TabIndex = 1;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(44, 68);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 2;
+            this.button3.Text = "button3";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(340, 97);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 2;
+            this.button5.Text = "button5";
+            this.button5.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DodgerBlue;
-            this.ClientSize = new System.Drawing.Size(786, 653);
+            this.ClientSize = new System.Drawing.Size(786, 656);
             this.Controls.Add(this.panel_Main);
             this.Controls.Add(this.headerPanel);
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(33)))), ((int)(((byte)(33)))));
@@ -508,7 +534,8 @@ namespace EnMon_Driver_Manager
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pct_led)).EndInit();
             this.panel_Main.ResumeLayout(false);
-            this.tabControl.ResumeLayout(false);
+            this.panel_Main.PerformLayout();
+            this.mainTabControl.ResumeLayout(false);
             this.tab_DriverSettings.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
@@ -557,7 +584,7 @@ namespace EnMon_Driver_Manager
 
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button5;
-        private GrayIris.Utilities.UI.Controls.YaTabControl tabControl;
+        private GrayIris.Utilities.UI.Controls.YaTabControl mainTabControl;
         private GrayIris.Utilities.UI.Controls.YaTabPage tabPage1;
         private GrayIris.Utilities.UI.Controls.YaTabPage tabPage2;
         private GrayIris.Utilities.UI.Controls.YaTabPage tabPage3;
@@ -579,6 +606,7 @@ namespace EnMon_Driver_Manager
         private System.Windows.Forms.TextBox txt_ModbusTCPConfigFileLocation;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btn_ChangeModbusDriverConfigFileLocation;
+        private System.Windows.Forms.CheckBox cbx_AutoStart;
     }
 }
 

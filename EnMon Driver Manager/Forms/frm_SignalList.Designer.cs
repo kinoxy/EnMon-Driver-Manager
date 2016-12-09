@@ -31,7 +31,6 @@ namespace EnMon_Driver_Manager
         private void InitializeComponent()
         {
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.btn_ExportCommandSignalsAsCSV = new MaterialSkin.Controls.MaterialRaisedButton();
             this.label2 = new System.Windows.Forms.Label();
             this.chkBox_AddTimeInformation = new MaterialSkin.Controls.MaterialCheckBox();
@@ -62,7 +61,6 @@ namespace EnMon_Driver_Manager
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.checkBox1);
             this.groupBox2.Controls.Add(this.btn_ExportCommandSignalsAsCSV);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.chkBox_AddTimeInformation);
@@ -80,16 +78,6 @@ namespace EnMon_Driver_Manager
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "DataBase\'den Sinyal Listesini Çek";
             // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(49, 73);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(80, 17);
-            this.checkBox1.TabIndex = 8;
-            this.checkBox1.Text = "checkBox1";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            // 
             // btn_ExportCommandSignalsAsCSV
             // 
             this.btn_ExportCommandSignalsAsCSV.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -98,7 +86,7 @@ namespace EnMon_Driver_Manager
             this.btn_ExportCommandSignalsAsCSV.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_ExportCommandSignalsAsCSV.ForeColor = System.Drawing.Color.Black;
             this.btn_ExportCommandSignalsAsCSV.Icon = null;
-            this.btn_ExportCommandSignalsAsCSV.Location = new System.Drawing.Point(49, 220);
+            this.btn_ExportCommandSignalsAsCSV.Location = new System.Drawing.Point(49, 208);
             this.btn_ExportCommandSignalsAsCSV.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ExportCommandSignalsAsCSV.Name = "btn_ExportCommandSignalsAsCSV";
             this.btn_ExportCommandSignalsAsCSV.Primary = false;
@@ -112,7 +100,7 @@ namespace EnMon_Driver_Manager
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.label2.Location = new System.Drawing.Point(3, 17);
+            this.label2.Location = new System.Drawing.Point(23, 17);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(157, 18);
             this.label2.TabIndex = 6;
@@ -145,7 +133,7 @@ namespace EnMon_Driver_Manager
             this.btn_ExportDigitalSignalsAsCSV.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_ExportDigitalSignalsAsCSV.ForeColor = System.Drawing.Color.Black;
             this.btn_ExportDigitalSignalsAsCSV.Icon = null;
-            this.btn_ExportDigitalSignalsAsCSV.Location = new System.Drawing.Point(49, 136);
+            this.btn_ExportDigitalSignalsAsCSV.Location = new System.Drawing.Point(49, 124);
             this.btn_ExportDigitalSignalsAsCSV.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ExportDigitalSignalsAsCSV.Name = "btn_ExportDigitalSignalsAsCSV";
             this.btn_ExportDigitalSignalsAsCSV.Primary = false;
@@ -166,7 +154,7 @@ namespace EnMon_Driver_Manager
             this.btn_ExportAnalogSignalsAsCSV.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_ExportAnalogSignalsAsCSV.ForeColor = System.Drawing.Color.Black;
             this.btn_ExportAnalogSignalsAsCSV.Icon = null;
-            this.btn_ExportAnalogSignalsAsCSV.Location = new System.Drawing.Point(49, 178);
+            this.btn_ExportAnalogSignalsAsCSV.Location = new System.Drawing.Point(49, 166);
             this.btn_ExportAnalogSignalsAsCSV.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ExportAnalogSignalsAsCSV.Name = "btn_ExportAnalogSignalsAsCSV";
             this.btn_ExportAnalogSignalsAsCSV.Primary = false;
@@ -183,7 +171,7 @@ namespace EnMon_Driver_Manager
             this.btn_ImportDigitalSignalsToDatabase.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_ImportDigitalSignalsToDatabase.ForeColor = System.Drawing.Color.Black;
             this.btn_ImportDigitalSignalsToDatabase.Icon = null;
-            this.btn_ImportDigitalSignalsToDatabase.Location = new System.Drawing.Point(55, 136);
+            this.btn_ImportDigitalSignalsToDatabase.Location = new System.Drawing.Point(55, 126);
             this.btn_ImportDigitalSignalsToDatabase.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ImportDigitalSignalsToDatabase.Name = "btn_ImportDigitalSignalsToDatabase";
             this.btn_ImportDigitalSignalsToDatabase.Primary = false;
@@ -237,7 +225,7 @@ namespace EnMon_Driver_Manager
             this.btn_ImportCommandSignalsToDataBase.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_ImportCommandSignalsToDataBase.ForeColor = System.Drawing.Color.Black;
             this.btn_ImportCommandSignalsToDataBase.Icon = null;
-            this.btn_ImportCommandSignalsToDataBase.Location = new System.Drawing.Point(55, 220);
+            this.btn_ImportCommandSignalsToDataBase.Location = new System.Drawing.Point(55, 210);
             this.btn_ImportCommandSignalsToDataBase.MouseState = MaterialSkin.MouseState.DOWN;
             this.btn_ImportCommandSignalsToDataBase.Name = "btn_ImportCommandSignalsToDataBase";
             this.btn_ImportCommandSignalsToDataBase.Primary = false;
@@ -251,7 +239,7 @@ namespace EnMon_Driver_Manager
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.label1.Location = new System.Drawing.Point(3, 17);
+            this.label1.Location = new System.Drawing.Point(18, 17);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(146, 18);
             this.label1.TabIndex = 5;
@@ -322,7 +310,7 @@ namespace EnMon_Driver_Manager
             this.btn_ImportAnalogSignalsToDataBase.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_ImportAnalogSignalsToDataBase.ForeColor = System.Drawing.Color.Black;
             this.btn_ImportAnalogSignalsToDataBase.Icon = null;
-            this.btn_ImportAnalogSignalsToDataBase.Location = new System.Drawing.Point(55, 178);
+            this.btn_ImportAnalogSignalsToDataBase.Location = new System.Drawing.Point(55, 168);
             this.btn_ImportAnalogSignalsToDataBase.MouseState = MaterialSkin.MouseState.DOWN;
             this.btn_ImportAnalogSignalsToDataBase.Name = "btn_ImportAnalogSignalsToDataBase";
             this.btn_ImportAnalogSignalsToDataBase.Primary = false;
@@ -350,18 +338,20 @@ namespace EnMon_Driver_Manager
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox3.Controls.Add(this.btn_AddCommandSignal);
             this.groupBox3.Controls.Add(this.btn_ShowOnlineValues);
             this.groupBox3.Controls.Add(this.btn_AddAnalogSignal);
             this.groupBox3.Controls.Add(this.btn_AddDigitalSignal);
+            this.groupBox3.ForeColor = System.Drawing.SystemColors.Control;
             this.groupBox3.Location = new System.Drawing.Point(5, 248);
             this.groupBox3.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(0);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(2);
             this.groupBox3.Size = new System.Drawing.Size(719, 216);
             this.groupBox3.TabIndex = 3;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "groupBox3";
+            this.groupBox3.Text = "Sinyaller";
             this.groupBox3.Enter += new System.EventHandler(this.groupBox3_Enter);
             // 
             // btn_AddCommandSignal
@@ -372,7 +362,7 @@ namespace EnMon_Driver_Manager
             this.btn_AddCommandSignal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_AddCommandSignal.ForeColor = System.Drawing.Color.Black;
             this.btn_AddCommandSignal.Icon = null;
-            this.btn_AddCommandSignal.Location = new System.Drawing.Point(16, 103);
+            this.btn_AddCommandSignal.Location = new System.Drawing.Point(9, 103);
             this.btn_AddCommandSignal.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_AddCommandSignal.Name = "btn_AddCommandSignal";
             this.btn_AddCommandSignal.Primary = false;
@@ -390,7 +380,7 @@ namespace EnMon_Driver_Manager
             this.btn_ShowOnlineValues.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_ShowOnlineValues.ForeColor = System.Drawing.Color.Black;
             this.btn_ShowOnlineValues.Icon = null;
-            this.btn_ShowOnlineValues.Location = new System.Drawing.Point(218, 19);
+            this.btn_ShowOnlineValues.Location = new System.Drawing.Point(189, 18);
             this.btn_ShowOnlineValues.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ShowOnlineValues.Name = "btn_ShowOnlineValues";
             this.btn_ShowOnlineValues.Primary = false;
@@ -408,7 +398,7 @@ namespace EnMon_Driver_Manager
             this.btn_AddAnalogSignal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_AddAnalogSignal.ForeColor = System.Drawing.Color.Black;
             this.btn_AddAnalogSignal.Icon = null;
-            this.btn_AddAnalogSignal.Location = new System.Drawing.Point(16, 61);
+            this.btn_AddAnalogSignal.Location = new System.Drawing.Point(9, 61);
             this.btn_AddAnalogSignal.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_AddAnalogSignal.Name = "btn_AddAnalogSignal";
             this.btn_AddAnalogSignal.Primary = false;
@@ -426,7 +416,7 @@ namespace EnMon_Driver_Manager
             this.btn_AddDigitalSignal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_AddDigitalSignal.ForeColor = System.Drawing.Color.Black;
             this.btn_AddDigitalSignal.Icon = null;
-            this.btn_AddDigitalSignal.Location = new System.Drawing.Point(16, 19);
+            this.btn_AddDigitalSignal.Location = new System.Drawing.Point(9, 18);
             this.btn_AddDigitalSignal.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_AddDigitalSignal.Name = "btn_AddDigitalSignal";
             this.btn_AddDigitalSignal.Primary = false;
@@ -500,6 +490,5 @@ namespace EnMon_Driver_Manager
         private MaterialRaisedButton btn_AddCommandSignal;
         private MaterialRaisedButton btn_ExportCommandSignalsAsCSV;
         private MaterialRaisedButton btn_ImportCommandSignalsToDataBase;
-        private System.Windows.Forms.CheckBox checkBox1;
     }
 }

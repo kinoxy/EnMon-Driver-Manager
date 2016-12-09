@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using EnMon_Driver_Manager.DataBase;
 using EnMon_Driver_Manager;
+using EnMon_Driver_Manager.Models;
 
 namespace EnMon_Driver_Manager
 {
@@ -29,7 +30,7 @@ namespace EnMon_Driver_Manager
             try
             {
                 DbHelper_SelectVariable = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
-                List<Station> stations = DbHelper_SelectVariable.GetAllStationsInfoWithDeviceInfo();
+                List<Station> stations = DbHelper_SelectVariable.GetAllStationsInfo();
                 cb_StationNames.Items.AddRange(stations.ToArray());
             }
             catch(Exception)
@@ -47,14 +48,16 @@ namespace EnMon_Driver_Manager
         {
             cb_DeviceNames.Enabled = true;
             cb_DeviceNames.Items.Clear();
-            cb_DeviceNames.Items.AddRange(((Station)cb_StationNames.SelectedItem).Devices.ToArray());
+            cb_DeviceNames.Items.AddRange(((Station)cb_StationNames.SelectedItem).ModbusTCPDevices.ToArray());
         }
 
         private void cb_DeviceNames_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if(rb_AnalogSignals.Checked)
+            AbstractDevice device = ((AbstractDevice)cb_DeviceNames.SelectedItem);
+            if (rb_AnalogSignals.Checked)
             {
-                List<AnalogSignal> analogSignals = DbHelper_SelectVariable.GetDeviceAnalogSignalsInfo(((Device)cb_DeviceNames.SelectedItem).ID);
+                List<Signal> analogSignals;
+                analogSignals = DbHelper_SelectVariable.GetDeviceAnalogSignalsBasicInfo(device.ID);
                 if(analogSignals.Count>0)
                 {
                     cb_SignalNames.Items.Clear();
@@ -64,7 +67,7 @@ namespace EnMon_Driver_Manager
             }
             if (rb_BinarySignals.Checked)
             {
-                List<BinarySignal> binarySignals = DbHelper_SelectVariable.GetDeviceBinarySignalsInfo(((Device)cb_DeviceNames.SelectedItem).ID);
+                List<Signal> binarySignals = DbHelper_SelectVariable.GetDeviceBinarySignalsBaiscInfo(device.ID);
                 if (binarySignals.Count > 0)
                 {
                     cb_SignalNames.Items.Clear();
@@ -85,9 +88,7 @@ namespace EnMon_Driver_Manager
 
 
         }
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariable.ClickedSignalAddButton'
         public AddSignalToFormEventHandler ClickedSignalAddButton;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariable.ClickedSignalAddButton'
 
         private void btn_Add_Click(object sender, EventArgs e)
         {
@@ -102,11 +103,11 @@ namespace EnMon_Driver_Manager
             frm_SelectVariableEventArgs args = new frm_SelectVariableEventArgs();
             if(rb_AnalogSignals.Checked)
             {
-                args.analogSignal = (AnalogSignal)cb_SignalNames.SelectedItem;
+                args.analogSignal = (ModbusAnalogSignal)cb_SignalNames.SelectedItem;
             }
             else
             {
-                args.binarySignal = (BinarySignal)cb_SignalNames.SelectedItem;
+                args.binarySignal = (ModbusBinarySignal)cb_SignalNames.SelectedItem;
             }
             
             if(ClickedSignalAddButton != null)
@@ -128,19 +129,15 @@ namespace EnMon_Driver_Manager
     }
 }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariableEventArgs'
-public class frm_SelectVariableEventArgs : EventArgs
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariableEventArgs'
-{
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariableEventArgs.binarySignal'
-    public BinarySignal binarySignal {get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariableEventArgs.binarySignal'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariableEventArgs.analogSignal'
-    public AnalogSignal analogSignal { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariableEventArgs.analogSignal'
+public class frm_SelectVariableEventArgs : EventArgs
+
+{ 
+    public ModbusBinarySignal binarySignal {get; set; }
+
+    public ModbusAnalogSignal analogSignal { get; set; }
+
 }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddSignalToFormEventHandler'
+
 public delegate void AddSignalToFormEventHandler(object sender, frm_SelectVariableEventArgs args);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddSignalToFormEventHandler'

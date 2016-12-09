@@ -66,7 +66,7 @@ namespace EnMon_Driver_Manager.Extensions
         }
 
 
-        public static bool HasRow(this DataTable _dt)
+        public static bool HasRows(this DataTable _dt)
 
         {
             if(_dt.Rows.Count>0)

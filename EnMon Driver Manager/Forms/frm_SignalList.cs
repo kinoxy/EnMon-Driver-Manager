@@ -11,7 +11,6 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_SignalList'
     public partial class frm_SignalList : Form
 
     {
@@ -37,8 +36,8 @@ namespace EnMon_Driver_Manager
 
         private enum ImportSettings
         {
-            DoNotDeleteOrOverWriteOldSignals,
-            OverWriteOldSignals,
+            DoNotDeleteOrOverWriteExistingSignals,
+            OverWriteExistingSignals,
             DeleteOldSignals
         }
 
@@ -61,11 +60,11 @@ namespace EnMon_Driver_Manager
 
             fileName = "";
             stations = new List<Station>();
-            analogSignalsCSVFileHeaders = new string[] { "Analog Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Data Type Id", "Unit", "Scale Value", "Max Value", "Min Value", "Max Alarm ID", "Min Alarm ID", "Alarm", "Event", "Archive", "Archive Period ID", "Web Gosterimi" };
-            binarySignalsCSVFileHeaders = new string[] { "Binary Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Bit Number", "Status ID", "Alarm", "Event", "Reverse", "Send Mail", "Mail Message"};
+            analogSignalsCSVFileHeaders = new string[] { "Analog Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Data Type Id", "Unit", "Scale Value", "Max Value", "Min Value", "Max Alarm ID", "Min Alarm ID", "Max Alarm", "Min Alarm", "Archive", "Archive Period ID", "Device Page Shown", "Detail Page Shown" };
+            binarySignalsCSVFileHeaders = new string[] { "Binary Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Bit Number", "Value", "Comparison Type", "Status ID", "Alarm", "Event", "Reverse", "Send Mail", "Mail Message"};
             commandSignalsCSVFileHeaders = new string[] { "Command Signal ID", "Station Name", "Device Name", "Name", "Identification", "Address", "Function Code", "Word Count", "Bit Number", "Status ID", "Event", "Command Type" };
             MessageBoxHeader = "EnMon Sürücü Yöneticisi";
-            importSettings = ImportSettings.DoNotDeleteOrOverWriteOldSignals;
+            importSettings = ImportSettings.DoNotDeleteOrOverWriteExistingSignals;
         }
 
         #endregion Constructors
@@ -160,7 +159,7 @@ namespace EnMon_Driver_Manager
                             }
                             break;
 
-                        case ImportSettings.DoNotDeleteOrOverWriteOldSignals:
+                        case ImportSettings.DoNotDeleteOrOverWriteExistingSignals:
                             if (ImportOnlyNewAnalogSignals(fileName))
                             {
                                 MessageBox.Show("Sinyal dosyasındaki değişiklikler başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -172,7 +171,7 @@ namespace EnMon_Driver_Manager
                             }
                             break;
 
-                        case ImportSettings.OverWriteOldSignals:
+                        case ImportSettings.OverWriteExistingSignals:
                             if (UpdateExistingAnalogSignalsandImportNewAnalogSignals(fileName))
                             {
                                 MessageBox.Show("Sinyal dosyasındaki değişiklikler başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -230,7 +229,7 @@ namespace EnMon_Driver_Manager
                             }
                             break;
 
-                        case ImportSettings.DoNotDeleteOrOverWriteOldSignals:
+                        case ImportSettings.DoNotDeleteOrOverWriteExistingSignals:
                             if (ImportOnlyNewBinarySignals(fileName))
                             {
                                 MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -242,7 +241,7 @@ namespace EnMon_Driver_Manager
                             }
                             break;
 
-                        case ImportSettings.OverWriteOldSignals:
+                        case ImportSettings.OverWriteExistingSignals:
                             if (UpdateExistingBinarySignalsandImportNewBinarySignals(fileName))
                             {
                                 MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -300,7 +299,7 @@ namespace EnMon_Driver_Manager
                             }
                             break;
 
-                        case ImportSettings.DoNotDeleteOrOverWriteOldSignals:
+                        case ImportSettings.DoNotDeleteOrOverWriteExistingSignals:
                             if (ImportOnlyNewCommandSignals(fileName))
                             {
                                 MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -312,7 +311,7 @@ namespace EnMon_Driver_Manager
                             }
                             break;
 
-                        case ImportSettings.OverWriteOldSignals:
+                        case ImportSettings.OverWriteExistingSignals:
                             if (UpdateExistingCommandSignalsandImportNewCommandSignals(fileName))
                             {
                                 MessageBox.Show("Sinyaller başarılı bir şekilde database'e eklendi.", "EnMon Sürücü Yöneticisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -426,12 +425,12 @@ namespace EnMon_Driver_Manager
 
         private void rdButton_DoNotDeleteOrOverWriteOldSignals_Click(object sender, EventArgs e)
         {
-            importSettings = ImportSettings.DoNotDeleteOrOverWriteOldSignals;
+            importSettings = ImportSettings.DoNotDeleteOrOverWriteExistingSignals;
         }
 
         private void rdButton_OverWriteOldSignals_Click(object sender, EventArgs e)
         {
-            importSettings = ImportSettings.OverWriteOldSignals;
+            importSettings = ImportSettings.OverWriteExistingSignals;
         }
 
         private void rdButton_DeleteOldSignals_Click(object sender, EventArgs e)
@@ -773,7 +772,7 @@ namespace EnMon_Driver_Manager
                         DeleteAllAnalogSignals();
                     }
 
-                    return DBHelper_SignalList.AddBinarySignalsToDataBase(_dt);
+                    return DBHelper_SignalList.AddAnalogSignalsToDataBase(_dt);
                 }
                 else
                 {
@@ -827,6 +826,7 @@ namespace EnMon_Driver_Manager
             {
                 // Database'den istasyonlara ait bilgiler çekiliyor.
                 stations = DBHelper_SignalList.GetAllStationsInfoWithDeviceInfo();
+                
                 foreach (DataRow dr in dt_stationNames.Rows)
                 {
                     string stationName = dr[0].ToString();
@@ -850,7 +850,7 @@ namespace EnMon_Driver_Manager
                         foreach (string deviceName in deviceNames.ToList())
                         {
                             // Cihaz istasyona kayıtlı değilse sinyalleri eklemeden önce kullanıcıya ne yapmak istedigini sor
-                            if (!(station.Devices.Exists((d) => d.Name == deviceName)))
+                            if (!(station.ModbusTCPDevices.Exists((d) => d.Name == deviceName)))
                             {
                                 AddDeviceToDataBaseOrRemoveFromCSVTable(stationName, deviceName);
                             }
@@ -1157,9 +1157,19 @@ namespace EnMon_Driver_Manager
             // Her satır için Device Name ve Station Name bilgileri, Device ID ve Station ID bilgileri ile değiştiriliyor.
             foreach (DataRow dr in dt_CSV.Rows)
             {
-                dr["Device Name"] = newStationList.Where((s) => s.Name == dr["Station Name"].ToString()).First().Devices.Where((d) => d.Name == dr["Device Name"].ToString()).First().ID;
 
-                dr["Station Name"] = newStationList.Where((s) => s.Name == dr["Station Name"].ToString()).First().ID;
+                try
+                {
+                    if (newStationList.Where((s) => s.Name == dr["Station Name"].ToString()).First().ModbusTCPDevices.Where((d) => d.Name == dr["Device Name"].ToString()).First() != null)
+                        dr["Device Name"] = newStationList.Where((s) => s.Name == dr["Station Name"].ToString()).First().ModbusTCPDevices.Where((d) => d.Name == dr["Device Name"].ToString()).First().ID;
+                    if (newStationList.Where((s) => s.Name == dr["Station Name"].ToString()).First() != null)
+                        dr["Station Name"] = newStationList.Where((s) => s.Name == dr["Station Name"].ToString()).First().ID;
+                }
+                catch (Exception ex)
+                {
+
+                    throw;
+                }
             }
 
             // Name'ler ID ye değiştirirdikten sonra sutun isimleri de güncelleniyor.
@@ -1176,7 +1186,7 @@ namespace EnMon_Driver_Manager
             // Kullanıcı onay verirse cihazı kullanıcıdan alınan bilgiler ile database'e ekle.
             if (result_2 == DialogResult.Yes)
             {
-                List<Protocol> _protocols = DBHelper_SignalList.GetAllProtocolsInfo();
+                List<CommunicationProtocol> _protocols = DBHelper_SignalList.GetAllProtocolsInfo();
                 List<int> usedModbusSlaveAddresses = DBHelper_SignalList.GetUsedModbusSlaveAddresses(stationName);
                 usedModbusSlaveAddresses.Add(1);
                 using (frm_AddDevice frm_addDevice = new frm_AddDevice(stationName, deviceName, _protocols, usedModbusSlaveAddresses))

@@ -42,14 +42,16 @@
             this.cbx_StationName = new System.Windows.Forms.ComboBox();
             this.txt_SignalID = new System.Windows.Forms.TextBox();
             this.grp_CommunicationParameters = new System.Windows.Forms.GroupBox();
+            this.cbx_ComparisonType = new System.Windows.Forms.ComboBox();
+            this.label13 = new System.Windows.Forms.Label();
             this.cbx_IsReversed = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
             this.txt_ModbusAddress = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.cbx_FunctionCode = new System.Windows.Forms.ComboBox();
-            this.txt_BitNumber = new System.Windows.Forms.TextBox();
+            this.txt_ComparisonBitNumber_Value = new System.Windows.Forms.TextBox();
             this.txt_WordCount = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
+            this.lbl_ComparisonBitNumber_Value = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.cbx_StatusText = new System.Windows.Forms.ComboBox();
@@ -184,27 +186,48 @@
             // 
             // grp_CommunicationParameters
             // 
+            this.grp_CommunicationParameters.Controls.Add(this.cbx_ComparisonType);
+            this.grp_CommunicationParameters.Controls.Add(this.label13);
             this.grp_CommunicationParameters.Controls.Add(this.cbx_IsReversed);
             this.grp_CommunicationParameters.Controls.Add(this.label7);
             this.grp_CommunicationParameters.Controls.Add(this.txt_ModbusAddress);
             this.grp_CommunicationParameters.Controls.Add(this.label11);
             this.grp_CommunicationParameters.Controls.Add(this.cbx_FunctionCode);
-            this.grp_CommunicationParameters.Controls.Add(this.txt_BitNumber);
+            this.grp_CommunicationParameters.Controls.Add(this.txt_ComparisonBitNumber_Value);
             this.grp_CommunicationParameters.Controls.Add(this.txt_WordCount);
-            this.grp_CommunicationParameters.Controls.Add(this.label10);
+            this.grp_CommunicationParameters.Controls.Add(this.lbl_ComparisonBitNumber_Value);
             this.grp_CommunicationParameters.Controls.Add(this.label9);
             this.grp_CommunicationParameters.Controls.Add(this.label8);
             this.grp_CommunicationParameters.Location = new System.Drawing.Point(12, 168);
             this.grp_CommunicationParameters.Name = "grp_CommunicationParameters";
-            this.grp_CommunicationParameters.Size = new System.Drawing.Size(454, 143);
+            this.grp_CommunicationParameters.Size = new System.Drawing.Size(454, 174);
             this.grp_CommunicationParameters.TabIndex = 7;
             this.grp_CommunicationParameters.TabStop = false;
             this.grp_CommunicationParameters.Text = "Haberleşme Ayarları";
             // 
+            // cbx_ComparisonType
+            // 
+            this.cbx_ComparisonType.Enabled = false;
+            this.cbx_ComparisonType.FormattingEnabled = true;
+            this.cbx_ComparisonType.Location = new System.Drawing.Point(117, 70);
+            this.cbx_ComparisonType.Name = "cbx_ComparisonType";
+            this.cbx_ComparisonType.Size = new System.Drawing.Size(224, 21);
+            this.cbx_ComparisonType.TabIndex = 27;
+            this.cbx_ComparisonType.SelectedIndexChanged += new System.EventHandler(this.cbx_ComparisonType_SelectedIndexChanged);
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(17, 73);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(91, 13);
+            this.label13.TabIndex = 26;
+            this.label13.Text = "Karşılaştırma Tipi :";
+            // 
             // cbx_IsReversed
             // 
             this.cbx_IsReversed.AutoSize = true;
-            this.cbx_IsReversed.Location = new System.Drawing.Point(117, 120);
+            this.cbx_IsReversed.Location = new System.Drawing.Point(117, 149);
             this.cbx_IsReversed.Name = "cbx_IsReversed";
             this.cbx_IsReversed.Size = new System.Drawing.Size(15, 14);
             this.cbx_IsReversed.TabIndex = 25;
@@ -213,7 +236,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(64, 120);
+            this.label7.Location = new System.Drawing.Point(64, 149);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(42, 13);
             this.label7.TabIndex = 25;
@@ -242,34 +265,37 @@
             this.cbx_FunctionCode.Name = "cbx_FunctionCode";
             this.cbx_FunctionCode.Size = new System.Drawing.Size(224, 21);
             this.cbx_FunctionCode.TabIndex = 14;
+            this.cbx_FunctionCode.SelectedIndexChanged += new System.EventHandler(this.cbx_FunctionCode_SelectedIndexChanged);
             // 
-            // txt_BitNumber
+            // txt_ComparisonBitNumber_Value
             // 
-            this.txt_BitNumber.Location = new System.Drawing.Point(118, 94);
-            this.txt_BitNumber.Name = "txt_BitNumber";
-            this.txt_BitNumber.Size = new System.Drawing.Size(224, 20);
-            this.txt_BitNumber.TabIndex = 18;
+            this.txt_ComparisonBitNumber_Value.Enabled = false;
+            this.txt_ComparisonBitNumber_Value.Location = new System.Drawing.Point(118, 123);
+            this.txt_ComparisonBitNumber_Value.Name = "txt_ComparisonBitNumber_Value";
+            this.txt_ComparisonBitNumber_Value.Size = new System.Drawing.Size(224, 20);
+            this.txt_ComparisonBitNumber_Value.TabIndex = 18;
             // 
             // txt_WordCount
             // 
-            this.txt_WordCount.Location = new System.Drawing.Point(118, 68);
+            this.txt_WordCount.Enabled = false;
+            this.txt_WordCount.Location = new System.Drawing.Point(118, 97);
             this.txt_WordCount.Name = "txt_WordCount";
             this.txt_WordCount.Size = new System.Drawing.Size(224, 20);
             this.txt_WordCount.TabIndex = 17;
             // 
-            // label10
+            // lbl_ComparisonBitNumber_Value
             // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(54, 97);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(53, 13);
-            this.label10.TabIndex = 16;
-            this.label10.Text = "Bit Sırası :";
+            this.lbl_ComparisonBitNumber_Value.Location = new System.Drawing.Point(54, 126);
+            this.lbl_ComparisonBitNumber_Value.Name = "lbl_ComparisonBitNumber_Value";
+            this.lbl_ComparisonBitNumber_Value.Size = new System.Drawing.Size(53, 13);
+            this.lbl_ComparisonBitNumber_Value.TabIndex = 16;
+            this.lbl_ComparisonBitNumber_Value.Text = "Bit Sırası :";
+            this.lbl_ComparisonBitNumber_Value.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(25, 71);
+            this.label9.Location = new System.Drawing.Point(25, 100);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(82, 13);
             this.label9.TabIndex = 15;
@@ -302,7 +328,7 @@
             this.groupBox1.Controls.Add(this.label12);
             this.groupBox1.Controls.Add(this.Alarm);
             this.groupBox1.Controls.Add(this.label6);
-            this.groupBox1.Location = new System.Drawing.Point(12, 317);
+            this.groupBox1.Location = new System.Drawing.Point(12, 348);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(454, 97);
             this.groupBox1.TabIndex = 8;
@@ -358,7 +384,7 @@
             // btn_OK
             // 
             this.btn_OK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_OK.Location = new System.Drawing.Point(244, 420);
+            this.btn_OK.Location = new System.Drawing.Point(244, 451);
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(109, 30);
             this.btn_OK.TabIndex = 9;
@@ -370,7 +396,7 @@
             // 
             this.btn_Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btn_Cancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_Cancel.Location = new System.Drawing.Point(357, 420);
+            this.btn_Cancel.Location = new System.Drawing.Point(357, 451);
             this.btn_Cancel.Name = "btn_Cancel";
             this.btn_Cancel.Size = new System.Drawing.Size(109, 30);
             this.btn_Cancel.TabIndex = 10;
@@ -381,7 +407,7 @@
             // btn_Delete
             // 
             this.btn_Delete.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_Delete.Location = new System.Drawing.Point(130, 420);
+            this.btn_Delete.Location = new System.Drawing.Point(130, 451);
             this.btn_Delete.Name = "btn_Delete";
             this.btn_Delete.Size = new System.Drawing.Size(109, 30);
             this.btn_Delete.TabIndex = 11;
@@ -393,7 +419,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btn_Cancel;
-            this.ClientSize = new System.Drawing.Size(477, 457);
+            this.ClientSize = new System.Drawing.Size(477, 487);
             this.Controls.Add(this.btn_Delete);
             this.Controls.Add(this.btn_Cancel);
             this.Controls.Add(this.btn_OK);
@@ -433,9 +459,9 @@
         private System.Windows.Forms.TextBox txt_ModbusAddress;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ComboBox cbx_FunctionCode;
-        private System.Windows.Forms.TextBox txt_BitNumber;
+        private System.Windows.Forms.TextBox txt_ComparisonBitNumber_Value;
         private System.Windows.Forms.TextBox txt_WordCount;
-        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label lbl_ComparisonBitNumber_Value;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ComboBox cbx_StatusText;
@@ -449,5 +475,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btn_Delete;
         private MaterialSkin.Controls.MaterialCheckBox cbx_IsAlarm;
+        private System.Windows.Forms.ComboBox cbx_ComparisonType;
+        private System.Windows.Forms.Label label13;
     }
 }

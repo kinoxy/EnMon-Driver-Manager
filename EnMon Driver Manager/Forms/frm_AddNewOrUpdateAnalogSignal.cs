@@ -15,7 +15,7 @@ namespace EnMon_Driver_Manager
 
         private AbstractDBHelper DBHelper_AddNewOrUpdateAnalogSignalForm;
 
-        private AnalogSignal analogSignal;
+        private ModbusAnalogSignal analogSignal;
 
         private uint ID;
 
@@ -44,10 +44,10 @@ namespace EnMon_Driver_Manager
             btn_Delete.Enabled = false;
             btn_Delete.Hide();
 
-            analogSignal = new AnalogSignal();
+            analogSignal = new ModbusAnalogSignal();
         }
 
-        public frm_AddNewOrUpdateAnalogSignal(AnalogSignal analogSignal) 
+        public frm_AddNewOrUpdateAnalogSignal(ModbusAnalogSignal analogSignal) 
         {
             InitializeComponent();
 
@@ -94,8 +94,8 @@ namespace EnMon_Driver_Manager
 
         private void InsertInfoToArchivingGroup()
         {
-            cbx_IsArchive.Checked = analogSignal.isArchive ? true : false;
-            cbx_Archive.Enabled = analogSignal.isArchive ? true : false;
+            cbx_IsArchive.Checked = analogSignal.IsArchive ? true : false;
+            cbx_Archive.Enabled = analogSignal.IsArchive ? true : false;
             cbx_Archive.SelectedItem = archivePeriods.Find((ap) => ap.ID == analogSignal.archivePeriod.ID);
         }
 
@@ -121,9 +121,9 @@ namespace EnMon_Driver_Manager
         private void InsertInfoToGeneralSettingsGroup()
         {
             txt_SignalID.Text = analogSignal.ID.ToString();
-            cbx_StationName.SelectedItem = stations.Find((s) => s.Devices.Exists((d) => d.ID == analogSignal.DeviceID));
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).Devices.ToArray());
-            cbx_DeviceName.SelectedItem = stations.Find((s) => s.Devices.Exists((d) => d.ID == analogSignal.DeviceID)).Devices.Find((d) => d.ID == analogSignal.DeviceID);
+            cbx_StationName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == analogSignal.DeviceID));
+            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
+            cbx_DeviceName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == analogSignal.DeviceID)).ModbusTCPDevices.Find((d) => d.ID == analogSignal.DeviceID);
             cbx_DeviceName.Enabled = true;
             //cbx_DeviceName.fi
             txt_SignalName.Text = analogSignal.Name;
@@ -136,10 +136,17 @@ namespace EnMon_Driver_Manager
 
         #region Events
 
+        private void btn_Delete_Click(object sender, EventArgs e)
+        {
+            DeleteSignal(analogSignal);
+
+        }
+
+
         private void cbx_StationName_SelectionChangeCommitted(object sender, EventArgs e)
         {
             cbx_DeviceName.Items.Clear();
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).Devices.ToArray());
+            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
             cbx_DeviceName.Enabled = true;
             cbx_DeviceName.ResetText();
             cbx_DeviceName.SelectedIndex = -1;
@@ -204,7 +211,23 @@ namespace EnMon_Driver_Manager
         #endregion Events
 
         #region Private Methods
+        private void DeleteSignal(ModbusAnalogSignal analogSignal)
+        {
+            DialogResult result = MessageBox.Show($"İşleme devam ederseniz {analogSignal.Identification} sinyali ve bu sinyale ait diğer tüm kayıtlar silinecektir.\nİşleme devam etmek istiyor musunuz? ", Constants.MessageBoxHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (result == DialogResult.OK)
+            {
+                if (DBHelper_AddNewOrUpdateAnalogSignalForm.DeleteAnalogSignal(analogSignal.ID))
+                {
+                    MessageBox.Show($"{analogSignal.Identification} adlı sinyal ve bu sinyale ait tüm kayıtlar başarılı bir şekilde silinmiştir.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Log.Instance.Info($"{this.GetType().Name}: {analogSignal.Identification} adlı sinyal ve bu sinyale ait tüm kayıtlar silinmiştir.");
+                }
+                else
+                {
+                    MessageBox.Show($"{analogSignal.Identification} adlı silinirken bir hata oluştu. Bazı verileri kaybetmiş olabilirsiniz.\nAyrıntılı bilgi için log dosyasını kontrol ediniz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
 
+            }
+        }
         private void InitializeDatabase()
         {
             try
@@ -404,12 +427,6 @@ namespace EnMon_Driver_Manager
                 cbx_DeviceName.Focus();
                 return false;
             }
-            else if (txt_Unit.Text == string.Empty)
-            {
-                MessageBox.Show("Birim bilgisi boş bırakılamaz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txt_Unit.Focus();
-                return false;
-            }
             return true;
         }
 
@@ -485,7 +502,7 @@ namespace EnMon_Driver_Manager
             List<Station> stations = new List<Station>();
             try
             {
-                stations = DBHelper_AddNewOrUpdateAnalogSignalForm.GetAllStationsInfoWithDeviceInfo();
+                stations = DBHelper_AddNewOrUpdateAnalogSignalForm.GetAllStationsInfo();
                 return stations;
             }
             catch (Exception ex)
@@ -512,15 +529,11 @@ namespace EnMon_Driver_Manager
 
         private void GetArchiveInfo()
         {
-            if(cbx_IsArchive.Checked)
+            analogSignal.IsArchive = cbx_IsArchive.Checked;
+            if(cbx_Archive.SelectedItem != null)
             {
                 analogSignal.archivePeriod.ID = ((ArchivePeriod)cbx_Archive.SelectedItem).ID;
             }
-            else
-            {
-                analogSignal.archivePeriod.ID = 0;
-            }
-            
         }
 
         private void GetCommunicationInfo()
@@ -547,7 +560,7 @@ namespace EnMon_Driver_Manager
         private void GetGeneralInfo()
         {
             analogSignal.ID = uint.Parse(txt_SignalID.Text);
-            analogSignal.DeviceID = ((Device)cbx_DeviceName.SelectedItem).ID;
+            analogSignal.DeviceID = ((AbstractDevice)cbx_DeviceName.SelectedItem).ID;
             analogSignal.Name = txt_SignalName.Text;
             analogSignal.Identification = txt_SignalIdentification.Text;
             analogSignal.Unit = txt_Unit.Text;
@@ -557,8 +570,8 @@ namespace EnMon_Driver_Manager
         {
             analogSignal.HasMaxAlarm = cbx_HasMaxAlarm.Checked;
             analogSignal.HasMinAlarm = cbx_HasMinAlarm.Checked;
-            analogSignal.MaxAlarmValue = uint.Parse(txt_MaxAlarmValue.Text);
-            analogSignal.MinAlarmValue = uint.Parse(txt_MinAlarmValue.Text);
+            analogSignal.MaxAlarmValue = float.Parse(txt_MaxAlarmValue.Text.Replace(".",","));
+            analogSignal.MinAlarmValue = float.Parse(txt_MinAlarmValue.Text.Replace(".",","));
 
             if (cbx_MaxAlarmStatus.SelectedItem == null)
             {
@@ -592,34 +605,10 @@ namespace EnMon_Driver_Manager
 
         private void SetTextAtIdentificationTextBox()
         {
-            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((Device)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
+            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((AbstractDevice)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
         }
 
 
-        #endregion Private Methods
-
-        private void btn_Delete_Click(object sender, EventArgs e)
-        {
-            DeleteSignal(analogSignal);
-            
-        }
-
-        private void DeleteSignal(AnalogSignal analogSignal)
-        {
-            DialogResult result = MessageBox.Show($"İşleme devam ederseniz {analogSignal.Identification} sinyali ve bu sinyale ait diğer tüm kayıtlar silinecektir.\nİşleme devam etmek istiyor musunuz? ", Constants.MessageBoxHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-            if (result == DialogResult.OK)
-            {
-                if(DBHelper_AddNewOrUpdateAnalogSignalForm.DeleteAnalogSignal(analogSignal.ID))
-                {
-                    MessageBox.Show($"{analogSignal.Identification} adlı sinyal ve bu sinyale ait tüm kayıtlar başarılı bir şekilde silinmiştir.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Log.Instance.Info($"{this.GetType().Name}: {analogSignal.Identification} adlı sinyal ve bu sinyale ait tüm kayıtlar silinmiştir.");
-                }
-                else
-                {
-                    MessageBox.Show($"{analogSignal.Identification} adlı silinirken bir hata oluştu. Bazı verileri kaybetmiş olabilirsiniz.\nAyrıntılı bilgi için log dosyasını kontrol ediniz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                
-            }
-        }
+        #endregion Private Methods    
     }
 }

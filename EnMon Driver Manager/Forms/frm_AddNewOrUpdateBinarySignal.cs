@@ -14,7 +14,7 @@ namespace EnMon_Driver_Manager
 
         private AbstractDBHelper DBHelper_AddNewOrUpdateBinarySignalForm;
 
-        private BinarySignal binarySignal;
+        private ModbusBinarySignal binarySignal;
 
         private uint ID;
 
@@ -37,13 +37,13 @@ namespace EnMon_Driver_Manager
 
             InitializeControlProperties();
 
-            binarySignal = new BinarySignal();
+            binarySignal = new ModbusBinarySignal();
 
             btn_Delete.Hide();
             btn_Delete.Enabled = false;
         }
 
-        public frm_AddNewOrUpdateBinarySignal(BinarySignal signal)
+        public frm_AddNewOrUpdateBinarySignal(ModbusBinarySignal signal)
         {
             InitializeComponent();
 
@@ -98,7 +98,24 @@ namespace EnMon_Driver_Manager
 
             txt_WordCount.Text = binarySignal.WordCount.ToString();
 
-            txt_BitNumber.Text = binarySignal.BitNumber.ToString();
+            if(binarySignal.FunctionCode == 3 || binarySignal.FunctionCode == 4)
+            {
+                switch (binarySignal.comparisonType)
+                {
+                    case ModbusBinarySignal.ComparisonType.bit:
+                        cbx_ComparisonType.Text = "Bit";
+                        txt_ComparisonBitNumber_Value.Name = "Bit Sırası :";
+                        txt_ComparisonBitNumber_Value.Text = binarySignal.ComparisonBitNumber.ToString();
+                        break;
+                    case ModbusBinarySignal.ComparisonType.value:
+                        cbx_ComparisonType.Text = "Değer";
+                        txt_ComparisonBitNumber_Value.Name = "Değer";
+                        txt_ComparisonBitNumber_Value.Text = binarySignal.ComparisonValue.ToString();
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             cbx_IsReversed.Checked = binarySignal.IsReversed ? true : false;
         }
@@ -106,9 +123,9 @@ namespace EnMon_Driver_Manager
         private void InsertInfoToGeneralSettingsGroup()
         {
             txt_SignalID.Text = binarySignal.ID.ToString();
-            cbx_StationName.SelectedItem = stations.Find((s) => s.Devices.Exists((d) => d.ID == binarySignal.DeviceID));
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).Devices.ToArray());
-            cbx_DeviceName.SelectedItem = stations.Find((s) => s.Devices.Exists((d) => d.ID == binarySignal.DeviceID)).Devices.Find((d) => d.ID == binarySignal.DeviceID);
+            cbx_StationName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == binarySignal.DeviceID));
+            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
+            cbx_DeviceName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == binarySignal.DeviceID)).ModbusTCPDevices.Find((d) => d.ID == binarySignal.DeviceID);
             cbx_DeviceName.Enabled = true;
             //cbx_DeviceName.fi
             txt_SignalName.Text = binarySignal.Name;
@@ -124,7 +141,7 @@ namespace EnMon_Driver_Manager
         private void cbx_StationName_SelectionChangeCommitted(object sender, EventArgs e)
         {
             cbx_DeviceName.Items.Clear();
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).Devices.ToArray());
+            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
             cbx_DeviceName.Enabled = true;
             cbx_DeviceName.ResetText();
             cbx_DeviceName.SelectedIndex = -1;
@@ -150,12 +167,197 @@ namespace EnMon_Driver_Manager
             }
         }
 
+        private void btn_Cancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void txt_SignalName_KeyUp(object sender, KeyEventArgs e)
+        {
+            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((AbstractDevice)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
+        }
+
+        private void cbx_DeviceName_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            txt_SignalName.Enabled = true;
+        }
+
+        private void cbx_IsEvent_CheckedChanged(object sender, EventArgs e)
+        {
+            cbx_StatusText.Enabled = cbx_IsEvent.Checked ? true : false;
+        }
+
+        private void cbx_ComparisonType_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+
+        }
+
+        #endregion Events
+
+        #region Private Methods
+
+        private void InitializeDatabase()
+        {
+            try
+            {
+                DBHelper_AddNewOrUpdateBinarySignalForm = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Database bağlantısı oluşturulamadı => {1}", this.GetType().Name, ex.Message);
+                MessageBox.Show("Veritabanına bağlanılamadı", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void InitializeControlProperties()
+        {
+            txt_SignalID.Enabled = false;
+            txt_SignalID.Text = ID.ToString();
+
+            stations = GetStations();
+            cbx_StationName.Items.AddRange(stations.ToArray());
+            cbx_DeviceName.Enabled = false;
+
+            statusTexts = GetStatusNames();
+
+            
+            txt_SignalID.Text = ID.ToString();
+
+            cbx_FunctionCode.Items.AddRange(new string[] { "FC 1", "FC 2", "FC 3", "FC 4" });
+            cbx_ComparisonType.Items.AddRange(new string[] { "Bit", "Değer" });
+
+            statusTexts = GetStatusNames();
+            cbx_StatusText.Items.AddRange(statusTexts.ToArray());
+
+        }
+
+        private List<StatusText> GetStatusNames()
+        {
+            List<StatusText> statusTexts = new List<StatusText>();
+            try
+            {
+                return DBHelper_AddNewOrUpdateBinarySignalForm.GetAllStatusTexts();
+            }
+
+            catch (Exception ex)
+            {
+                return statusTexts;
+                throw;
+            }
+        }
+
+        private List<Station> GetStations()
+        {
+            List<Station> stations = new List<Station>();
+            try
+            {
+                stations = DBHelper_AddNewOrUpdateBinarySignalForm.GetAllStationsInfo();
+                return stations;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Station bilgileri veritabanından okunamadı =>{1}", this.GetType().Name, ex.Message);
+                return stations;
+            }
+        }
+
+        private bool AddNewBinarySignalToDatabase()
+        {
+            return DBHelper_AddNewOrUpdateBinarySignalForm.addNewBinarySignal(binarySignal);
+        }
+
+        private void GetAlarmEventInfo()
+        {
+            binarySignal.IsAlarm = cbx_IsAlarm.Checked;
+            binarySignal.IsEvent = cbx_IsEvent.Checked;
+
+            if (cbx_StatusText.SelectedItem == null)
+            {
+                binarySignal.StatusID = 1;
+            }
+            else
+            {
+                binarySignal.StatusID = ((StatusText)(cbx_StatusText.SelectedItem)).StatusID;
+            }
+        }
+
+        private void GetCommunicationInfo()
+        {
+            binarySignal.Address = ushort.Parse(txt_ModbusAddress.Text);
+            binarySignal.ComparisonBitNumber = byte.Parse(txt_ComparisonBitNumber_Value.Text);
+            binarySignal.WordCount = byte.Parse(txt_WordCount.Text);
+            binarySignal.IsReversed = cbx_IsReversed.Checked;
+            switch (cbx_FunctionCode.SelectedItem.ToString())
+            {
+                case "FC 1":
+                    binarySignal.FunctionCode = 1;
+                    break;
+
+                case "FC 2":
+                    binarySignal.FunctionCode = 2;
+                    break;
+
+                case "FC 3":
+                    binarySignal.FunctionCode = 3;
+                    break;
+
+                case "FC 4":
+                    binarySignal.FunctionCode = 4;
+                    break;
+
+                default:
+                    break;
+            }
+            switch(cbx_ComparisonType.SelectedText)
+            {
+                case "Bit":
+                    binarySignal.comparisonType = ModbusBinarySignal.ComparisonType.bit;
+                    break;
+                case "Değer":
+                    binarySignal.comparisonType = ModbusBinarySignal.ComparisonType.value;
+                    break;
+                default:
+                    break;
+            }
+
+            if(binarySignal.comparisonType == ModbusBinarySignal.ComparisonType.value)
+            {
+                binarySignal.ComparisonValue = int.Parse(txt_ComparisonBitNumber_Value.ToString());
+                binarySignal.ComparisonBitNumber = 1;
+            }
+            else
+            {
+                binarySignal.ComparisonBitNumber = byte.Parse(txt_ComparisonBitNumber_Value.ToString());
+                binarySignal.ComparisonValue = 1;
+            }
+        }
+
+        private void GetGeneralInfo()
+        {
+            binarySignal.Name = txt_SignalName.Text;
+            binarySignal.Identification = txt_SignalIdentification.Text;
+            binarySignal.DeviceID = ((AbstractDevice)cbx_DeviceName.SelectedItem).ID;
+        }
+
+        private void TrimAllInputFields()
+        {
+            foreach (Control control in this.Controls)
+            {
+                if (control is TextBox)
+                {
+                    control.Text.Trim();
+                }
+            }
+        }
+
         private void UpdateSignal()
         {
             if (VerifyInputsAtFormControls())
             {
                 try
                 {
+                    GetInfoFromFormInputs();
+
                     if (UpdateBinarySignalAtDatabase())
                     {
                         MessageBox.Show("Sinyal başarılı bir şekilde güncellendi", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -176,14 +378,17 @@ namespace EnMon_Driver_Manager
             }
         }
 
-        private bool UpdateBinarySignalAtDatabase()
+        private void GetInfoFromFormInputs()
         {
             GetGeneralInfo();
 
             GetCommunicationInfo();
 
             GetAlarmEventInfo();
+        }
 
+        private bool UpdateBinarySignalAtDatabase()
+        {
             return DBHelper_AddNewOrUpdateBinarySignalForm.UpdateBinarySignal(binarySignal);
         }
 
@@ -193,6 +398,8 @@ namespace EnMon_Driver_Manager
             {
                 try
                 {
+                    GetInfoFromFormInputs();
+
                     if (AddNewBinarySignalToDatabase())
                     {
                         MessageBox.Show("Sinyal başarılı bir şekilde eklendi", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -215,12 +422,12 @@ namespace EnMon_Driver_Manager
         {
             TrimAllInputFields();
 
-            return VerifyGeneralSettings() & VerifyCommunicationSettings()  & VerifyAlarmEventSettings();
+            return VerifyGeneralSettings() & VerifyCommunicationSettings() & VerifyAlarmEventSettings();
         }
 
         private bool VerifyAlarmEventSettings()
         {
-            if((cbx_IsAlarm.Checked || cbx_IsAlarm.Checked ==  false & cbx_IsEvent.Checked) & cbx_StatusText.SelectedItem == null)
+            if ((cbx_IsAlarm.Checked || cbx_IsAlarm.Checked == false & cbx_IsEvent.Checked) & cbx_StatusText.SelectedItem == null)
             {
                 MessageBox.Show("Durum yazısı bilgisi boş bırakılamaz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 cbx_StatusText.Focus();
@@ -234,6 +441,7 @@ namespace EnMon_Driver_Manager
             ushort modbusAddress;
             byte wordCount;
             byte bitNumber;
+            int value;
 
             if (!(ushort.TryParse((txt_ModbusAddress.Text), out modbusAddress)))
             {
@@ -247,9 +455,15 @@ namespace EnMon_Driver_Manager
                 txt_ModbusAddress.Focus();
                 return false;
             }
-            else if (!(byte.TryParse((txt_BitNumber.Text), out bitNumber)))
+            else if (cbx_ComparisonType.SelectedText == "bit" & !(byte.TryParse((txt_ComparisonBitNumber_Value.Text), out bitNumber)))
             {
                 MessageBox.Show("Bit Sırası bilgisi için geçerli bir sayı giriniz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txt_ModbusAddress.Focus();
+                return false;
+            }
+            else if (cbx_ComparisonType.SelectedText == "value" & !(int.TryParse((txt_ComparisonBitNumber_Value.Text), out value)))
+            {
+                MessageBox.Show("Değer bilgisi için geçerli bir sayı giriniz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txt_ModbusAddress.Focus();
                 return false;
             }
@@ -292,168 +506,38 @@ namespace EnMon_Driver_Manager
             return true;
         }
 
-        #endregion Events
 
-        #region Private Methods
 
-        private void InitializeDatabase()
-        {
-            try
-            {
-                DBHelper_AddNewOrUpdateBinarySignalForm = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Database bağlantısı oluşturulamadı => {1}", this.GetType().Name, ex.Message);
-                MessageBox.Show("Veritabanına bağlanılamadı", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
 
-        private void InitializeControlProperties()
-        {
-            txt_SignalID.Enabled = false;
-            txt_SignalID.Text = ID.ToString();
-
-            stations = GetStations();
-            cbx_StationName.Items.AddRange(stations.ToArray());
-            cbx_DeviceName.Enabled = false;
-
-            statusTexts = GetStatusNames();
-
-            
-            txt_SignalID.Text = ID.ToString();
-
-            cbx_FunctionCode.Items.AddRange(new string[] { "FC 1", "FC 2", "FC 3", "FC 4" });
-
-            statusTexts = GetStatusNames();
-            cbx_StatusText.Items.AddRange(statusTexts.ToArray());
-
-        }
-
-        private List<StatusText> GetStatusNames()
-        {
-            List<StatusText> statusTexts = new List<StatusText>();
-            try
-            {
-                return DBHelper_AddNewOrUpdateBinarySignalForm.GetAllStatusTexts();
-            }
-
-            catch (Exception ex)
-            {
-                return statusTexts;
-                throw;
-            }
-        }
-
-        private List<Station> GetStations()
-        {
-            List<Station> stations = new List<Station>();
-            try
-            {
-                stations = DBHelper_AddNewOrUpdateBinarySignalForm.GetAllStationsInfoWithDeviceInfo();
-                return stations;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Station bilgileri veritabanından okunamadı =>{1}", this.GetType().Name, ex.Message);
-                return stations;
-            }
-        }
-
-        private bool AddNewBinarySignalToDatabase()
-        {
-
-            GetGeneralInfo();
-
-            GetCommunicationInfo();
-
-            GetAlarmEventInfo();
-
-            return DBHelper_AddNewOrUpdateBinarySignalForm.addNewBinarySignal(binarySignal);
-        }
-
-        private void GetAlarmEventInfo()
-        {
-            binarySignal.IsAlarm = cbx_IsAlarm.Checked;
-            binarySignal.IsEvent = cbx_IsEvent.Checked;
-
-            if (cbx_StatusText.SelectedItem == null)
-            {
-                binarySignal.StatusID = 1;
-            }
-            else
-            {
-                binarySignal.StatusID = ((StatusText)(cbx_StatusText.SelectedItem)).StatusID;
-            }
-        }
-
-        private void GetCommunicationInfo()
-        {
-            binarySignal.Address = ushort.Parse(txt_ModbusAddress.Text);
-            binarySignal.BitNumber = byte.Parse(txt_BitNumber.Text);
-            binarySignal.WordCount = byte.Parse(txt_WordCount.Text);
-            binarySignal.IsReversed = cbx_IsReversed.Checked;
-            switch (cbx_FunctionCode.SelectedItem.ToString())
-            {
-                case "FC 1":
-                    binarySignal.FunctionCode = 1;
-                    break;
-
-                case "FC 2":
-                    binarySignal.FunctionCode = 2;
-                    break;
-
-                case "FC 3":
-                    binarySignal.FunctionCode = 3;
-                    break;
-
-                case "FC 4":
-                    binarySignal.FunctionCode = 4;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        private void GetGeneralInfo()
-        {
-            binarySignal.Name = txt_SignalName.Text;
-            binarySignal.Identification = txt_SignalIdentification.Text;
-            binarySignal.DeviceID = ((Device)cbx_DeviceName.SelectedItem).ID;
-        }
-
-        private void TrimAllInputFields()
-        {
-            foreach (Control control in this.Controls)
-            {
-                if (control is TextBox)
-                {
-                    control.Text.Trim();
-                }
-            }
-        }
 
         #endregion Private Methods
 
-        private void btn_Cancel_Click(object sender, EventArgs e)
+        private void cbx_ComparisonType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.Close();
+            if(cbx_ComparisonType.SelectedItem.ToString() == "Bit")
+            {
+                lbl_ComparisonBitNumber_Value.Text = "Bit Sırası :";
+            }
+            else
+            {
+                lbl_ComparisonBitNumber_Value.Text = "Değer :";
+            }
         }
 
-        private void txt_SignalName_KeyUp(object sender, KeyEventArgs e)
+        private void cbx_FunctionCode_SelectedIndexChanged(object sender, EventArgs e)
         {
-            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((Device)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
-        }
-
-        private void cbx_DeviceName_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            txt_SignalName.Enabled = true;
-        }
-
-        private void cbx_IsEvent_CheckedChanged(object sender, EventArgs e)
-        {
-            cbx_StatusText.Enabled = cbx_IsEvent.Checked ? true : false;
+            if (cbx_FunctionCode.Text == "FC 3" || cbx_FunctionCode.Text == "FC 4")
+            {
+                cbx_ComparisonType.Enabled = true;
+                txt_ComparisonBitNumber_Value.Enabled = true;
+                txt_WordCount.Enabled = true;
+            }
+            else
+            {
+                cbx_ComparisonType.Enabled = false;
+                txt_ComparisonBitNumber_Value.Enabled = false;
+                txt_WordCount.Enabled = false;
+            }
         }
     }
 }

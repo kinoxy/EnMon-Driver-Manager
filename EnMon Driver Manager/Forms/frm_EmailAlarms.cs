@@ -1,8 +1,6 @@
 ﻿using EnMon_Driver_Manager.DataBase;
 using EnMon_Driver_Manager.Drivers.Mail;
 using EnMon_Driver_Manager.Models;
-using MailKit;
-using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,9 +11,7 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_EmailAlarms'
     public partial class frm_EmailAlarms : Form
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_EmailAlarms'
     {
         private AbstractDBHelper DBHelper_EmailAlarms { get; set; }
 
@@ -24,13 +20,10 @@ namespace EnMon_Driver_Manager
 
         private frm_AddNewOrUpdateMailAlarm frm_addNewOrUpdateMailAlarm { get; set; }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_EmailAlarms.frm_EmailAlarms()'
         public frm_EmailAlarms()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_EmailAlarms.frm_EmailAlarms()'
         {
             InitializeComponent();
-            
-            
+
         }
 
         private void InitializeDBConnection()
@@ -42,51 +35,6 @@ namespace EnMon_Driver_Manager
             else
             {
                 DBHelper_EmailAlarms = null;
-            }
-        }
-
-        private void btn_Send_Click(object sender, EventArgs e)
-        {
-            SendMail("bu bir deneme mesajıdır");
-        }
-
-        private bool SendMail(string _message)
-        {
-            try
-            {
-                List<string> mailAddresses = new List<string>();
-                mailAddresses.Add("umutn86@gmail.com");
-                mailAddresses.Add("umut.kilic@utmotomasyon.com");
-
-                using (mailClient = StaticHelper.InitializeMailClient(Constants.MailClientConfigFileLocation))
-                {
-                    ;
-                    if (mailClient != null)
-                    {
-                        MimeEntity entity = new TextPart("plain") { Text = @_message };
-                        mailClient.SendMail(mailAddresses, entity);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-            catch (ServiceNotConnectedException ex)
-            {
-                Log.Instance.Error("E-mail gonderilemedi. Ayarları kontrol ediniz => {0}", ex.Message);
-                return false;
-            }
-            catch (ServiceNotAuthenticatedException ex)
-            {
-                Log.Instance.Error("E-mail gonderilemedi. Ayarları kontrol ediniz => {0}", ex.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("E-mail gonderilemedi. Ayarları kontrol ediniz => {0}", ex.Message);
-                return false;
             }
         }
 
@@ -197,7 +145,7 @@ namespace EnMon_Driver_Manager
         {
             try
             {
-                if (!DBHelper_EmailAlarms.UpdateExistingMailAlarm(args.alarmMail.ID, args.alarmMail.Name, args.alarmMail.LogicText, args.alarmMail.MailGroupID, args.alarmMail.EMailSubject, args.alarmMail.EmailText))
+                if (!DBHelper_EmailAlarms.UpdateExistingMailAlarm(args.alarmMail.ID, args.alarmMail.Name, args.alarmMail.LogicText, args.alarmMail.MailGroupID, args.alarmMail.EMailSubject, args.alarmMail.EmailText, args.alarmMail.Delaytime))
                 {
                     MessageBox.Show("Yeni alarm database'e  eklenemedi", Constants.MessageBoxHeader);
                 }

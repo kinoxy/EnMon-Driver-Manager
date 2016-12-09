@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frm_ChangeGroupName));
             this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
             this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.txtBox_OldName = new MaterialSkin.Controls.MaterialSingleLineTextField();
@@ -41,7 +42,8 @@
             this.materialLabel1.AutoSize = true;
             this.materialLabel1.Depth = 0;
             this.materialLabel1.Font = new System.Drawing.Font("Roboto", 11F);
-            this.materialLabel1.Location = new System.Drawing.Point(12, 79);
+            this.materialLabel1.ForeColor = System.Drawing.Color.Black;
+            this.materialLabel1.Location = new System.Drawing.Point(12, 13);
             this.materialLabel1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialLabel1.Name = "materialLabel1";
             this.materialLabel1.Size = new System.Drawing.Size(81, 19);
@@ -54,7 +56,8 @@
             this.materialLabel2.AutoSize = true;
             this.materialLabel2.Depth = 0;
             this.materialLabel2.Font = new System.Drawing.Font("Roboto", 11F);
-            this.materialLabel2.Location = new System.Drawing.Point(12, 110);
+            this.materialLabel2.ForeColor = System.Drawing.Color.Black;
+            this.materialLabel2.Location = new System.Drawing.Point(12, 42);
             this.materialLabel2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialLabel2.Name = "materialLabel2";
             this.materialLabel2.Size = new System.Drawing.Size(79, 19);
@@ -66,9 +69,9 @@
             // 
             this.txtBox_OldName.Depth = 0;
             this.txtBox_OldName.Enabled = false;
-            this.txtBox_OldName.ForeColor = System.Drawing.Color.Black;
+            this.txtBox_OldName.ForeColor = System.Drawing.Color.White;
             this.txtBox_OldName.Hint = "";
-            this.txtBox_OldName.Location = new System.Drawing.Point(108, 79);
+            this.txtBox_OldName.Location = new System.Drawing.Point(108, 9);
             this.txtBox_OldName.MaxLength = 32767;
             this.txtBox_OldName.MouseState = MaterialSkin.MouseState.HOVER;
             this.txtBox_OldName.Name = "txtBox_OldName";
@@ -87,7 +90,7 @@
             // 
             this.txtbox_NewName.Depth = 0;
             this.txtbox_NewName.Hint = "";
-            this.txtbox_NewName.Location = new System.Drawing.Point(108, 110);
+            this.txtbox_NewName.Location = new System.Drawing.Point(108, 38);
             this.txtbox_NewName.MaxLength = 32767;
             this.txtbox_NewName.MouseState = MaterialSkin.MouseState.HOVER;
             this.txtbox_NewName.Name = "txtbox_NewName";
@@ -107,7 +110,7 @@
             this.btn_ChangeGroupName.Depth = 0;
             this.btn_ChangeGroupName.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_ChangeGroupName.Icon = null;
-            this.btn_ChangeGroupName.Location = new System.Drawing.Point(12, 158);
+            this.btn_ChangeGroupName.Location = new System.Drawing.Point(16, 77);
             this.btn_ChangeGroupName.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ChangeGroupName.Name = "btn_ChangeGroupName";
             this.btn_ChangeGroupName.Primary = true;
@@ -122,9 +125,10 @@
             this.btn_Cancel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.btn_Cancel.BackColor = System.Drawing.Color.White;
             this.btn_Cancel.Depth = 0;
+            this.btn_Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btn_Cancel.ForeColor = System.Drawing.Color.White;
             this.btn_Cancel.Icon = null;
-            this.btn_Cancel.Location = new System.Drawing.Point(149, 158);
+            this.btn_Cancel.Location = new System.Drawing.Point(149, 77);
             this.btn_Cancel.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_Cancel.Name = "btn_Cancel";
             this.btn_Cancel.Primary = true;
@@ -137,8 +141,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
-            this.ClientSize = new System.Drawing.Size(285, 206);
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.CancelButton = this.btn_Cancel;
+            this.ClientSize = new System.Drawing.Size(285, 123);
             this.Controls.Add(this.btn_Cancel);
             this.Controls.Add(this.btn_ChangeGroupName);
             this.Controls.Add(this.txtbox_NewName);
@@ -146,13 +151,13 @@
             this.Controls.Add(this.materialLabel2);
             this.Controls.Add(this.materialLabel1);
             this.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frm_ChangeGroupName";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
-            this.Sizable = false;
-            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Grup Adını Değiştir";
             this.ResumeLayout(false);
@@ -161,12 +166,11 @@
         }
 
         #endregion
-
-        private MaterialSkin.Controls.MaterialLabel materialLabel1;
-        private MaterialSkin.Controls.MaterialLabel materialLabel2;
         private MaterialSkin.Controls.MaterialSingleLineTextField txtBox_OldName;
         private MaterialSkin.Controls.MaterialSingleLineTextField txtbox_NewName;
-        private MaterialSkin.Controls.MaterialRaisedButton btn_ChangeGroupName;
         private MaterialSkin.Controls.MaterialRaisedButton btn_Cancel;
+        public MaterialSkin.Controls.MaterialLabel materialLabel1;
+        public MaterialSkin.Controls.MaterialLabel materialLabel2;
+        public MaterialSkin.Controls.MaterialRaisedButton btn_ChangeGroupName;
     }
 }

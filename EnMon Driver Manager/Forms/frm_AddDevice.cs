@@ -12,30 +12,20 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventHandler'
     public delegate void AddDeviceEventHandler(object source, AddDeviceEventArgs e);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventHandler'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice'
     public partial class frm_AddDevice : MaterialForm
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice'
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.MessageBoxHeader'
         public string MessageBoxHeader {get;set;}
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.MessageBoxHeader'
         private List<int> usedModbusSlaveAddresses;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.frm_AddDevice()'
         public frm_AddDevice()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.frm_AddDevice()'
         {
             InitializeComponent();
             MessageBoxHeader = "EnMon Sürücü Yöneticisi";
 
         }
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.frm_AddDevice(string, string, List<Protocol>, List<int>)'
-        public frm_AddDevice(string _stationName, string _deviceName, List<Protocol> _protocols, List<int> _usedModbusSlaveAddresses) : this()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.frm_AddDevice(string, string, List<Protocol>, List<int>)'
+       public frm_AddDevice(string _stationName, string _deviceName, List<CommunicationProtocol> _protocols, List<int> _usedModbusSlaveAddresses) : this()
         {
             cbx_StationName.Items.Add(_stationName);
             cbx_StationName.SelectedItem = _stationName;
@@ -44,7 +34,7 @@ namespace EnMon_Driver_Manager
             txt_DeviceName.Enabled = false;
             if (_protocols != null)
             {
-                foreach (Protocol p in _protocols)
+                foreach (CommunicationProtocol p in _protocols)
                 {
                     cbx_Protocol.Items.Add(p.Name);
                 }
@@ -64,9 +54,7 @@ namespace EnMon_Driver_Manager
 
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.btn_AddDevice_Click(object, EventArgs)'
         public void btn_AddDevice_Click(object sender, EventArgs e)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.btn_AddDevice_Click(object, EventArgs)'
         {
             // Girilen modbus slave adresi ve ip adresinde bir sorun yoksa,
             if(ValidateSlaveAddress(txt_SlaveID.Text) & ValidateIpAddress(txt_IpAddress.Text))
@@ -143,9 +131,7 @@ namespace EnMon_Driver_Manager
 
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.ClickedAddDeviceButton'
         public event AddDeviceEventHandler ClickedAddDeviceButton;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddDevice.ClickedAddDeviceButton'
         private void OnClickedAddDeviceButton()
         {
             AddDeviceEventArgs args = new AddDeviceEventArgs();
@@ -170,28 +156,16 @@ namespace EnMon_Driver_Manager
 
 
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs'
     public class AddDeviceEventArgs : EventArgs
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs'
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.StationName'
-        public string StationName { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.StationName'
+       public string StationName { get; set; }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.DeviceName'
         public string DeviceName { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.DeviceName'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.IpAddress'
         public string IpAddress { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.IpAddress'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.SlaveID'
         public string SlaveID { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.SlaveID'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.ProtocolName'
         public string ProtocolName { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AddDeviceEventArgs.ProtocolName'
     }
 }

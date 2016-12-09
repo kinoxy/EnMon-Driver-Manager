@@ -10,14 +10,11 @@ using System.Collections.Generic;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper'
+
     public static class StaticHelper
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper'
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeDatabase(string)'
-        public static AbstractDBHelper InitializeDatabase(string _fileName)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeDatabase(string)'
-        {
+       public static AbstractDBHelper InitializeDatabase(string _fileName)
+       {
             try
             {
                 if (File.Exists(_fileName))
@@ -93,9 +90,7 @@ namespace EnMon_Driver_Manager
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeMailClient(string)'
         public static MailClient InitializeMailClient(string _fileName)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.InitializeMailClient(string)'
         {
             if (File.Exists(_fileName))
             {
@@ -103,6 +98,8 @@ namespace EnMon_Driver_Manager
                 string _mailServerPort = string.Empty;
                 string _userName = string.Empty;
                 string _password = string.Empty;
+                string _fromMailAddress = string.Empty;
+                bool _useSSL = false;
 
                 var parser = new FileIniDataParser();
 
@@ -130,17 +127,19 @@ namespace EnMon_Driver_Manager
                             _password = kd.Value.Trim();
                             break;
 
-                        case "MaxRegisterInOnePoll":
-                            _password = kd.Value.Trim();
+                        case "MailAddress":
+                            _fromMailAddress = kd.Value.Trim();
                             break;
-
+                        case "EnableSLL":
+                            _useSSL = kd.Value.Trim() == "TRUE" ? true : false;
+                            break;
                         default:
                             break;
                     }
                 }
-                if (_mailServerName != string.Empty & _mailServerPort!= string.Empty & _userName!= string.Empty & _password!= string.Empty)
+                if (_mailServerName != string.Empty & _mailServerPort!= string.Empty & _userName!= string.Empty & _password!= string.Empty & _fromMailAddress != string.Empty)
                 {
-                    return new MailClient(_mailServerName, _mailServerPort, _userName, _password);
+                    return new MailClient(_mailServerName, _mailServerPort, _userName, _password, _fromMailAddress, _useSSL);
                 }
                 else
                 {

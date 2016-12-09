@@ -14,9 +14,7 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddNewOrUpdateMailAlarm'
     public partial class frm_AddNewOrUpdateMailAlarm : Form, IDisposable
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddNewOrUpdateMailAlarm'
     {
         private int cursorPos;
         private AbstractDBHelper DBHelper_AddNewOrUpdateExistingMailAlarm;
@@ -29,9 +27,7 @@ namespace EnMon_Driver_Manager
         }
 
         private FormType formType;
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddNewOrUpdateMailAlarm.frm_AddNewOrUpdateMailAlarm()'
         public frm_AddNewOrUpdateMailAlarm()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddNewOrUpdateMailAlarm.frm_AddNewOrUpdateMailAlarm()'
         {
             InitializeComponent();
             cursorPos = 0;
@@ -39,9 +35,7 @@ namespace EnMon_Driver_Manager
             formType = FormType.AddNewSignal;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_AddNewOrUpdateMailAlarm.frm_AddNewOrUpdateMailAlarm(AlarmMail)'
         public frm_AddNewOrUpdateMailAlarm(AlarmMail _alarmMail)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_AddNewOrUpdateMailAlarm.frm_AddNewOrUpdateMailAlarm(AlarmMail)'
         {
             
             InitializeComponent();

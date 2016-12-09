@@ -2,12 +2,12 @@
 using EnMon_Driver_Manager.Models;
 using IniParser;
 using IniParser.Model;
-using MailKit.Net.Smtp;
-using MimeKit;
 using NCalc;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -15,54 +15,87 @@ using System.Timers;
 namespace EnMon_Driver_Manager.Drivers.Mail
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient'
+
     public class MailClient : IDisposable
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient'
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailServerName'
-        public string MailServerName;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailServerName'
+        #region Public Properties
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailServerPort'
-        public string MailServerPort;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailServerPort'
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.UserName'
-        public string UserName;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.UserName'
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Password'
-        public string Password;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Password'
+        public string MailServerName
+        {
+            get;
+            protected set;
+        }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.ConfigFileLocation'
-        public string ConfigFileLocation;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.ConfigFileLocation'
+        public string MailServerPort
+        {
+            get;
+            protected set;
+        }
+
+        public string UserName
+        {
+            get;
+            protected set;
+        }
+
+        public string Password
+        {
+            get;
+            protected set;
+        }
+
+
+
+        public SmtpClient Client
+        {
+            get;
+            protected set;
+        }
+
+        public bool isStarted
+        {
+            get;
+            protected set;
+        }
+
+        public bool UseSSL
+        {
+            get;
+            protected set;
+        }
+
+        public string FromMailAddress
+        {
+            get;
+            protected set;
+        }
+        #endregion Public Properties
+
+        #region Private Properties
+
         private AbstractDBHelper DBHelper_MailClient;
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.isStarted'
-        public bool isStarted { get; private set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.isStarted'
+
         private List<AlarmMail> _alarmMails;
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.client'
-        public SmtpClient client;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.client'
+
         private Timer cyclicTimer;
+
         private List<MailClientTimer> mailClientTimers; //Gecikmeli mail alarmları için gerekli timerları tutuyor.
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Client'
-        public SmtpClient Client
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Client'
+        private string ConfigFileLocation
         {
-            get { return client; }
-            set { client = value; }
+            get;
+            set;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailClient()'
+        #endregion Private Properties
+
+        #region Constructors
+
         public MailClient()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailClient()'
         {
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailClient(string)'
         public MailClient(string _configFileLocation) : this()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailClient(string)'
         {
             MailServerPort = "587";
             mailClientTimers = new List<MailClientTimer>();
@@ -71,12 +104,203 @@ namespace EnMon_Driver_Manager.Drivers.Mail
             ReadConfigFile(_configFileLocation);
 
             DBHelper_MailClient = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
+
             // Mail alarmları kontrol etmek için cyclic timer
             cyclicTimer = new Timer();
-            cyclicTimer.Interval = 100;
-            cyclicTimer.Enabled = true;
+            cyclicTimer.Interval = 500;
             cyclicTimer.Elapsed += Timer_Elapsed;
         }
+
+        public MailClient(string _mailServerName, string _mailServerPort, string _userName, string _password, string _fromMailAddress, bool _useSSL)
+        {
+            try
+            {
+                MailServerName = _mailServerName;
+                MailServerPort = _mailServerPort;
+                UserName = _userName;
+                Password = _password;
+                FromMailAddress = _fromMailAddress;
+                UseSSL = _useSSL;
+                if (Client == null)
+                {
+                    Client = new SmtpClient(_mailServerName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("MailClient sürücüsü oluşturulamadı  => {0} ", ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public void StartDriver()
+        {
+            try
+            {
+                // Database helper oluşturulmadıysa veritabanı baglantısı için database helper oluşturulur
+                if (DBHelper_MailClient == null)
+                {
+                    DBHelper_MailClient = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
+                }
+
+                if (DBHelper_MailClient != null)
+                {
+                    // Database'den alarm mail bilgileri çekilir.
+                    _alarmMails = GetAlarmMails();
+
+                    // Database'den alarm mail donduyse,
+                    if (_alarmMails != null)
+                    {
+                        // Timer'ın olup olmadığına bakılır. Timer oluşturulmadıysa timer oluşturulur.
+                        if (cyclicTimer == null)
+                        {
+                            cyclicTimer = new Timer();
+                            cyclicTimer.Interval = 500;
+                            cyclicTimer.Elapsed += Timer_Elapsed;
+                        }
+
+                        isStarted = true;
+                        cyclicTimer.Start();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Mail client sürücüsü başlatılamadı => {1}", this.GetType().Name, ex.Message);
+            }
+        }
+
+        public List<AlarmMail> GetAlarmMails()
+        {
+            return DBHelper_MailClient.GetAllAlarmMails();
+        }
+
+        public void Dispose()
+
+        {
+            Client = null;
+            DBHelper_MailClient = null;
+        }
+
+        public Task SendMailAsync(List<string> toWho, string _message, string _subject = "Enmon Enerji Takibi")
+
+        {
+            try
+            {
+                var mail = new MailMessage();
+                mail.From = new MailAddress(FromMailAddress);
+                foreach (string address in toWho)
+                {
+                    mail.To.Add(address);
+                }
+                mail.Subject = _subject;
+                mail.IsBodyHtml = true;
+                string htmlBody;
+                htmlBody = _message;
+                mail.Body = htmlBody;
+                Client.Port = int.Parse(MailServerPort);
+                Client.UseDefaultCredentials = false;
+                Client.Credentials = new System.Net.NetworkCredential(UserName, Password);
+                Client.EnableSsl = UseSSL;
+                return Client.SendMailAsync(mail);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+        public async void SendMailAsync(AlarmMail _alarm)
+        {
+            if (Client == null)
+            {
+                Client = new SmtpClient(MailServerName);
+            }
+
+            try
+            {
+                List<User> recipients = GetMailRecipients(_alarm);
+                if (recipients.Count > 0)
+                {
+                    var toWho = from recipient in recipients select recipient.Email;
+
+                    await SendMailAsync(toWho.ToList(), _alarm.EmailText, _alarm.EMailSubject);
+                    Log.Instance.Info("{0}: '{1}' adlı alarm '{2}' nolu e-posta grubundaki kullanıcalara iletildi.", this.GetType().Name, _alarm.Name, _alarm.MailGroupName);
+                }
+                else
+                {
+                    Log.Instance.Warn("{0}: Veritabanında alıcı bulunamadığı için {1} adlı alarm iletilemedi.", this.GetType().Name, _alarm.Name);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: {1} adlı alarm ilgili kullanıcalara iletilemedi => {2}", this.GetType().Name, _alarm.Name, ex.Message);
+                throw;
+            }
+        }
+
+        /*public bool ConnectToMailServer()
+        {
+            try
+            {
+                if (!(Client.IsConnected))
+                {
+                    client.ServerCertificateValidationCallback = (s, c, h, fe) => true;
+
+                    client.Connect(MailServerName, Convert.ToInt32(MailServerPort), false);
+
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                    client.Authenticate(UserName, Password);
+                }
+                if (client.IsConnected)
+                {
+                    return true;
+                }
+                else
+                {
+                    throw new Exception("Mail Server ile bağlantı kurulamadı");
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+                throw;
+            }
+        }*/
+
+        /*public void Connect(string _mailServerName, string _mailServerPort, string _userName, string _password)
+        {
+            MailServerName = _mailServerName;
+            MailServerPort = _mailServerPort;
+            UserName = _userName;
+            Password = _password;
+            if (client == null)
+            {
+                client = new SmtpClient();
+            }
+            try
+            {
+                client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                client.Connect(MailServerName, int.Parse(MailServerPort), false);
+
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                client.Authenticate(UserName, Password);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }*/
+
+        #endregion
+
+        #region Private Methods
 
         private void ReadConfigFile(string _configFileLocation)
         {
@@ -105,32 +329,16 @@ namespace EnMon_Driver_Manager.Drivers.Mail
                         case "Password":
                             Password = kd.Value.Trim();
                             break;
-
+                        case "MailAddress":
+                            FromMailAddress = kd.Value.Trim();
+                            break;
+                        case "EnableSSL":
+                            UseSSL = kd.Value.Trim() == "TRUE" ? true : false;
+                            break;
                         default:
                             break;
                     }
                 }
-            }
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailClient(string, string, string, string)'
-        public MailClient(string _mailServerName, string _mailServerPort, string _userName, string _password)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.MailClient(string, string, string, string)'
-        {
-            try
-            {
-                MailServerName = _mailServerName;
-                MailServerPort = _mailServerPort;
-                UserName = _userName;
-                Password = _password;
-                if (client == null)
-                {
-                    client = new SmtpClient();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("MailClient sürücüsü oluşturulamadı  => {0} ", ex.Message);
             }
         }
 
@@ -153,35 +361,40 @@ namespace EnMon_Driver_Manager.Drivers.Mail
                     foreach (AlarmMail alarmMail in _alarmMails)
                     {
                         // Alarm koşulu içerisindeki sinyal isimleri anlık değerler ile değiştirilir.
-                        string logicTextWithVariables = ReplaceVariableNamesWithVariableValue(alarmMail.LogicText);
+                        string logicTextWithVariables = ReplaceVariableNamesWithVariableValues(alarmMail.LogicText);
 
-                        // Güncel değerlerin yer aldığı logictext çalıştırılır.
-                        int calculatedValue = CalculateLogic(logicTextWithVariables);
-
-                        bool result = calculatedValue > 0;
-
-                        // Logic sonucu onceki sonuclar ile aynı değilse,
-                        if (result != alarmMail.Status)
+                        // Logicte yazım hatası, sinyal ismi bulunamaması vb durumu varsa ReplaceVariableNamesWithVariableValues methodundan logicText null olarak doner.
+                        // Aksi durumda işlem devam eder.
+                        if (logicTextWithVariables != null)
                         {
-                            // yeni sonuc database'de kaydedilir.
-                            alarmMail.Status = result;
-                            DBHelper_MailClient.UpdateMailAlarmStatus(alarmMail);
+                            // Güncel değerlerin yer aldığı logictext dynamic olarak çalıştırılır.
+                            int calculatedValue = CalculateLogic(logicTextWithVariables);
 
-                            // eğer logic sonucu false'tan true'ta gectiyse
-                            if (result == true)
+                            bool result = calculatedValue > 0;
+
+                            // Logic sonucu kaydedilen önceki sonuç ile aynı değilse, logic sonucu değişmis ise
+                            if (result != alarmMail.Status)
                             {
-                                // mail alarm'a atanmıs gecikme suresi yoksa e-posta anında gönderilir.
-                                if (alarmMail.Delaytime == 0)
+                                // yeni sonuc database'de kaydedilir.
+                                alarmMail.Status = result;
+                                DBHelper_MailClient.UpdateMailAlarmStatus(alarmMail);
+
+                                // logic sonucu true ise e-mail gönderme işlemleri başlatılır.
+                                if (result == true)
                                 {
-                                    SendMail(alarmMail);
-                                }
-                                // eğer mail alarm'a atanmış bir gecikme süresi varsa girilen süre sonra logic'in durumunun tekrardan kontrol edilmesi için timer olusturulur.
-                                else
-                                {
-                                    MailClientTimer mailClientTimer = new MailClientTimer(alarmMail);
-                                    mailClientTimer.TimerElapsed += MailClientTimer_TimerElapsed;
-                                    mailClientTimers.Add(mailClientTimer);
-                                    mailClientTimer.Start();
+                                    // mail alarm'a atanmıs gecikme suresi yoksa e-posta anında gönderilir.
+                                    if (alarmMail.Delaytime == 0)
+                                    {
+                                        SendMailAsync(alarmMail);
+                                    }
+                                    // eğer mail alarm'a atanmış gecikme süresi varsa girilen süre sonra logic'in değerinin tekrardan kontrol edilmesi için timer olusturulur.
+                                    else
+                                    {
+                                        MailClientTimer mailClientTimer = new MailClientTimer(alarmMail);
+                                        mailClientTimer.TimerElapsed += MailClientTimer_TimerElapsed;
+                                        mailClientTimers.Add(mailClientTimer);
+                                        mailClientTimer.Start();
+                                    }
                                 }
                             }
                         }
@@ -200,11 +413,12 @@ namespace EnMon_Driver_Manager.Drivers.Mail
             mailClientTimer.Stop();
             try
             {
-                string logicTextWithVariables = ReplaceVariableNamesWithVariableValue(args.alarmMail.LogicText);
+                string logicTextWithVariables = ReplaceVariableNamesWithVariableValues(args.alarmMail.LogicText);
                 int result = CalculateLogic(logicTextWithVariables);
+                // Logic hala true donuyorsa e-mail gonderilir.
                 if (result > 0)
                 {
-                    SendMail(args.alarmMail);
+                    SendMailAsync(args.alarmMail);
                 }
                 mailClientTimers.Remove(mailClientTimer);
             }
@@ -238,116 +452,37 @@ namespace EnMon_Driver_Manager.Drivers.Mail
             return evaluateValue;
         }
 
-        private string ReplaceVariableNamesWithVariableValue(string logicText)
+        private string ReplaceVariableNamesWithVariableValues(string logicText)
         {
             // Koşul içerisindeki sinyal isimleri alınır.
             List<string> variables = StaticHelper.GetStringsBetweenGivenChar(logicText, '$');
 
-            // Koşul içerisinde sinyal ismi varsa,
+            // Koşul içerisinde sinyal ismi varsa sinyallerin isimleri sinyal değerleri ile değiştirilir.
             if (variables.Count > 0)
             {
                 // Koşul text'i içerisinde sinyal isimleri güncel değerleri ile değiştirilir.
-                foreach (string variable in variables)
+                try
                 {
-                    string oldValue = string.Format("${0}$", variable);
-                    string newValue = DBHelper_MailClient.GetSignalValueByIdentification(variable);
-                    logicText = logicText.Replace(oldValue, newValue);
+                    foreach (string variable in variables)
+                    {
+                        string oldValue = string.Format("${0}$", variable);
+                        string newValue = DBHelper_MailClient.GetSignalValueByIdentification(variable);
+                        newValue = newValue.Replace(",", ".");
+                        
+                        logicText = logicText.Replace(oldValue, newValue);
+                    }
+
+                    logicText = logicText.ToUpper();
+                    logicText = logicText.Replace("FALSE", "0");
+                    logicText = logicText.Replace("TRUE", "1");
+                }
+                catch
+                {
+                    return null;
                 }
             }
 
             return logicText;
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.StartDriver()'
-        public void StartDriver()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.StartDriver()'
-        {
-            
-            // Mail client ve database helper olusturulduysa
-            if (DBHelper_MailClient != null)
-            {
-                // Database'den alarm mail bilgileri çekilir.
-                _alarmMails = GetAlarmMails();
-
-                // Database'den alarm mail donduyse,
-                if (_alarmMails != null)
-                {
-                    isStarted = true;
-                    cyclicTimer.Start();
-                }
-            }
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.GetAlarmMails()'
-        public List<AlarmMail> GetAlarmMails()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.GetAlarmMails()'
-        {
-            return DBHelper_MailClient.GetAllAlarmMails();
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Dispose()'
-        public void Dispose()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Dispose()'
-        {
-            Client = null;
-            DBHelper_MailClient = null;
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.SendMail(List<string>, MimeEntity, string)'
-        public void SendMail(List<string> toWho, MimeEntity _message, string _subject = "Enmon Enerji Takibi")
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.SendMail(List<string>, MimeEntity, string)'
-        {
-           
-            try
-            {
-                
-                    var message = new MimeMessage();
-                    foreach (string mailAddress in toWho)
-                    {
-                        message.To.Add(new MailboxAddress(mailAddress, mailAddress));
-                    }
-                    message.From.Add(new MailboxAddress(UserName, UserName));
-                    message.Subject = _subject;
-                    message.Body = _message;
-                    client.Send(message);
-
-                    client.Disconnect(true);
-                
-                    
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.SendMail(AlarmMail)'
-        public void SendMail(AlarmMail _alarm)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.SendMail(AlarmMail)'
-        {
-            client = new SmtpClient();
-            List<User> recipients = GetMailRecipients(_alarm);
-            if (recipients.Count > 0)
-            {
-                var message = new MimeMessage();
-                foreach (User recipient in recipients)
-                {
-                    message.To.Add(new MailboxAddress(recipient.Name + " " + recipient.Surname, recipient.Email));
-                }
-                message.From.Add(new MailboxAddress(Constants.MessageBoxHeader, UserName));
-                message.Subject = _alarm.EMailSubject;
-                message.Body = new TextPart("plain") { Text = @_alarm.EmailText };
-
-                if (ConnectToMailServer())
-                {
-                    client.Send(message);
-                    client.Disconnect(true);
-                }
-                else
-                {
-                    Log.Instance.Error("{0} isimli alarm mail server'a bağlanılamadı için gönderilemedi", _alarm.Name);
-                }
-            }
         }
 
         private List<User> GetMailRecipients(AlarmMail _alarm)
@@ -355,63 +490,8 @@ namespace EnMon_Driver_Manager.Drivers.Mail
             return DBHelper_MailClient.GetMailRecipients(_alarm.MailGroupID);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.ConnectToMailServer()'
-        public bool ConnectToMailServer()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.ConnectToMailServer()'
-        {
-            try
-            {
-                if (!(client.IsConnected))
-                {
-                    client.ServerCertificateValidationCallback = (s, c, h, fe) => true;
+        #endregion
 
-                    client.Connect(MailServerName, Convert.ToInt32(MailServerPort), false);
 
-                    client.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                    client.Authenticate(UserName, Password);
-                }
-                if (client.IsConnected)
-                {
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("Mail Server ile bağlantı kurulamadı");
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-                throw;
-            }
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Connect(string, string, string, string)'
-        public void Connect(string _mailServerName, string _mailServerPort, string _userName, string _password)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'MailClient.Connect(string, string, string, string)'
-        {
-            MailServerName = _mailServerName;
-            MailServerPort = _mailServerPort;
-            UserName = _userName;
-            Password = _password;
-            if (client == null)
-            {
-                client = new SmtpClient();
-            }
-            try
-            {
-                client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                client.Connect(MailServerName, int.Parse(MailServerPort), false);
-
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
-
-                client.Authenticate(UserName, Password);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
     }
 }

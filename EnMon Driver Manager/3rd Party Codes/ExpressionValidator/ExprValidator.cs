@@ -5,17 +5,17 @@ namespace ExpressionValidatorLib
     /// <summary>
     /// Parse a math expression to see if it's correct.
     /// Algorithm: recursive descent.
-    /// 
+    ///
     /// Grammar for mathematical expressions:
     /// E = T + E | T - E | T
     /// T = F * T | F / T | F
     /// F = (E) | num | var
-    /// 
+    ///
     /// num is of format a or a.b, cannot be a. or .b,
     /// var type1 is of format id,
     /// var type2 is of format id.id,
     /// id is of format [a-zA-Z][a-zA-Z0-9_]+.
-    /// 
+    ///
     /// Author: X. C.
     /// Created on: 3/12/2015
     /// Last modified: 6/2/2015
@@ -27,30 +27,17 @@ namespace ExpressionValidatorLib
         private string expr; // input math expression string.
         private int p;       // position of current character.
         private int len;     // length of input expression string.
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.msg'
         public string msg;  // error message.
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.msg'
 
-
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.VarType.VarType2'
         public enum VarType { VarType1, VarType2 };
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.VarType.VarType1'
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.VarType.VarType2'
+
         public VarType varType // Variable type.
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.VarType'
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.VarType.VarType1'
         {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.varType'
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.VarType'
             get;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.varType'
             set;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.TRACE'
         public bool TRACE   // Flag to trace function entrance.
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ExprValidator.TRACE'
         {
             get;
             set;
@@ -65,7 +52,6 @@ namespace ExpressionValidatorLib
             varType = VarType.VarType1;
         }
 
-
         /// <summary>
         /// Returns error message of validation.
         /// </summary>
@@ -74,7 +60,6 @@ namespace ExpressionValidatorLib
         {
             return msg;
         }
-
 
         /// <summary>
         /// Entry point of validation.
@@ -103,21 +88,15 @@ namespace ExpressionValidatorLib
                 }
                 return valid;
             }
-#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
-#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
                 valid = false;
 
-
-                    msg += /*"\nexception: " + ex.Message +*/ getPos();
-               
-                
+                msg += /*"\nexception: " + ex.Message +*/ getPos();
             }
 
             return valid;
         }
-
 
         /// <summary>
         /// Ignore space in input string.
@@ -126,7 +105,6 @@ namespace ExpressionValidatorLib
         {
             while (p < len && is_space(expr[p])) ++p;
         }
-
 
         /// <summary>
         /// Return true if c is a space character.
@@ -137,7 +115,6 @@ namespace ExpressionValidatorLib
         {
             return Char.IsWhiteSpace(c);
         }
-
 
         /// <summary>
         /// Validate E.
@@ -161,7 +138,6 @@ namespace ExpressionValidatorLib
             return true;
         }
 
-
         /// <summary>
         /// Validate T.
         /// </summary>
@@ -172,9 +148,25 @@ namespace ExpressionValidatorLib
 
             if (!F()) return false;
             ignore_space();
-            //char c = expr[p];
-            //while (p < len && (expr[p] == '*' || expr[p] == '/'))
-            if (p < len && ((expr[p] == '*' || expr[p] == '/' || (expr[p]) == '>' || expr[p] == '<' || expr[p] == '&' || expr[p] == '|' )))
+
+            if (p < len && expr[p] == '=')
+            {
+                if (TRACE) msg += "\n" + expr[p];
+                ++p;
+                if (p < len && expr[p] == '=')
+                {
+                    if (TRACE) msg += "\n" + expr[p];
+                    ++p;
+                    ignore_space();
+                    if (!T()) return false;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            else if (p < len && ((expr[p] == '*' || expr[p] == '/' || (expr[p]) == '>' || expr[p] == '<' || expr[p] == '&' || expr[p] == '|')))
             {
                 if (TRACE) msg += "\n" + expr[p];
                 ++p;
@@ -183,7 +175,6 @@ namespace ExpressionValidatorLib
             }
             return true;
         }
-
 
         /// <summary>
         /// Validate F.
@@ -291,7 +282,6 @@ namespace ExpressionValidatorLib
             return true;
         }
 
-
         /// <summary>
         /// Validate var.
         /// Type 1: id
@@ -306,7 +296,7 @@ namespace ExpressionValidatorLib
             while (p < len && expr[p] != (char)39)
             {
                 ++p;
-                if(expr[p]==(char)39)
+                if (expr[p] == (char)39)
                 {
                     ++p;
                     return true;
@@ -332,7 +322,6 @@ namespace ExpressionValidatorLib
             //}
             //else if (varType == VarType.VarType2)
             //{
-
             //	if (!ID())
             //	{
             //		msg += "\ninvalid variable (invalid variable prefix)" + getPos();
@@ -344,7 +333,7 @@ namespace ExpressionValidatorLib
             //		return false;
             //	}
             //	// now p < len, and expr[p] == '.'.
-            //	++p; 
+            //	++p;
             //	if (!ID())
             //	{
             //		msg += "\ninvalid variable (invalid variable suffix)" + getPos();
@@ -359,10 +348,9 @@ namespace ExpressionValidatorLib
             //}
         }
 
-
         /// <summary>
         /// Validate ID (Identifier).
-        /// 
+        ///
         /// [a-zA-Z][a-zA-Z0-9_]+
         /// Note: do not show error cause for Identifier.
         /// </summary>
@@ -388,7 +376,6 @@ namespace ExpressionValidatorLib
 
             return true;
         }
-
 
         /// <summary>
         /// Show position where validation error happens.

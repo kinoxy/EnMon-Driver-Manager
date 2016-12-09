@@ -12,20 +12,14 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName'
-    public partial class frm_ChangeGroupName : MaterialForm
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName'
+    public partial class frm_ChangeGroupName : Form
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName.frm_ChangeGroupName()'
-        public frm_ChangeGroupName()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName.frm_ChangeGroupName()'
+       public frm_ChangeGroupName()
         {
             InitializeComponent();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName.frm_ChangeGroupName(MailGroup)'
         public frm_ChangeGroupName(MailGroup _mailGroup)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName.frm_ChangeGroupName(MailGroup)'
         {
             InitializeComponent();
             txtBox_OldName.Text = _mailGroup.Name;
@@ -46,9 +40,7 @@ namespace EnMon_Driver_Manager
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName.ClickedChangeGroupNameButton'
         public ChangeGroupNameEventHandler ClickedChangeGroupNameButton;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_ChangeGroupName.ClickedChangeGroupNameButton'
 
         private void OnClickedChangeGroupNameButton()
         {
@@ -63,13 +55,9 @@ namespace EnMon_Driver_Manager
     }
 }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ChangeGroupNameEventArgs'
 public class ChangeGroupNameEventArgs : EventArgs
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ChangeGroupNameEventArgs'
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'ChangeGroupNameEventArgs.Name'
     public string Name { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'ChangeGroupNameEventArgs.Name'
 
 }
 

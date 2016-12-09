@@ -62,7 +62,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(23, 129);
+            this.label3.Location = new System.Drawing.Point(21, 123);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(59, 13);
             this.label3.TabIndex = 2;
@@ -73,9 +73,9 @@
             this.cb_StationNames.DisplayMember = "Name";
             this.cb_StationNames.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.cb_StationNames.FormattingEnabled = true;
-            this.cb_StationNames.Location = new System.Drawing.Point(89, 31);
+            this.cb_StationNames.Location = new System.Drawing.Point(86, 31);
             this.cb_StationNames.Name = "cb_StationNames";
-            this.cb_StationNames.Size = new System.Drawing.Size(156, 24);
+            this.cb_StationNames.Size = new System.Drawing.Size(159, 24);
             this.cb_StationNames.TabIndex = 3;
             this.cb_StationNames.SelectionChangeCommitted += new System.EventHandler(this.cb_StationNames_SelectionChangeCommitted);
             // 
@@ -85,9 +85,9 @@
             this.cb_DeviceNames.Enabled = false;
             this.cb_DeviceNames.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.cb_DeviceNames.FormattingEnabled = true;
-            this.cb_DeviceNames.Location = new System.Drawing.Point(89, 74);
+            this.cb_DeviceNames.Location = new System.Drawing.Point(86, 74);
             this.cb_DeviceNames.Name = "cb_DeviceNames";
-            this.cb_DeviceNames.Size = new System.Drawing.Size(156, 24);
+            this.cb_DeviceNames.Size = new System.Drawing.Size(159, 24);
             this.cb_DeviceNames.TabIndex = 4;
             this.cb_DeviceNames.DropDown += new System.EventHandler(this.cb_DeviceNames_DropDown);
             this.cb_DeviceNames.SelectionChangeCommitted += new System.EventHandler(this.cb_DeviceNames_SelectionChangeCommitted);
@@ -98,9 +98,9 @@
             this.cb_SignalNames.Enabled = false;
             this.cb_SignalNames.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.cb_SignalNames.FormattingEnabled = true;
-            this.cb_SignalNames.Location = new System.Drawing.Point(88, 124);
+            this.cb_SignalNames.Location = new System.Drawing.Point(86, 118);
             this.cb_SignalNames.Name = "cb_SignalNames";
-            this.cb_SignalNames.Size = new System.Drawing.Size(157, 24);
+            this.cb_SignalNames.Size = new System.Drawing.Size(160, 24);
             this.cb_SignalNames.TabIndex = 5;
             // 
             // rb_AnalogSignals
@@ -119,7 +119,7 @@
             // rb_BinarySignals
             // 
             this.rb_BinarySignals.AutoSize = true;
-            this.rb_BinarySignals.Location = new System.Drawing.Point(191, 8);
+            this.rb_BinarySignals.Location = new System.Drawing.Point(180, 8);
             this.rb_BinarySignals.Name = "rb_BinarySignals";
             this.rb_BinarySignals.Size = new System.Drawing.Size(54, 17);
             this.rb_BinarySignals.TabIndex = 7;
