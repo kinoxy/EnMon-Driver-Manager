@@ -6,6 +6,7 @@ using EnMon_Driver_Manager.Models.Device;
 using IniParser;
 using IniParser.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace EnMon_Driver_Manager.Modbus
     ///
     /// </summary>
     /// <seealso cref="EnMon_Driver_Manager.Modbus.AbstractModbusDriver" />
-    public class ModbusTCP : AbstractModbusDriver, ITCPDriver
+    public class ModbusTCP : AbstractModbusDriver, ITCPDriver, IEnumerable
     {
         #region Private Properties
         private ParallelLoopResult loopResult { get; set; }
@@ -41,7 +42,7 @@ namespace EnMon_Driver_Manager.Modbus
         #region Constructors
         public ModbusTCP() : base()
         {
-            ProtocolID = AbstractDevice.Protocol.ModbusTCP;
+            communicationProtocol = new CommunicationProtocol() { Name = "ModbusTCP" };
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="ModbusTCP"/> class.
@@ -84,8 +85,6 @@ namespace EnMon_Driver_Manager.Modbus
         public void ConnectedToServer(object sender, TCPClientEventArgs e)
         {
             Log.Instance.Trace("{0}: {1} baglantı kuruldu", MethodBase.GetCurrentMethod().Name, e.ipAddress);
-            //_modbusTCPmaster.ReadValuesFromModbusServer();
-            //throw new NotImplementedException();
         }
 
         #endregion
@@ -200,7 +199,7 @@ namespace EnMon_Driver_Manager.Modbus
             }
             else
             {
-                Log.Instance.Error("{0} Hata: ModbusTCP Server cihazlar için Ip adresi bulunamadı. Driver olusturulamıyor...", this.GetType().Name);
+                Log.Instance.Error("{0} Hata: ModbusTCP Server cihazları için Ip adres bilgisi bulunamadı. Driver olusturulamıyor...", this.GetType().Name);
                 IsError = true;
             }
         }
@@ -262,16 +261,16 @@ namespace EnMon_Driver_Manager.Modbus
 
 
                     // Haberleşme protokolü farklı olan device'lar bu driver ile haberleşemeyeceği için listeden çıkartılıyor
-                    _stationDevices = VerifyProtocolofDevices(_stationDevices, ProtocolID);
+                    _stationDevices = VerifyProtocolofDevices(_stationDevices, communicationProtocol.Name);
 
                     if (_stationDevices.Count > 0)
                     {
                         // Her device için device'a ait sinyaller veritabanından çekilir
                         foreach (ModbusTCPDevice d in _stationDevices)
                         {
-                            d.BinarySignals = DBHelper.GetModbusDeviceBinarySignalsInfo(d.ID);
-                            d.AnalogSignals = DBHelper.GetModbusTCPDeviceAnalogSignalsInfo(d.ID);
-                            d.CommandSignals = DBHelper.GetModbusDeviceCommandSignalsInfo(d.ID);
+                            d.BinarySignals = DBHelper.GetModbusDeviceSignalsInfo<ModbusBinarySignal>(d);
+                            d.AnalogSignals = DBHelper.GetModbusDeviceSignalsInfo<ModbusAnalogSignal>(d);
+                            d.CommandSignals = DBHelper.GetModbusDeviceSignalsInfo<ModbusCommandSignal>(d);
                         }
 
                         s.ModbusTCPDevices = _stationDevices;
@@ -301,9 +300,10 @@ namespace EnMon_Driver_Manager.Modbus
             }
         }
 
-        public override void SetAllDevicesAsDisconnected()
+        public override void SetDriverAllDevicesDisconnected()
         {
-            DBHelper.SetDevicesDisconnected(AbstractDevice.Protocol.ModbusTCP);
+            CommunicationProtocol _protocol = new CommunicationProtocol() { ID = 0, Name = "ModbusTCP" };
+            DBHelper.SetDriverDevicesDisconnected(_protocol);
         }
 
         protected override void SendCommand(DataRow dr)
@@ -346,7 +346,7 @@ namespace EnMon_Driver_Manager.Modbus
                 cycleForCommands.Stop();
 
                 // Veritabanından active_commands tablosu okunuyor.
-                DataTable dt_activeCommands = DBHelper.GetActiveCommands(1);
+                DataTable dt_activeCommands = DBHelper.GetDriverActiveCommands("ModbusTCP");
 
                 // active_commands tablosundan veri donduyse web scadadan komut gelmiş demektir.
                 if (dt_activeCommands != null)
@@ -363,6 +363,23 @@ namespace EnMon_Driver_Manager.Modbus
 
                 cycleForCommands.Start();
             }
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            if (TCPClients != null)
+            {
+                foreach (ModbusTCPClient client in TCPClients)
+
+                {
+                    yield return client;
+                }
+            }
+        }
+
+        public override void SetAllDevicesDisconnected()
+        {
+            DBHelper.SetDriverDevicesDisconnected(communicationProtocol);
         }
 
 

@@ -32,7 +32,7 @@ namespace EnMon_Driver_Manager.Modbus
             throw new NotImplementedException();
         }
 
-        public override void SetAllDevicesAsDisconnected()
+        public override void SetDriverAllDevicesDisconnected()
         {
             throw new NotImplementedException();
         }
@@ -48,6 +48,11 @@ namespace EnMon_Driver_Manager.Modbus
         }
 
         protected override void CycleForCommands_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetAllDevicesDisconnected()
         {
             throw new NotImplementedException();
         }

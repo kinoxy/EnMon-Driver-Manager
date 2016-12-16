@@ -1,6 +1,6 @@
 ﻿namespace EnMon_Driver_Manager
 {
-    partial class frm_AddNewOrUpdateBinarySignal
+    partial class frm_AddNewOrUpdateModbusBinarySignal
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frm_AddNewOrUpdateBinarySignal));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frm_AddNewOrUpdateModbusBinarySignal));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -339,15 +339,11 @@
             // 
             this.cbx_IsAlarm.AutoSize = true;
             this.cbx_IsAlarm.BackColor = System.Drawing.Color.Black;
-            this.cbx_IsAlarm.Depth = 0;
             this.cbx_IsAlarm.Font = new System.Drawing.Font("Roboto", 10F);
             this.cbx_IsAlarm.ForeColor = System.Drawing.Color.White;
             this.cbx_IsAlarm.Location = new System.Drawing.Point(109, 8);
             this.cbx_IsAlarm.Margin = new System.Windows.Forms.Padding(0);
-            this.cbx_IsAlarm.MouseLocation = new System.Drawing.Point(-1, -1);
-            this.cbx_IsAlarm.MouseState = MaterialSkin.MouseState.HOVER;
             this.cbx_IsAlarm.Name = "cbx_IsAlarm";
-            this.cbx_IsAlarm.Ripple = true;
             this.cbx_IsAlarm.Size = new System.Drawing.Size(26, 30);
             this.cbx_IsAlarm.TabIndex = 24;
             this.cbx_IsAlarm.UseVisualStyleBackColor = false;
@@ -474,7 +470,7 @@
         private System.Windows.Forms.CheckBox cbx_IsReversed;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btn_Delete;
-        private MaterialSkin.Controls.MaterialCheckBox cbx_IsAlarm;
+        private System.Windows.Forms.CheckBox cbx_IsAlarm;
         private System.Windows.Forms.ComboBox cbx_ComparisonType;
         private System.Windows.Forms.Label label13;
     }

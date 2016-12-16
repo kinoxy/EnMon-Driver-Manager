@@ -1,4 +1,5 @@
 ﻿using EnMon_Driver_Manager.DataBase;
+using EnMon_Driver_Manager.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -144,11 +145,11 @@ namespace EnMon_Driver_Manager
 
         private void dgv_AnalogValues_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            string cellValue = dgv_AnalogValues.Rows[e.RowIndex].Cells[0].Value.ToString();
-            ModbusAnalogSignal analogSignal = DBHelper_OnlineValues.GetAnalogSignalsInfoByIdentification(cellValue);
+            string signalIdentification = dgv_AnalogValues.Rows[e.RowIndex].Cells[0].Value.ToString();
+            AnalogSignal analogSignal = DBHelper_OnlineValues.GetAnalogSignalsInfoByIdentification(signalIdentification);
             if (analogSignal != null)
             {
-                frm_AddNewOrUpdateAnalogSignal frm_UpdateAnalogSignal = new frm_AddNewOrUpdateAnalogSignal(analogSignal);
+                frm_AddNewOrUpdateModbusAnalogSignal frm_UpdateAnalogSignal = new frm_AddNewOrUpdateModbusAnalogSignal(analogSignal);
                 frm_UpdateAnalogSignal.ShowDialog();
             }
             else
@@ -159,11 +160,11 @@ namespace EnMon_Driver_Manager
 
         private void dgv_BinaryValues_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            string cellValue = dgv_BinaryValues.Rows[e.RowIndex].Cells[0].Value.ToString();
-            ModbusBinarySignal binarySignal = DBHelper_OnlineValues.GetBinarySignalsInfoByIdentification(cellValue);
+            string signalIdentification = dgv_BinaryValues.Rows[e.RowIndex].Cells[0].Value.ToString();
+            BinarySignal binarySignal = DBHelper_OnlineValues.GetBinarySignalsInfoByIdentification(signalIdentification);
             if (binarySignal != null)
             {
-                frm_AddNewOrUpdateBinarySignal frm_UpdateBinarySignal = new frm_AddNewOrUpdateBinarySignal(binarySignal);
+                frm_AddNewOrUpdateModbusBinarySignal frm_UpdateBinarySignal = new frm_AddNewOrUpdateModbusBinarySignal(binarySignal);
                 frm_UpdateBinarySignal.ShowDialog();
             }
             else
@@ -199,6 +200,7 @@ namespace EnMon_Driver_Manager
             dt_BinaryValues = DBHelper_OnlineValues.GetAllBinarySignalsInfoWithLastValues();
             //     dt_AnalogValues.Columns["Alarm"].DataType = System.Type.GetType("System.Boolean");
             dgv_BinaryValues.DataSource = dt_BinaryValues;
+            dgv_BinaryValues.Columns["driver_id"].Visible = false;   
         }
 
         #endregion

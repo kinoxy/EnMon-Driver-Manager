@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using EnMon_Driver_Manager.Models.Device;
 
 namespace EnMon_Driver_Manager.DataBase
 {
@@ -198,61 +199,14 @@ namespace EnMon_Driver_Manager.DataBase
 
         #region Protected Methods
 
-        /// <summary>
-        /// Sets the binary signal value.
-        /// </summary>
-        /// <param name="_signalID">The signal identifier.</param>
-        /// <param name="_signalValue">if set to <c>true</c> [signal value].</param>
-        /// <param name="_datetime">The datetime.</param>
-        /// <returns></returns>
-        protected bool SetBinarySignalValue(uint _signalID, bool _signalValue, string _datetime)
+        internal void AddAnalogSignalValueToDataBaseWriteBuffer(List<ModbusAnalogSignal> analogSignals)
         {
-            Log.Instance.Trace("{0} methodu çaðrýldý cagrýldý", MethodBase.GetCurrentMethod().Name);
-            bool _returnValue = false;
-            string value = _signalValue == true ? "1" : "0";
-            string query = String.Format("CALL setBinarySignalValue('{0}', {1},'{2}')", _signalID, value, _datetime);
-            DataTable dt = new DataTable();
-            try
-            {
-                dt = ExecuteQuery(query);
-
-                if (dt.Rows.Count > 0)
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        _returnValue = (dr.Field<bool>("result"));
-                        if (!_returnValue)
-                        {
-                            Log.Instance.Error("Database Hatasý: (setBinarySignalValue('{0}', {1}, '{2}') stored procedure çaðrýlýrken bir hata oluþtu)", _signalID, _signalValue, _datetime);
-                        }
-                    }
-                }
-                else
-                {
-                    Log.Instance.Error("Database'den deger donmedi");
-                    _returnValue = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Fatal("Database Hatasý: setBinarySignalValue stored procedure çaðrýlýrken bir hata olustu => {0}", ex.Message);
-                return false;
-            }
-
-            return _returnValue;
+            throw new NotImplementedException();
         }
 
-        public void SetDevicesDisconnected(Device.Protocol protocolID)
+        internal void AddBinarySignalValueToDataBaseWriteBuffer(List<ModbusBinarySignal> binarySignals)
         {
-            string query = $"CALL setDevicesDisconnected({protocolID})";
-            try
-            {
-                ExecuteNonQuery(query);
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Sürücü durdurulurken tüm cihazlarýn isConnected bilgisi deðiþtirilemedi =>{1}", this.GetType().Name, ex.Message);
-            }
+            throw new NotImplementedException();
         }
 
         public BinarySignal GetBinarySignalsInfoByIdentification(string _identification)
@@ -305,13 +259,75 @@ namespace EnMon_Driver_Manager.DataBase
             }
         }
 
-        /// <summary>
-        /// Sets the analog signal value.
-        /// </summary>
-        /// <param name="_signalID">The signal identifier.</param>
-        /// <param name="_signalValue">The signal value.</param>
-        /// <param name="_datetime">The datetime.</param>
-        /// <returns></returns>
+        public List<T> GetModbusDeviceSignalsInfo<T>(AbstractDevice d) where T : IModbusSignal, new()
+        {
+            string type_T = typeof(T).ToString();
+            string query;
+            switch (type_T)
+            {
+                case "ModbusBinarySignal":
+                    query = string.Format("CALL getModbusDeviceBinarySignalsInfo('{0}')", d.ID);
+                    break;
+                case "ModbusAnalogSignal":
+                    query = string.Format("CALL getModbusDeviceAnalogSignalsInfo('{0}')", d.ID);
+                    break;
+                case "ModbusCommandSignal":
+                    query = string.Format("CALL getModbusCommandSignalsInfo('{0}')", d.ID);
+                    break;
+                default:
+                    return null;
+            }
+            T signal;
+            List<T> signals = new List<T>();
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery(query);
+                if (dt.HasRows())
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        signal = new T();
+                        signal.GetInfosFromDataRow(dr);
+                        signals.Add(signal);
+                    }
+                }
+
+                return signals;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        internal List<ModbusTCPDevice> GetStationModbusTCPDevices(Station s)
+        {
+            string query = $"CALL getStationModbusTCPDevices({s})";
+            List<ModbusTCPDevice> devices = new List<ModbusTCPDevice>();
+            DataTable dt = new DataTable();
+            try
+            {
+
+                dt = ExecuteQuery(query);
+                if (dt.HasRows())
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        ModbusTCPDevice device = new ModbusTCPDevice(dr);
+                        devices.Add(device);
+                    }
+                }
+                return devices;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         protected bool SetAnalogSignalValue(uint _signalID, UInt32 _signalValue, string _datetime)
         {
             Log.Instance.Trace("{0} methodu çaðrýldý cagrýldý", MethodBase.GetCurrentMethod().Name);
@@ -339,13 +355,70 @@ namespace EnMon_Driver_Manager.DataBase
             return _returnValue;
         }
 
+        /// <summary>
+        /// Sets the binary signal value.
+        /// </summary>
+        /// <param name="_signalID">The signal identifier.</param>
+        /// <param name="_signalValue">if set to <c>true</c> [signal value].</param>
+        /// <param name="_datetime">The datetime.</param>
+        /// <returns></returns>
+        protected bool SetBinarySignalValue(uint _signalID, bool _signalValue, string _datetime)
+        {
+            Log.Instance.Trace("{0} methodu çaðrýldý cagrýldý", MethodBase.GetCurrentMethod().Name);
+            bool _returnValue = false;
+            string value = _signalValue == true ? "1" : "0";
+            string query = String.Format("CALL setBinarySignalValue('{0}', {1},'{2}')", _signalID, value, _datetime);
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery(query);
+
+                if (dt.Rows.Count > 0)
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        _returnValue = (dr.Field<bool>("result"));
+                        if (!_returnValue)
+                        {
+                            Log.Instance.Error("Database Hatasý: (setBinarySignalValue('{0}', {1}, '{2}') stored procedure çaðrýlýrken bir hata oluþtu)", _signalID, _signalValue, _datetime);
+                        }
+                    }
+                }
+                else
+                {
+                    Log.Instance.Error("Database'den deger donmedi");
+                    _returnValue = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Fatal("Database Hatasý: setBinarySignalValue stored procedure çaðrýlýrken bir hata olustu => {0}", ex.Message);
+                return false;
+            }
+
+            return _returnValue;
+        }
+
+        public void SetDriverDevicesDisconnected(CommunicationProtocol _communicationProtocol)
+        {
+            string query = $"CALL setDriverAllDevicesDisconnected({_communicationProtocol.ID})";
+            try
+            {
+                ExecuteNonQuery(query);
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Sürücü durdurulurken tüm cihazlarýn isConnected bilgisi deðiþtirilemedi =>{1}", this.GetType().Name, ex.Message);
+            }
+        }
         #endregion Protected Methods
 
         #region Public  Methods
 
-        public bool AddNewAnalogSignal(AnalogSignal analogSignal)
+        public bool AddNewModbusAnalogSignal(ModbusAnalogSignal analogSignal)
         {
             int HasMaxAlarm, HasMinAlarm, isEvent, isArchive, isSummary;
+            string query = string.Empty;
             try
             {
                 // Bir kerede update edilecek satýr sayýsý 30k dolaylarýnda olursa database'in hata verme ihtimali var
@@ -353,20 +426,19 @@ namespace EnMon_Driver_Manager.DataBase
                 HasMinAlarm = analogSignal.HasMinAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
                 isArchive = analogSignal.IsArchive.ToString().ToUpper() == "TRUE" ? 1 : 0;
 
-                string query = "INSERT INTO analog_signals(analog_signal_id, device_id, name,  identification, address, function_code, word_count, data_type_id, unit, scale_value, max_value, min_value, max_status_id, min_status_id, has_max_alarm, has_min_alarm, is_archive, archive_period_id) ";
-                query += $"VALUES ('{analogSignal.ID}', '{analogSignal.DeviceID}', '{analogSignal.Name}', '{analogSignal.Identification}', '{analogSignal.Address}','{analogSignal.FunctionCode}','{analogSignal.WordCount}','{analogSignal.dataType.ID}','{analogSignal.Unit}','{analogSignal.ScaleValue}','{analogSignal.MaxAlarmValue}','{analogSignal.MinAlarmValue}','{analogSignal.MaxAlarmStatusID}','{analogSignal.MinAlarmStatusID}','{HasMaxAlarm}','{HasMinAlarm}','{isArchive}','{analogSignal.archivePeriod.ID}')";
+                query = $"CALL addNewModbusAnalogSignal('{analogSignal.ID}', '{analogSignal.DeviceID}', '{analogSignal.Name}', '{analogSignal.Identification}', '{analogSignal.dataType.ID}','{analogSignal.Unit}','{analogSignal.ScaleValue}','{analogSignal.MaxAlarmValue}','{analogSignal.MinAlarmValue}','{analogSignal.MaxAlarmStatusID}','{analogSignal.MinAlarmStatusID}','{HasMaxAlarm}','{HasMinAlarm}','{isArchive}','{analogSignal.archivePeriod.ID}', '{analogSignal.Address}','{analogSignal.FunctionCode}','{analogSignal.WordCount}')";
                 return ExecuteNonQuery(query) > 0;
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Yeni analog sinyal oluþturulken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Log.Instance.Error("{0}: Veritabanýna yeni analog sinyal eklenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
 
-        public bool AddNewBinarySignal(BinarySignal binarySignal)
+        public bool AddNewModbusBinarySignal(ModbusBinarySignal binarySignal)
         {
-            StringBuilder query = new StringBuilder();
+            string query = string.Empty;
             int isAlarm, isEvent, isReversed;
             try
             {
@@ -374,8 +446,7 @@ namespace EnMon_Driver_Manager.DataBase
                 isEvent = binarySignal.IsEvent == true ? 1 : 0;
                 isReversed = binarySignal.IsReversed == true ? 1 : 0;
 
-                query.Append("INSERT INTO binary_signals (binary_signal_id, device_id, name, identification, address, function_code, word_count, comparison_bit_number, comparison_value, comparison_type, status_id, is_alarm, is_event,  is_reversed) ");
-                query.Append(string.Format("VALUES ('{0}', '{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}', '{12}', '{13}')", binarySignal.ID, binarySignal.DeviceID, binarySignal.Name, binarySignal.Identification, binarySignal.Address, binarySignal.FunctionCode, binarySignal.WordCount, binarySignal.ComparisonBitNumber, binarySignal.ComparisonValue, binarySignal.comparisonType, binarySignal.StatusID, isAlarm, isEvent, isReversed));
+                query =$"CALL addNewModbusBinarySignal('{binarySignal.ID}', '{binarySignal.DeviceID}','{binarySignal.Name}', '{binarySignal.Identification}', '{binarySignal.StatusID}', '{isAlarm}', '{isEvent}', '{isReversed}', '{binarySignal.Address}', '{binarySignal.FunctionCode}', '{binarySignal.WordCount}', '{binarySignal.ComparisonBitNumber}', '{binarySignal.ComparisonValue}', '{binarySignal.comparisonType}')";
                 return ExecuteNonQuery(query.ToString()) > 0;
             }
             catch (Exception ex)
@@ -385,9 +456,9 @@ namespace EnMon_Driver_Manager.DataBase
             }
         }
 
-        public bool AddNewCommandSignal(CommandSignal commandSignal)
+        public bool AddNewModbusCommandSignal(ModbusCommandSignal commandSignal)
         {
-            string query = string.Format("INSERT INTO command_signals (command_signal_id, device_id, name, identification, address, word_count, command_type) VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}') ", commandSignal.ID, commandSignal.DeviceID, commandSignal.Name, commandSignal.Identification, commandSignal.Address, commandSignal.WordCount, commandSignal.commandType);
+            string query = $"CALL addNewModbusCommand('{commandSignal.ID}','{commandSignal.DeviceID}', '{commandSignal.Name}', '{commandSignal.Identification}', '{commandSignal.Address}', '{commandSignal.WordCount}', '{commandSignal.commandType}')";
             try
             {
                 return ExecuteNonQuery(query) > 0;
@@ -412,6 +483,7 @@ namespace EnMon_Driver_Manager.DataBase
                 return false;
             }
         }
+
         public bool DeleteAnalogSignal(uint ID)
         {
             string query = $"CALL deleteAnalogSignalWithAllRecords('{ID}')";
@@ -673,10 +745,10 @@ namespace EnMon_Driver_Manager.DataBase
         /// Gets the active commands.
         /// </summary>
         /// <returns></returns>
-        public DataTable GetActiveCommands()
+        public DataTable GetDriverActiveCommands(string _driverName)
         {
             DataTable dt = new DataTable();
-            string query = "CALL getActiveCommands()";
+            string query = $"CALL getDriverActiveCommands({_driverName})";
             try
             {
                 dt = ExecuteQuery(query);
@@ -755,7 +827,7 @@ namespace EnMon_Driver_Manager.DataBase
             return result;
         }
 
-        public void DeleteActiveCommand(uint _commandID)
+        public void DeleteActiveCommandFromDatabase(uint _commandID)
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractDBHelper.DeleteActiveCommand(uint)'
         {
             string query = string.Format("CALL deleteActiveCommand('{0}');", _commandID);
@@ -775,8 +847,6 @@ namespace EnMon_Driver_Manager.DataBase
         /// <param name="_stationName">Name of the station.</param>
         /// <returns></returns>
         public bool AddStation(string _stationName)
-#pragma warning restore CS1572 // XML comment has a param tag for 'toString', but there is no parameter by that name
-#pragma warning restore CS1573 // Parameter '_stationName' has no matching param tag in the XML comment for 'AbstractDBHelper.AddStation(string)' (but other parameters do)
         {
             string query = String.Format("Call addStation('{0}');", _stationName);
             int result = ExecuteNonQuery(query);
@@ -801,12 +871,10 @@ namespace EnMon_Driver_Manager.DataBase
                 {
                     foreach (DataRow dr in dt.Rows)
                     {
-                        Station _station = new Station();
-                        _station.ID = dr.Field<ushort>("station_id");
-                        _station.Name = dr.Field<string>("name");
+                        Station _station = new Station(dr);
 
                         // Ýstasyona ait cihazlar okunuyor
-                        _station.Devices = GetStationDevices(_station.Name);
+                        _station.Devices = GetStationDevicesBasicInfo(_station.Name);
 
                         _stations.Add(_station);
                     }
@@ -848,7 +916,6 @@ namespace EnMon_Driver_Manager.DataBase
         }
 
         public DataTable GetAllBinarySignalsInfoWithLastValues()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractDBHelper.GetAllBinarySignalsInfoWithLastValues()'
         {
             DataTable dt = new DataTable();
             try
@@ -952,11 +1019,10 @@ namespace EnMon_Driver_Manager.DataBase
             }
         }
 
-        public List<Protocol> GetAllProtocolsInfo()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractDBHelper.GetAllProtocolsInfo()'
+        public List<CommunicationProtocol> GetAllProtocolsInfo()
         {
             Log.Instance.Trace("DBHelper.{0} methodu çaðrýldý", MethodBase.GetCurrentMethod().Name);
-            List<Protocol> protocols = new List<Protocol>();
+            List<CommunicationProtocol> protocols = new List<CommunicationProtocol>();
             try
             {
                 string query = String.Format("CALL getAllProtocolsInfo();");
@@ -966,10 +1032,7 @@ namespace EnMon_Driver_Manager.DataBase
                 {
                     foreach (DataRow dr in dt.Rows)
                     {
-                        Protocol _protocol = new Protocol();
-                        _protocol.ID = dt.Rows[0].Field<byte>("protocolID");
-                        _protocol.Name = dt.Rows[0].Field<string>("name");
-
+                        CommunicationProtocol _protocol = new CommunicationProtocol(dr);
                         protocols.Add(_protocol);
                     }
 
@@ -1283,78 +1346,6 @@ namespace EnMon_Driver_Manager.DataBase
             }
         }
 
-        /// <summary>
-        /// Gets all devices list.
-        /// </summary>
-        /// <returns></returns>
-        public List<Device> GetAllDevicesList()
-#pragma warning restore CS1658 // Unexpected character '`'. See also error CS1056.
-#pragma warning restore CS1658 // Unexpected character '1'. See also error CS1056.
-        {
-            Log.Instance.Trace("{0} methodu çaðrýldý ", MethodBase.GetCurrentMethod().Name);
-            List<Device> _deviceList = new List<Device>();
-            Device _device;
-
-            try
-            {
-                string query = "CALL getAllDevicesInfo()";
-                DataTable dt = new DataTable();
-                dt = ExecuteQuery(query);
-
-                if (dt.Rows.Count > 0)
-                {
-                    //for(int i =0; i<dt.Rows.Count; i++)
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        _device = new Device();
-                        _device.ID = dr.Field<UInt16>("device_id");
-                        _device.Name = dr.Field<string>("name");
-                        _device.StationID = dr.Field<UInt16>("station_id");
-                        _device.Name = dr.Field<string>("name");
-                        _device.StationID = dr.Field<UInt16>("station_id");
-
-                        int protocolID = dr.Field<byte>("protocol_id");
-                        switch (protocolID)
-                        {
-                            case 0:
-                                _device.ProtocolID = Device.Protocol.ModbusRTU;
-                                break;
-
-                            case 1:
-                                _device.ProtocolID = Device.Protocol.ModbusTCP;
-                                break;
-
-                            case 2:
-                                _device.ProtocolID = Device.Protocol.ModbusASCII;
-                                break;
-
-                            default:
-                                break;
-                        }
-
-                        _device.IpAddress = dr.Field<string>("ip_address");
-                        _device.SlaveID = dr.Field<byte>("slave_id");
-                        _device.Connected = dr.Field<bool>("connected");
-                        _device.isActive = dr.Field<bool>("is_active");
-                        _deviceList.Add(_device);
-                    }
-                }
-                else
-                {
-                    Log.Instance.Warn("Kayýtlý device bulunamadý.");
-                }
-
-                //CloseConnection();
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("Database hatasý: {0}", ex.Message);
-                throw;
-            }
-
-            return _deviceList;
-        }
-
         public bool AddModbusTCPDeviceToDatabase(string stationName, string deviceName, string ipAddress, string slaveID)
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractDBHelper.AddModbusTCPDeviceToDatabase(string, string, string, string)'
         {
@@ -1377,15 +1368,15 @@ namespace EnMon_Driver_Manager.DataBase
         /// </summary>
         /// <param name="_stationName">Name of the station.</param>
         /// <returns></returns>
-        public List<Device> GetStationDevices(string _stationName)
+        public List<AbstractDevice> GetStationDevicesBasicInfo(string _stationName)
         {
             Log.Instance.Trace("{0}: {1} methodu cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-            List<Device> _deviceList = new List<Device>();
-            Device _device;
+            List<AbstractDevice> _deviceList = new List<AbstractDevice>();
+            AbstractDevice _device;
 
             try
             {
-                string query = String.Format("CALL getStationDevicesInfo('{0}')", _stationName);
+                string query = String.Format("CALL getStationDevicesBasicInfo('{0}')", _stationName);
                 DataTable dt = new DataTable();
                 dt = ExecuteQuery(query);
 
@@ -1393,34 +1384,8 @@ namespace EnMon_Driver_Manager.DataBase
                 {
                     foreach (DataRow dr in dt.Rows)
                     {
-                        _device = new Device();
-                        _device.ID = dr.Field<ushort>("device_id");
-                        _device.Name = dr.Field<string>("name");
-                        _device.StationID = dr.Field<ushort>("station_id");
-
-                        int protocolID = dr.Field<byte>("protocol_id");
-                        switch (protocolID)
-                        {
-                            case 0:
-                                _device.ProtocolID = Device.Protocol.ModbusRTU;
-                                break;
-
-                            case 1:
-                                _device.ProtocolID = Device.Protocol.ModbusTCP;
-                                break;
-
-                            case 2:
-                                _device.ProtocolID = Device.Protocol.ModbusASCII;
-                                break;
-
-                            default:
-                                break;
-                        }
-
-                        _device.IpAddress = dr.Field<string>("ip_address");
-                        _device.SlaveID = dr.Field<byte>("slave_id");
-                        _device.isActive = dr.Field<bool>("is_active");
-                        _device.Connected = dr.Field<bool>("connected");
+                        _device = new AbstractDevice(dr);
+                        
 
                         _deviceList.Add(_device);
                     }
@@ -1505,58 +1470,6 @@ namespace EnMon_Driver_Manager.DataBase
             }
 
             return _binarySignalList;
-        }
-
-        public List<CommandSignal> GetDeviceCommandSignalsInfo(ushort _deviceID)
-        {
-            Log.Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
-
-            List<CommandSignal> commandSignalList = new List<CommandSignal>();
-            CommandSignal _commandSignal;
-            string query = String.Format("CALL getDeviceCommandSignalsInfo({0})", _deviceID.ToString());
-            DataTable dt = new DataTable();
-            try
-            {
-                dt = ExecuteQuery(query);
-
-                if (dt.Rows.Count > 0)
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        _commandSignal = new CommandSignal();
-                        _commandSignal.ID = dr.Field<uint>("command_signal_id");
-                        _commandSignal.Identification = dr.Field<string>("identification");
-                        _commandSignal.Address = dr.Field<ushort>("address");
-                        _commandSignal.FunctionCode = dr.Field<byte>("function_code");
-                        _commandSignal.WordCount = dr.Field<byte>("word_count");
-                        _commandSignal.IsEvent = dr.Field<bool>("is_event");
-                        _commandSignal.DeviceID = _deviceID;
-                        switch (dr.Field<string>("command_type"))
-                        {
-                            case "binary":
-                                _commandSignal.commandType = CommandSignal.CommandType.Binary;
-                                break;
-
-                            case "analog":
-                                _commandSignal.commandType = CommandSignal.CommandType.Analog;
-                                break;
-                        }
-                        _commandSignal.BitNumber = dr.Field<byte>("bit_number");
-
-                        commandSignalList.Add(_commandSignal);
-                    }
-                }
-                else
-                {
-                    Log.Instance.Info("{0} id numarasýna sahip device için kayýtlý commmand sinyal bulunamadý.", _deviceID.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Database baglantý hatasý => {1} nolu cihaza ait command  sinyalleri database'den dogru bir þekilde okunamadý... {2}", this.GetType().Name, _deviceID.ToString(), ex.Message);
-            }
-
-            return commandSignalList;
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
         public new List<SNMPDevice> Devices { get; set; }
 
         #endregion
+
         #region Constructors
         public SNMPClient(string _ipAddress, int _readTimeOut, int _retryNumber, double _pollingtime) : base(_ipAddress, _readTimeOut, _retryNumber, _pollingtime)
         {
@@ -25,7 +26,7 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
             throw new NotImplementedException();
         }
 
-        public override bool WriteValue(AbstractDevice d, Signal c)
+        public override bool WriteValue(AbstractDevice d, CommandSignal c)
         {
             SNMPDevice _d = Devices.Where(device => device.ID == d.ID).FirstOrDefault();
             SNMPCommandSignal _commandSignal = _d.CommandSignals.Where(command => command.ID == c.ID).FirstOrDefault();

@@ -7,12 +7,12 @@ using System.Windows.Forms;
 namespace EnMon_Driver_Manager
 {
 
-    public partial class frm_AddNewOrUpdateBinarySignal : Form
+    public partial class frm_AddNewOrUpdateModbusBinarySignal : Form
 
     {
         #region Private Properties
 
-        private AbstractDBHelper DBHelper_AddNewOrUpdateBinarySignalForm;
+        private AbstractDBHelper DBHelper_AddNewOrUpdateModbusBinarySignalForm;
 
         private ModbusBinarySignal binarySignal;
 
@@ -26,14 +26,14 @@ namespace EnMon_Driver_Manager
         #region Constructors
 
 
-        public frm_AddNewOrUpdateBinarySignal()
+        public frm_AddNewOrUpdateModbusBinarySignal()
         {
             
             InitializeComponent();
 
             InitializeDatabase();
 
-            ID = DBHelper_AddNewOrUpdateBinarySignalForm.GetNextBinarySignalID();
+            ID = DBHelper_AddNewOrUpdateModbusBinarySignalForm.GetNextBinarySignalID();
 
             InitializeControlProperties();
 
@@ -43,7 +43,7 @@ namespace EnMon_Driver_Manager
             btn_Delete.Enabled = false;
         }
 
-        public frm_AddNewOrUpdateBinarySignal(ModbusBinarySignal signal)
+        public frm_AddNewOrUpdateModbusBinarySignal(ModbusBinarySignal signal)
         {
             InitializeComponent();
 
@@ -200,7 +200,7 @@ namespace EnMon_Driver_Manager
         {
             try
             {
-                DBHelper_AddNewOrUpdateBinarySignalForm = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
+                DBHelper_AddNewOrUpdateModbusBinarySignalForm = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
             }
             catch (Exception ex)
             {
@@ -236,7 +236,7 @@ namespace EnMon_Driver_Manager
             List<StatusText> statusTexts = new List<StatusText>();
             try
             {
-                return DBHelper_AddNewOrUpdateBinarySignalForm.GetAllStatusTexts();
+                return DBHelper_AddNewOrUpdateModbusBinarySignalForm.GetAllStatusTexts();
             }
 
             catch (Exception ex)
@@ -251,7 +251,7 @@ namespace EnMon_Driver_Manager
             List<Station> stations = new List<Station>();
             try
             {
-                stations = DBHelper_AddNewOrUpdateBinarySignalForm.GetAllStationsInfo();
+                stations = DBHelper_AddNewOrUpdateModbusBinarySignalForm.GetAllStationsInfoWithDeviceInfo();
                 return stations;
             }
             catch (Exception ex)
@@ -263,7 +263,7 @@ namespace EnMon_Driver_Manager
 
         private bool AddNewBinarySignalToDatabase()
         {
-            return DBHelper_AddNewOrUpdateBinarySignalForm.addNewBinarySignal(binarySignal);
+            return DBHelper_AddNewOrUpdateModbusBinarySignalForm.addNewBinarySignal(binarySignal);
         }
 
         private void GetAlarmEventInfo()
@@ -389,7 +389,7 @@ namespace EnMon_Driver_Manager
 
         private bool UpdateBinarySignalAtDatabase()
         {
-            return DBHelper_AddNewOrUpdateBinarySignalForm.UpdateBinarySignal(binarySignal);
+            return DBHelper_AddNewOrUpdateModbusBinarySignalForm.UpdateBinarySignal(binarySignal);
         }
 
         private void AddNewSignal()

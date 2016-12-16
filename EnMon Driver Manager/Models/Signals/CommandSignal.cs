@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace EnMon_Driver_Manager.Models
 {
-    public interface ICommandSignal
+    public class CommandSignal : Signal
     {
-        float CommandValue { get; set; }
+        public float CommandValue { get; set; }
     }
 }

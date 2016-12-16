@@ -8,7 +8,7 @@ using System.Windows.Forms;
 namespace EnMon_Driver_Manager
 {
 
-    public partial class frm_AddNewOrUpdateAnalogSignal : Form
+    public partial class frm_AddNewOrUpdateModbusAnalogSignal : Form
 
     {
         #region Private Properties
@@ -30,7 +30,7 @@ namespace EnMon_Driver_Manager
 
         #region Constructors
 
-        public frm_AddNewOrUpdateAnalogSignal()
+        public frm_AddNewOrUpdateModbusAnalogSignal()
         {
             
             InitializeComponent();
@@ -47,7 +47,7 @@ namespace EnMon_Driver_Manager
             analogSignal = new ModbusAnalogSignal();
         }
 
-        public frm_AddNewOrUpdateAnalogSignal(ModbusAnalogSignal analogSignal) 
+        public frm_AddNewOrUpdateModbusAnalogSignal(ModbusAnalogSignal analogSignal) 
         {
             InitializeComponent();
 
@@ -502,7 +502,7 @@ namespace EnMon_Driver_Manager
             List<Station> stations = new List<Station>();
             try
             {
-                stations = DBHelper_AddNewOrUpdateAnalogSignalForm.GetAllStationsInfo();
+                stations = DBHelper_AddNewOrUpdateAnalogSignalForm.GetAllStationsInfoWithDeviceInfo();
                 return stations;
             }
             catch (Exception ex)

@@ -1298,13 +1298,13 @@ namespace EnMon_Driver_Manager
 
         private void Load_frm_AddBinarySignal()
         {
-            frm_AddNewOrUpdateBinarySignal frm_addNewBinarySignal = new frm_AddNewOrUpdateBinarySignal();
+            frm_AddNewOrUpdateModbusBinarySignal frm_addNewBinarySignal = new frm_AddNewOrUpdateModbusBinarySignal();
             frm_addNewBinarySignal.ShowDialog();
         }
 
         private void Load_frm_AddAnalogSignal()
         {
-            frm_AddNewOrUpdateAnalogSignal frm_addNewAnalogSignal = new frm_AddNewOrUpdateAnalogSignal();
+            frm_AddNewOrUpdateModbusAnalogSignal frm_addNewAnalogSignal = new frm_AddNewOrUpdateModbusAnalogSignal();
             frm_addNewAnalogSignal.ShowDialog();
         }
 
@@ -1320,7 +1320,7 @@ namespace EnMon_Driver_Manager
 
         private void Load_frm_AddCommandSignal()
         {
-            frm_AddNewOrUpdateCommandSignal frm_addNewCommandSignal = new frm_AddNewOrUpdateCommandSignal();
+            frm_AddNewOrUpdateModbusCommandSignal frm_addNewCommandSignal = new frm_AddNewOrUpdateModbusCommandSignal();
             frm_addNewCommandSignal.ShowDialog();
         }
     }

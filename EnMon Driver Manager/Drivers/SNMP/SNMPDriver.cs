@@ -35,7 +35,7 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
 
         public List<string> ipAddresses { get; set; }
 
-        public new List<SNMPDevice> Devices { get; set; }
+        public List<SNMPDevice> Devices { get; set; }
 
         #endregion
 
@@ -58,6 +58,7 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
         #endregion
 
         #region Private Methods
+
         private void Communicate()
         {
             loopResult = Parallel.ForEach(ipAddresses, ConnectToSNMPAgents);
@@ -72,13 +73,13 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
 
             try
             {
-                // Verilen IP adresi icin modbusTCPMaster olusturuluyor
+                // Verilen IP adresi icin SNMPClient olusturuluyor
                 SNMPClient _snmpClient = new SNMPClient(_ipAddress, ReadTimeOut, RetryNumber, PollingTime);
 
-                // modbusTCPClient'ın haberleşeceği cihazlar modbusTCPCLient instance'in Devices property'sine ekleniyor.
+                // SNMPClient'ın haberleşeceği cihazlar SNMPClient instance'in Devices property'sine ekleniyor.
                 _snmpClient.Devices = (from d in Devices where d.IpAddress == _ipAddress select d).ToList();
 
-                // Sinyal okumayı hızlandırmak için tüm sinyaller liste modbus adreslerine göre sıralanıyor.
+                // Sinyal okumayı hızlandırmak için tüm sinyaller liste SNMP adreslerine göre sıralanıyor.
                 foreach (SNMPDevice d in _snmpClient.Devices)
                 {
                     if (d.BinarySignals.Count > 0)
@@ -111,8 +112,9 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
             }
         }
         #endregion
+
         #region Public Override Methods
-        public override void SetAllDevicesAsDisconnected()
+        public override void SetDriverAllDevicesDisconnected()
         {
             throw new NotImplementedException();
         }
@@ -326,12 +328,12 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
 
         public void AnyAnalogSignalValueChanged(object sender, TCPClientEventArgs e)
         {
-            DBHelper.AddAnalogSignalsToDataBaseWriteBuffer(e.AnalogSignals);
+            DBHelper.AddAnalogSignalValueToDataBaseWriteBuffer(e.AnalogSignals);
         }
 
         public void AnyBinarySignalValueChanged(object sender, TCPClientEventArgs e)
         {
-            DBHelper.AddBinarySignalsToDataBaseWriteBuffer(e.BinarySignals);
+            DBHelper.AddBinarySignalValueToDataBaseWriteBuffer(e.BinarySignals);
         }
 
         public void DisconnectedFromServer(object sender, TCPClientEventArgs e)
@@ -343,40 +345,11 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
         {
             Log.Instance.Trace("{0}: {1} baglantı kuruldu", MethodBase.GetCurrentMethod().Name, e.ipAddress);
         }
-    }
-
+    
         #endregion
 
         #region Protected Override Methods
-        protected override void CycleForCommands_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
 
-        protected override void GetCommunicationParametersFromConfigFile(string _configFileLocation)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void GetStationDevicesAndSignalsInfo()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void InitializeDriver()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void SendCommand(DataRow dr)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void SetDefaultCommunicationParameters()
-        {
-
-        }
 
         #endregion
     }

@@ -115,27 +115,18 @@ namespace EnMon_Driver_Manager.Drivers
         /// </summary>
         public event TCPClientEventHandler DeviceConnectionStateChanged;
 
-        /// <summary>
-        /// Called when [any binary signal value changed].
-        /// </summary>
-        /// <param name="_valueChangedSignals">Value changed signals.</param>
-        protected void OnAnyBinarySignalValueChanged(List<ModbusBinarySignal> _valueChangedSignals)
+
+        protected void OnAnyBinarySignalValueChanged(List<BinarySignal> _valueChangedSignals)
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-            TCPClientEventArgs ms = new TCPClientEventArgs();
-            ms.BinarySignals = _valueChangedSignals;
 
-            if (AnyBinarySignalValueChanged != null)
-            {
-                AnyBinarySignalValueChanged(this, ms);
-            }
+            TCPClientEventArgs args = new TCPClientEventArgs();
+            args.BinarySignals = _valueChangedSignals;
+
+            AnyBinarySignalValueChanged?.Invoke(this, args);
         }
 
-        /// <summary>
-        /// Called when [any analog signal value changed].
-        /// </summary>
-        /// <param name="_valueChangedSignals">Value changed signals.</param>
-        protected void OnAnyAnalogSignalValueChanged(List<ModbusAnalogSignal> _valueChangedSignals)
+        protected void OnAnyAnalogSignalValueChanged(List<AnalogSignal> _valueChangedSignals)
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
             TCPClientEventArgs ms = new TCPClientEventArgs();
@@ -147,9 +138,6 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        /// <summary>
-        /// Called when [disconnect from server].
-        /// </summary>
         protected void OnDisconnectedFromServer(List<AbstractTCPDevice> _devices)
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
@@ -169,10 +157,6 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        /// <summary>
-        /// Called when [connected to server].
-        /// </summary>
-        /// <exception cref="Exception"></exception>
         protected void OnConnectedToServer()
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
@@ -354,7 +338,7 @@ namespace EnMon_Driver_Manager.Drivers
 
         public abstract void ReadValues();
 
-        public abstract bool WriteValue(AbstractDevice d, Signal c);
+        public abstract bool WriteValue(AbstractDevice d, CommandSignal c);
 
         #endregion Public Abstract Methods
 

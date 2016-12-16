@@ -12,7 +12,7 @@ using System.Timers;
 
 namespace EnMon_Driver_Manager.Drivers
 {
-    public abstract class AbstractDriver : IDriver
+    public abstract class AbstractDriver
     {
         #region Public Properties
 
@@ -24,7 +24,7 @@ namespace EnMon_Driver_Manager.Drivers
 
         public bool IsError { get; protected set; }
 
-        public AbstractDevice.Protocol ProtocolID { get; set; }
+        public CommunicationProtocol communicationProtocol { get; set; }
 
         #endregion Public Properties
 
@@ -41,8 +41,11 @@ namespace EnMon_Driver_Manager.Drivers
              switch(this.GetType().Name)
             {
                 case "ModbusTCP":
-                    ProtocolID = AbstractDevice.Protocol.ModbusTCP;
+                    communicationProtocol = new CommunicationProtocol() { Name = "ModbusTCP" };
                         break;
+                case "SNMP":
+                    communicationProtocol = new CommunicationProtocol() { Name = "SNMP" };
+                    break;
                 default:
                     break;
             }
@@ -89,7 +92,7 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        public abstract void SetAllDevicesAsDisconnected();
+        public abstract void SetDriverAllDevicesDisconnected();
 
 
         #endregion Public Methods
@@ -136,8 +139,6 @@ namespace EnMon_Driver_Manager.Drivers
             return _stations;
         }
 
-        protected abstract void SendCommand(DataRow dr);
-
         protected void ReadDriverConfigFile(string _configFile)
         {
             GetCommunicationParametersFromConfigFile(_configFile);
@@ -149,6 +150,18 @@ namespace EnMon_Driver_Manager.Drivers
             Stations = VerifyStationNames(_stationNames);
         }
 
+        protected List<T> VerifyProtocolofDevices<T>(List<T> _devices, string _protocolName) where T : AbstractDevice
+        {
+            foreach (T device in _devices)
+            {
+                if (device.communicationProtocol.Name != _protocolName)
+                {
+                    _devices.Remove(device);
+                }
+            }
+            return _devices;
+        }
+    
         #endregion Protected Methods
 
         #region Private Methods
@@ -162,6 +175,8 @@ namespace EnMon_Driver_Manager.Drivers
 
         public abstract void StartCommunication();
 
+        public abstract void SetAllDevicesDisconnected();
+
         #endregion Public Abstract Methods
 
         #region Protected Abstract Methods
@@ -170,23 +185,13 @@ namespace EnMon_Driver_Manager.Drivers
 
         protected abstract void InitializeDriver();
 
-        protected List<T> VerifyProtocolofDevices<T>(List<T> _devices, AbstractDevice.Protocol _protocolID) where T : AbstractDevice
-        {
-            foreach (T device in _devices)
-            {
-                if (device.ProtocolID != _protocolID)
-                {
-                     _devices.Remove(device);
-                }
-            }
-            return _devices;
-        }
+        protected abstract void SendCommand(DataRow dr);
 
         protected abstract void GetCommunicationParametersFromConfigFile(string _configFileLocation);
 
         protected abstract void GetStationDevicesAndSignalsInfo();
 
-
+   
         #endregion Protected Abstract Methods
     }
 }

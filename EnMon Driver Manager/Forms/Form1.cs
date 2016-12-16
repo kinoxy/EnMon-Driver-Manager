@@ -1,4 +1,5 @@
 ﻿using EnMon_Driver_Manager.DataBase;
+using EnMon_Driver_Manager.Drivers;
 using EnMon_Driver_Manager.Drivers.Archiving;
 using EnMon_Driver_Manager.Drivers.Mail;
 using EnMon_Driver_Manager.Modbus;
@@ -16,7 +17,6 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-
     public partial class MainForm : Form
 
     {
@@ -40,11 +40,9 @@ namespace EnMon_Driver_Manager
 
         public bool IsDriverStarted { get; private set; }
 
-
         #endregion Public Properties
 
         #region Constructors
-
 
         public MainForm()
 
@@ -58,11 +56,10 @@ namespace EnMon_Driver_Manager
             WriteConfigFileLocationsToTextBoxes();
 
             InitializeDatabase();
+
             GetActiveDrivers();
 
         }
-
-
 
         #endregion Constructors
 
@@ -120,9 +117,14 @@ namespace EnMon_Driver_Manager
             pct_led.Visible = !pct_led.Visible;
         }
 
-        private async void btn_start_Click(object sender, EventArgs e)
-       {
-            if(!IsDriverStarted)
+        private void btn_start_Click(object sender, EventArgs e)
+        {
+            RunEnMon();
+        }
+
+        private async void RunEnMon()
+        {
+            if (!IsDriverStarted)
             {
                 try
                 {
@@ -171,14 +173,12 @@ namespace EnMon_Driver_Manager
                 }
                 catch (Exception ex)
                 {
-                    Log.Instance.Error("{0}: EnMon Sürücüsü durdurururken hata oluştu => {1}", this.GetType().Name, ex.Message); 
+                    Log.Instance.Error("{0}: EnMon Sürücüsü durdurururken hata oluştu => {1}", this.GetType().Name, ex.Message);
                     throw;
                 }
             }
-            
         }
 
-        
         private void DragStart(object sender, MouseEventArgs e)
         {
             dragging = true;
@@ -324,7 +324,7 @@ namespace EnMon_Driver_Manager
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            cbx_AutoStart.Checked = Properties.Settings.Default.StartDrivers = true ? true : false;
+            cbx_AutoStart.Checked = Properties.Settings.Default.StartDrivers == true ? true : false;
             //frm_devices = new frm_Devices();
             Load_frm_devices();
 
@@ -335,6 +335,11 @@ namespace EnMon_Driver_Manager
             Load_frm_eMailSettings();
 
             Load_frm_emailAlarms();
+
+            if (Properties.Settings.Default.StartDrivers)
+            {
+                RunEnMon();
+            }
         }
 
         private void yaTabControl1_TabChanged(object sender, EventArgs e)
@@ -509,15 +514,14 @@ namespace EnMon_Driver_Manager
             // ModbusTCP Config dosyası mevcutsa
             if (File.Exists(Constants.ModbusTCPDriverConfigFileLocation))
             {
-                 // Ayrı bir thread içerisinde ModbusTCP driver'ı çalıştırılıyor.
+                // Ayrı bir thread içerisinde ModbusTCP driver'ı çalıştırılıyor.
                 Task t1 = Task.Factory.StartNew(() =>
                 {
                     modbusTCP = new ModbusTCP(Constants.ModbusTCPDriverConfigFileLocation);
-                    modbusTCP.SetAllDevicesAsDisconnected();
+                    modbusTCP.SetAllDevicesDisconnected();
                     modbusTCP.StartCommunication();
                 });
                 await t1;
-                
             }
             else
             {
@@ -645,21 +649,20 @@ namespace EnMon_Driver_Manager
 
         private void StopDrivers()
         {
-            
             if (modbusTCP != null)
             {
-                for (int i = 0; i < modbusTCP.TCPClients.Count; i++)
+                foreach (ModbusTCPClient client in modbusTCP)
                 {
-                    modbusTCP.TCPClients[i].Dismiss();
+                    client.Dismiss();
                 }
 
                 if (dbhelper != null)
                 {
+                    modbusTCP.SetAllDevicesDisconnected();
+
                     while (dbhelper.HasAnyValuAtBuffers())
                     {
-
                     }
-                    modbusTCP.SetAllDevicesAsDisconnected();
 
                 }
                 modbusTCP = null;
@@ -675,26 +678,19 @@ namespace EnMon_Driver_Manager
             IsDriverStarted = false;
 
             Log.Instance.Info("EnMon Sürücü Yöneticisi durduruldu.");
-            
-
         }
 
         private void StartDrivers()
         {
-            
             timer_led.Start();
 
             EnMonDrivers();
 
             timer_led.Stop();
-            
 
-            
             IsDriverStarted = true;
             Log.Instance.Info("EnMon Sürücü Yöneticisi Başlatıldı");
         }
-
-
 
         #endregion Private Methods
 

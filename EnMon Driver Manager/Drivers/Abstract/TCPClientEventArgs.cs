@@ -1,4 +1,5 @@
-﻿using EnMon_Driver_Manager.Models.Device;
+﻿using EnMon_Driver_Manager.Models;
+using EnMon_Driver_Manager.Models.Device;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +10,10 @@ namespace EnMon_Driver_Manager.Drivers
 {
     public class TCPClientEventArgs : EventArgs
     {
-            /// <summary>
-            /// The analog signals
-            /// </summary>
-            public List<ModbusAnalogSignal> AnalogSignals { get; internal set; }
 
-            /// <summary>
-            /// Gets or sets the binary signals.
-            /// </summary>
-            /// <value>
-            /// The binary signals.
-            /// </value>
-            public List<ModbusBinarySignal> BinarySignals { get; internal set; }
+            public List<AnalogSignal> AnalogSignals { get; internal set; }
+
+            public List<BinarySignal> BinarySignals { get; internal set; }
 
             public string ipAddress { get; internal set; }
 

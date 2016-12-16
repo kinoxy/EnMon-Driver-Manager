@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
-    public partial class frm_AddNewOrUpdateCommandSignal : Form
+    public partial class frm_AddNewOrUpdateModbusCommandSignal : Form
 
     {
         #region Private Properties
@@ -19,7 +19,7 @@ namespace EnMon_Driver_Manager
 
         #region Constructors
 
-        public frm_AddNewOrUpdateCommandSignal()
+        public frm_AddNewOrUpdateModbusCommandSignal()
         {
             InitializeComponent();
 

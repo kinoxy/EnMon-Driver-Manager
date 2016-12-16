@@ -388,7 +388,7 @@ namespace EnMon_Driver_Manager.Drivers
         /// <exception cref="Exception">ModbusServer Hata: Yanlış tanımlanan adres veya Function Code bulundu</exception>
         private List<ModbusAnalogSignal> ReadAnalogSignalsValuesFromModbusDevice(ModbusTCPDevice _device, int _numberOfFirstSignal, int _totalSignalCount)
         {
-            List<ModbusAnalogSignal> _valueChangedSignals = new List<ModbusAnalogSignal>();
+            List<AnalogSignal> _valueChangedAnalogSignals = new List<AnalogSignal>();
             ModbusAnalogSignal _firstSignal = _device.AnalogSignals[_numberOfFirstSignal];
             ushort[] words = { };
             ushort wordCount = TotalWordCount(_device.AnalogSignals, _numberOfFirstSignal, _totalSignalCount);
@@ -426,7 +426,7 @@ namespace EnMon_Driver_Manager.Drivers
                                 {
                                     _device.AnalogSignals[currentSignalNo].CurrentValue = words[currentWordNumber];
                                     _device.AnalogSignals[currentSignalNo].TimeTag = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                                    _valueChangedSignals.Add(_device.AnalogSignals[currentSignalNo]);
+                                    _valueChangedAnalogSignals.Add(_device.AnalogSignals[currentSignalNo]);
                                 }
                                 currentWordNumber++;
                                 break;
@@ -438,7 +438,7 @@ namespace EnMon_Driver_Manager.Drivers
                                 {
                                     _device.AnalogSignals[currentSignalNo].CurrentValue = _valueFromDevice;
                                     _device.AnalogSignals[currentSignalNo].TimeTag = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                                    _valueChangedSignals.Add(_device.AnalogSignals[currentSignalNo]);
+                                    _valueChangedAnalogSignals.Add(_device.AnalogSignals[currentSignalNo]);
                                 }
                                 currentWordNumber += 2;
                                 break;
@@ -476,9 +476,10 @@ namespace EnMon_Driver_Manager.Drivers
                 Log.Instance.Error("{0} Hata: Yanlış tanımlanan adres veya geçersiz function Code bulundu", this.GetType().Name);
             }
             // Okuma işlemi bittiğinde bufferValueChangedSignals listesine sinyal eklenmişse event çağrılır.
-            if (_valueChangedSignals.Count > 0)
+            if (_valueChangedAnalogSignals.Count > 0)
             {
-                OnAnyAnalogSignalValueChanged(_valueChangedSignals);
+                
+                OnAnyAnalogSignalValueChanged(_valueChangedAnalogSignals);
             }
 
             return _device.AnalogSignals;
@@ -494,7 +495,7 @@ namespace EnMon_Driver_Manager.Drivers
         /// <exception cref="Exception">ModbusServer Hata: Yanlış tanımlanan adres veya Function Code bulundu</exception>
         private List<ModbusBinarySignal> ReadBinarySignalsValuesFromModbusDevice(ModbusTCPDevice _device, int _numberOfFirstSignal, int _totalSignalCount)
         {
-            List<ModbusBinarySignal> _valueChangedSignals = new List<ModbusBinarySignal>();
+            List<BinarySignal> _valueChangedBinarySignals = new List<BinarySignal>();
             ModbusBinarySignal _firstSignal = _device.BinarySignals[_numberOfFirstSignal];
             bool[] values = { };
             //ushort wordCount = TotalWordCount(_device.BinarySignals, _numberOfFirstSignal, _totalSignalCount);
@@ -533,7 +534,7 @@ namespace EnMon_Driver_Manager.Drivers
                         {
                             _device.BinarySignals[currentSignalNo].CurrentValue = values[k];
                             _device.BinarySignals[currentSignalNo].TimeTag = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                            _valueChangedSignals.Add(_device.BinarySignals[currentSignalNo]);
+                            _valueChangedBinarySignals.Add(_device.BinarySignals[currentSignalNo]);
                         }
                     }
                 }
@@ -610,7 +611,7 @@ namespace EnMon_Driver_Manager.Drivers
                             {
                                 _device.BinarySignals[currentSignalNo].CurrentValue = value;
                                 _device.BinarySignals[currentSignalNo].TimeTag = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                                _valueChangedSignals.Add(_device.BinarySignals[currentSignalNo]);
+                                _valueChangedBinarySignals.Add(_device.BinarySignals[currentSignalNo]);
                             }
                         }
                     }
@@ -643,11 +644,11 @@ namespace EnMon_Driver_Manager.Drivers
                 Log.Instance.Error("{0} Hata: Yanlış tanımlanan adres veya geçersiz function Code bulundu", this.GetType().Name);
             }
 
-            // Okuma işlemi bittiğinde _valueChangedSignals listesine sinyal eklenmişse event çağrılır.
-            if (_valueChangedSignals.Count > 0)
+            // Okuma işlemi bittiğinde _valueChangedSignals listesine sinyal eklenmişse bu sinyallerin database buffera eklenmesi için event çağrılır.
+            if (_valueChangedBinarySignals.Count > 0)
             {
-                OnAnyBinarySignalValueChanged(_valueChangedSignals);
-                _valueChangedSignals.Clear();
+                OnAnyBinarySignalValueChanged(_valueChangedBinarySignals);
+                _valueChangedBinarySignals.Clear();
             }
 
             values = null;
@@ -758,7 +759,7 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        public override bool WriteValue(AbstractDevice d, Signal c)
+        public override bool WriteValue(AbstractDevice d, CommandSignal c)
         {
             ModbusTCPDevice _d = Devices.Where(device => device.ID == d.ID).FirstOrDefault();
             ModbusCommandSignal _commandSignal = _d.CommandSignals.Where(command => command.ID == c.ID).FirstOrDefault();

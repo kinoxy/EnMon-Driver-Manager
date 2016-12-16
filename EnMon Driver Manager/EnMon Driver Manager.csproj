@@ -163,9 +163,6 @@
     </Compile>
     <Compile Include="Drivers\Abstract\AbstractDriver.cs" />
     <Compile Include="Drivers\Abstract\ITCPDriver.cs" />
-    <Compile Include="Drivers\ICommunicationDriver.cs" />
-    <Compile Include="Drivers\Modbus\ModbusDriverDatabaseConnection.cs" />
-    <Compile Include="Drivers\Modbus\Modbus_DBHelper.cs" />
     <Compile Include="Drivers\SNMP\SNMPClient.cs" />
     <Compile Include="Drivers\SNMP\SNMPDriver.cs" />
     <Compile Include="Drivers\Abstract\TCPClientEventArgs.cs" />
@@ -188,23 +185,23 @@
     <Compile Include="Forms\frm_AddNewMailGroup.Designer.cs">
       <DependentUpon>frm_AddNewMailGroup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\frm_AddNewOrUpdateCommandSignal.cs">
+    <Compile Include="Forms\frm_AddNewOrUpdateModbusCommandSignal.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\frm_AddNewOrUpdateCommandSignal.Designer.cs">
-      <DependentUpon>frm_AddNewOrUpdateCommandSignal.cs</DependentUpon>
+    <Compile Include="Forms\frm_AddNewOrUpdateModbusCommandSignal.Designer.cs">
+      <DependentUpon>frm_AddNewOrUpdateModbusCommandSignal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\frm_AddNewOrUpdateAnalogSignal.cs">
+    <Compile Include="Forms\frm_AddNewOrUpdateModbusAnalogSignal.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\frm_AddNewOrUpdateAnalogSignal.Designer.cs">
-      <DependentUpon>frm_AddNewOrUpdateAnalogSignal.cs</DependentUpon>
+    <Compile Include="Forms\frm_AddNewOrUpdateModbusAnalogSignal.Designer.cs">
+      <DependentUpon>frm_AddNewOrUpdateModbusAnalogSignal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\frm_AddNewOrUpdateBinarySignal.cs">
+    <Compile Include="Forms\frm_AddNewOrUpdateModbusBinarySignal.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\frm_AddNewOrUpdateBinarySignal.Designer.cs">
-      <DependentUpon>frm_AddNewOrUpdateBinarySignal.cs</DependentUpon>
+    <Compile Include="Forms\frm_AddNewOrUpdateModbusBinarySignal.Designer.cs">
+      <DependentUpon>frm_AddNewOrUpdateModbusBinarySignal.cs</DependentUpon>
     </Compile>
     <Compile Include="Drivers\Archiving\ArchiveToDatabase.cs" />
     <Compile Include="Drivers\Mail\MailClientTimer.cs" />
@@ -294,13 +291,13 @@
     <Compile Include="Models\Device\IModbusTCP.cs" />
     <Compile Include="Models\Device\ModbusTCPDevice.cs" />
     <Compile Include="Models\Device\SNMPDevice.cs" />
-    <Compile Include="Models\Signals\Modbus\AbstractModbusSignal.cs" />
+    <Compile Include="Models\Signals\Modbus\IModbusSignal.cs" />
     <Compile Include="Models\Signals\SNMP\AbstractSNMPSignal.cs" />
     <Compile Include="Models\AlarmMail.cs" />
     <Compile Include="Models\ArchivePeriod.cs" />
-    <Compile Include="Models\Signals\IAnalogSignal.cs" />
-    <Compile Include="Models\Signals\IBinarySignal.cs" />
-    <Compile Include="Models\Signals\ICommandSignal.cs" />
+    <Compile Include="Models\Signals\AnalogSignal.cs" />
+    <Compile Include="Models\Signals\BinarySignal.cs" />
+    <Compile Include="Models\Signals\CommandSignal.cs" />
     <Compile Include="Models\Signals\Modbus\ModbusCommandSignal.cs" />
     <Compile Include="Drivers\Abstract\AbstractTCPClient.cs" />
     <Compile Include="Models\DataType.cs" />
@@ -310,7 +307,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Models\CommunicationProtocol.cs" />
-    <Compile Include="Models\Signals\AbstractSignal.cs" />
+    <Compile Include="Models\Signals\Signal.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\Alarm.cs" />
     <Compile Include="Models\Device\AbstractDevice.cs" />
@@ -376,14 +373,14 @@
     <EmbeddedResource Include="Forms\frm_AddNewMailGroup.resx">
       <DependentUpon>frm_AddNewMailGroup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\frm_AddNewOrUpdateCommandSignal.resx">
-      <DependentUpon>frm_AddNewOrUpdateCommandSignal.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\frm_AddNewOrUpdateModbusCommandSignal.resx">
+      <DependentUpon>frm_AddNewOrUpdateModbusCommandSignal.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\frm_AddNewOrUpdateAnalogSignal.resx">
-      <DependentUpon>frm_AddNewOrUpdateAnalogSignal.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\frm_AddNewOrUpdateModbusAnalogSignal.resx">
+      <DependentUpon>frm_AddNewOrUpdateModbusAnalogSignal.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\frm_AddNewOrUpdateBinarySignal.resx">
-      <DependentUpon>frm_AddNewOrUpdateBinarySignal.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\frm_AddNewOrUpdateModbusBinarySignal.resx">
+      <DependentUpon>frm_AddNewOrUpdateModbusBinarySignal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\frm_AddNewOrUpdateMailAlarm.resx">
       <DependentUpon>frm_AddNewOrUpdateMailAlarm.cs</DependentUpon>
