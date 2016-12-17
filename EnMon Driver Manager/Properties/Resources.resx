@@ -154,4 +154,8 @@
   <data name="switchbutton_on" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Icons\switchbutton_on.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_" xml:space="preserve">
+    <value>Binary sinyal bilgileri veritabanından okunamadı.
+Ayrıntılı bilgi için log dosyasına bakınız.</value>
+  </data>
 </root>

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EnMon_Driver_Manager.Models.Device;
+using static EnMon_Driver_Manager.Log;
 
 namespace EnMon_Driver_Manager.DataBase
 {
@@ -83,7 +84,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Status bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Status bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return statusTexts;
                 throw;
             }
@@ -109,13 +110,13 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Error("Sinyal deðeri database'den okunamadý");
+                    Instance.Error("Sinyal deðeri database'den okunamadý");
                     throw new Exception();
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Sinyal deðeri database'den okunamadý => {0}", ex.Message);
+                Instance.Error("Sinyal deðeri database'den okunamadý => {0}", ex.Message);
                 throw ex;
             }
         }
@@ -254,7 +255,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Binary sinyal bilgisi veritabanýndan okunamadý => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Binary sinyal bilgisi veritabanýndan okunamadý => {1}", this.GetType().Name, ex.Message);
                 return null;
             }
         }
@@ -330,7 +331,7 @@ namespace EnMon_Driver_Manager.DataBase
 
         protected bool SetAnalogSignalValue(uint _signalID, UInt32 _signalValue, string _datetime)
         {
-            Log.Instance.Trace("{0} methodu çaðrýldý cagrýldý", MethodBase.GetCurrentMethod().Name);
+            Instance.Trace("{0} methodu çaðrýldý cagrýldý", MethodBase.GetCurrentMethod().Name);
             bool _returnValue = false;
             string query = String.Format("Call setAnalogSignalValue({0},{1},'{2}')", _signalID, _signalValue, _datetime);
             DataTable dt = new DataTable();
@@ -348,7 +349,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Fatal("Database Hatasý (setAnalogSignalValue stored procedure çaðrýlýrken bir hata olustu): {0}, {1}", ex.Message, query);
+                Instance.Fatal("Database Hatasý (setAnalogSignalValue stored procedure çaðrýlýrken bir hata olustu): {0}, {1}", ex.Message, query);
                 return false;
             }
 
@@ -364,7 +365,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         protected bool SetBinarySignalValue(uint _signalID, bool _signalValue, string _datetime)
         {
-            Log.Instance.Trace("{0} methodu çaðrýldý cagrýldý", MethodBase.GetCurrentMethod().Name);
+            Instance.Trace("{0} methodu çaðrýldý cagrýldý", MethodBase.GetCurrentMethod().Name);
             bool _returnValue = false;
             string value = _signalValue == true ? "1" : "0";
             string query = String.Format("CALL setBinarySignalValue('{0}', {1},'{2}')", _signalID, value, _datetime);
@@ -380,19 +381,19 @@ namespace EnMon_Driver_Manager.DataBase
                         _returnValue = (dr.Field<bool>("result"));
                         if (!_returnValue)
                         {
-                            Log.Instance.Error("Database Hatasý: (setBinarySignalValue('{0}', {1}, '{2}') stored procedure çaðrýlýrken bir hata oluþtu)", _signalID, _signalValue, _datetime);
+                            Instance.Error("Database Hatasý: (setBinarySignalValue('{0}', {1}, '{2}') stored procedure çaðrýlýrken bir hata oluþtu)", _signalID, _signalValue, _datetime);
                         }
                     }
                 }
                 else
                 {
-                    Log.Instance.Error("Database'den deger donmedi");
+                    Instance.Error("Database'den deger donmedi");
                     _returnValue = false;
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Fatal("Database Hatasý: setBinarySignalValue stored procedure çaðrýlýrken bir hata olustu => {0}", ex.Message);
+                Instance.Fatal("Database Hatasý: setBinarySignalValue stored procedure çaðrýlýrken bir hata olustu => {0}", ex.Message);
                 return false;
             }
 
@@ -408,7 +409,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Sürücü durdurulurken tüm cihazlarýn isConnected bilgisi deðiþtirilemedi =>{1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Sürücü durdurulurken tüm cihazlarýn isConnected bilgisi deðiþtirilemedi =>{1}", this.GetType().Name, ex.Message);
             }
         }
         #endregion Protected Methods
@@ -417,21 +418,21 @@ namespace EnMon_Driver_Manager.DataBase
 
         public bool AddNewModbusAnalogSignal(ModbusAnalogSignal analogSignal)
         {
-            int HasMaxAlarm, HasMinAlarm, isEvent, isArchive, isSummary;
-            string query = string.Empty;
+            int hasMaxAlarm, hasMinAlarm, isArchive;
+            string query;
             try
             {
                 // Bir kerede update edilecek satýr sayýsý 30k dolaylarýnda olursa database'in hata verme ihtimali var
-                HasMaxAlarm = analogSignal.HasMaxAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                HasMinAlarm = analogSignal.HasMinAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
+                hasMaxAlarm = analogSignal.HasMaxAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
+                hasMinAlarm = analogSignal.HasMinAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
                 isArchive = analogSignal.IsArchive.ToString().ToUpper() == "TRUE" ? 1 : 0;
 
-                query = $"CALL addNewModbusAnalogSignal('{analogSignal.ID}', '{analogSignal.DeviceID}', '{analogSignal.Name}', '{analogSignal.Identification}', '{analogSignal.dataType.ID}','{analogSignal.Unit}','{analogSignal.ScaleValue}','{analogSignal.MaxAlarmValue}','{analogSignal.MinAlarmValue}','{analogSignal.MaxAlarmStatusID}','{analogSignal.MinAlarmStatusID}','{HasMaxAlarm}','{HasMinAlarm}','{isArchive}','{analogSignal.archivePeriod.ID}', '{analogSignal.Address}','{analogSignal.FunctionCode}','{analogSignal.WordCount}')";
+                query = $"CALL addNewModbusAnalogSignal('{analogSignal.ID}', '{analogSignal.DeviceID}', '{analogSignal.Name}', '{analogSignal.Identification}', '{analogSignal.dataType.ID}','{analogSignal.Unit}','{analogSignal.ScaleValue}','{analogSignal.MaxAlarmValue}','{analogSignal.MinAlarmValue}','{analogSignal.MaxAlarmStatusID}','{analogSignal.MinAlarmStatusID}','{hasMaxAlarm}','{hasMinAlarm}','{isArchive}','{analogSignal.archivePeriod.ID}', '{analogSignal.Address}','{analogSignal.FunctionCode}','{analogSignal.WordCount}')";
                 return ExecuteNonQuery(query) > 0;
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Veritabanýna yeni analog sinyal eklenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Veritabanýna yeni analog sinyal eklenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -451,7 +452,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Binary sinyal veritabanýna eklenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Binary sinyal veritabanýna eklenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -465,7 +466,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Komut sinyali veritabanýna eklenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Komut sinyali veritabanýna eklenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -479,7 +480,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Yeni E-posta grubu oluþtururken hata => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Yeni E-posta grubu oluþtururken hata => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -493,7 +494,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: {1} ID numaralý sinyal veritabanýndan silinirken hata oluþtu => {2}", this.GetType().Name, ID, ex.Message);
+                Instance.Error("{0}: {1} ID numaralý sinyal veritabanýndan silinirken hata oluþtu => {2}", this.GetType().Name, ID, ex.Message);
                 return false;
             }
         }
@@ -521,7 +522,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0} isimli mail grubu silinirken hata oluþtu => {1}", _mailGroup.Name, ex.Message);
+                Instance.Error("{0} isimli mail grubu silinirken hata oluþtu => {1}", _mailGroup.Name, ex.Message);
                 return false;
                 throw;
             }
@@ -543,7 +544,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Yeni analog sinyal için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Yeni analog sinyal için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return 0;
                 throw;
             }
@@ -586,7 +587,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Analogsinyal bilgisi veritabanýndan okunamadý => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Analogsinyal bilgisi veritabanýndan okunamadý => {1}", this.GetType().Name, ex.Message);
                 return null;
             }
         }
@@ -608,7 +609,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Yeni binary sinyal için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Yeni binary sinyal için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return 0;
                 throw;
             }
@@ -630,7 +631,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Yeni komut sinyali için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Yeni komut sinyali için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return 0;
                 throw;
             }
@@ -653,7 +654,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Yeni e-posta grubu eklemek için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Yeni e-posta grubu eklemek için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return 0;
                 throw;
             }
@@ -683,7 +684,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception)
             {
-                Log.Instance.Error("Database Hatasý: {0} istasyonu için mevcut slave adresler database'den okunamadý.", _stationName);
+                Instance.Error("Database Hatasý: {0} istasyonu için mevcut slave adresler database'den okunamadý.", _stationName);
                 return usedModbusSlaveAddresses;
             }
         }
@@ -705,7 +706,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Analog  sinyal güncellenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Analog  sinyal güncellenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -725,7 +726,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Binary sinyal güncellenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Binary sinyal güncellenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -780,7 +781,7 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 catch (Exception ex)
                 {
-                    Log.Instance.Error("{0}: Data Tipi bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                    Instance.Error("{0}: Data Tipi bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                     return dataTypes;
                     throw;
                 }
@@ -808,7 +809,7 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 catch (Exception ex)
                 {
-                    Log.Instance.Error("{0}: Arþivleme periyot bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                    Instance.Error("{0}: Arþivleme periyot bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
                     return archivePeriods;
                     throw;
                 }
@@ -837,7 +838,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: komut database'den silinemedi. => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: komut database'den silinemedi. => {1}", this.GetType().Name, ex.Message);
             }
         }
 
@@ -860,7 +861,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         public List<Station> GetAllStationsInfoWithDeviceInfo()
         {
-            Log.Instance.Trace("DBHelper.{0} methodu çaðrýldý", MethodBase.GetCurrentMethod().Name);
+            Instance.Trace("DBHelper.{0} methodu çaðrýldý", MethodBase.GetCurrentMethod().Name);
             List<Station> _stations = new List<Station>();
             try
             {
@@ -883,14 +884,14 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Trace("DBHelper.{0}", MethodBase.GetCurrentMethod().Name);
-                    Log.Instance.Warn("Database'de station kaydý bulunamadý");
+                    Instance.Trace("DBHelper.{0}", MethodBase.GetCurrentMethod().Name);
+                    Instance.Warn("Database'de station kaydý bulunamadý");
                     return _stations;
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Debug("{0}.{1} => {2}", this.GetType().Name, MethodBase.GetCurrentMethod().Name, ex.Message);
+                Instance.Debug("{0}.{1} => {2}", this.GetType().Name, MethodBase.GetCurrentMethod().Name, ex.Message);
                 return _stations;
             }
         }
@@ -910,7 +911,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Analog sinyaller database'den okunamadý => {0}", ex.Message);
+                Instance.Error("Analog sinyaller database'den okunamadý => {0}", ex.Message);
                 return dt;
             }
         }
@@ -929,7 +930,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Binary sinyaller database'den okunamadý => {0}", ex.Message);
+                Instance.Error("Binary sinyaller database'den okunamadý => {0}", ex.Message);
                 return dt;
             }
         }
@@ -1021,7 +1022,7 @@ namespace EnMon_Driver_Manager.DataBase
 
         public List<CommunicationProtocol> GetAllProtocolsInfo()
         {
-            Log.Instance.Trace("DBHelper.{0} methodu çaðrýldý", MethodBase.GetCurrentMethod().Name);
+            Instance.Trace("DBHelper.{0} methodu çaðrýldý", MethodBase.GetCurrentMethod().Name);
             List<CommunicationProtocol> protocols = new List<CommunicationProtocol>();
             try
             {
@@ -1040,14 +1041,14 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Trace("DBHelper.{0}", MethodBase.GetCurrentMethod().Name);
-                    Log.Instance.Warn("Database'de haberleþme protokolü kaydý bulunamadý");
+                    Instance.Trace("DBHelper.{0}", MethodBase.GetCurrentMethod().Name);
+                    Instance.Warn("Database'de haberleþme protokolü kaydý bulunamadý");
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Debug("{0}.{1} => {2}", this.GetType().Name, MethodBase.GetCurrentMethod().Name, ex.Message);
+                Instance.Debug("{0}.{1} => {2}", this.GetType().Name, MethodBase.GetCurrentMethod().Name, ex.Message);
                 return null;
             }
         }
@@ -1075,7 +1076,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Database'den mail adresleri çekilemedi => {0}", ex.Message);
+                Instance.Error("Database'den mail adresleri çekilemedi => {0}", ex.Message);
                 throw ex;
             }
         }
@@ -1099,7 +1100,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0} isimli mail alarmýn durumu güncellenemedi => {1}", alarm.Name, ex.Message);
+                Instance.Error("{0} isimli mail alarmýn durumu güncellenemedi => {1}", alarm.Name, ex.Message);
                 return false;
             }
         }
@@ -1156,7 +1157,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         public Station GetStationInfoByName(string _stationName)
         {
-            Log.Instance.Trace("DBHelper.{0} methodu {1} için çaðrýldý", MethodBase.GetCurrentMethod().Name, _stationName);
+            Instance.Trace("DBHelper.{0} methodu {1} için çaðrýldý", MethodBase.GetCurrentMethod().Name, _stationName);
             Station _station = null;
             try
             {
@@ -1171,15 +1172,15 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Trace("DBHelper.{0}", MethodBase.GetCurrentMethod().Name);
-                    Log.Instance.Warn("{0} adlý bir station kaydý bulunamadý", _stationName);
+                    Instance.Trace("DBHelper.{0}", MethodBase.GetCurrentMethod().Name);
+                    Instance.Warn("{0} adlý bir station kaydý bulunamadý", _stationName);
                 }
 
                 return _station;
             }
             catch (Exception ex)
             {
-                Log.Instance.Debug("{0}.{1} => {2}", this.GetType().Name, MethodBase.GetCurrentMethod().Name, ex.Message);
+                Instance.Debug("{0}.{1} => {2}", this.GetType().Name, MethodBase.GetCurrentMethod().Name, ex.Message);
                 return null;
             }
         }
@@ -1241,7 +1242,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Analog sinyaller update edilirken hata => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Analog sinyaller update edilirken hata => {1}", this.GetType().Name, ex.Message);
                 return false;
                 throw;
             }
@@ -1295,7 +1296,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Binary sinyaller update edilirken hata => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Binary sinyaller update edilirken hata => {1}", this.GetType().Name, ex.Message);
                 return false;
                 throw;
             }
@@ -1303,14 +1304,12 @@ namespace EnMon_Driver_Manager.DataBase
 
         public bool UpdateCommandSignals(DataTable _dt)
         {
-            int isEvent;
-            List<string> Rows = new List<string>();
             StringBuilder query = new StringBuilder();
             try
             {
                 // Bir kerede update edilecek satýr sayýsý 30k dolaylarýnda olursa database'in hata verme ihtimali var
                 DataRow firstRow = _dt.Rows[0];
-                isEvent = firstRow["Event"].ToString().ToUpper() == "TRUE" ? 1 : 0;
+                var isEvent = firstRow["Event"].ToString().ToUpper() == "TRUE" ? 1 : 0;
                 query.Append(string.Format("UPDATE command_signals ass JOIN (SELECT '{0}' as _command_signal_id, '{1}' as _device_id, '{2}' as _name, '{3}' as _identification, '{4}' as _address, '{5}' as _function_code, '{6}' as _word_count, '{7}' as _bit_number, '{8}' as _is_event, '{9}' as _status_id, '{10}' as _command_type UNION ALL ",
                                             MySqlHelper.EscapeString(firstRow["Command Signal ID"].ToString()), MySqlHelper.EscapeString(firstRow["Device ID"].ToString()), MySqlHelper.EscapeString(firstRow["Name"].ToString()),
                                             MySqlHelper.EscapeString(firstRow["Identification"].ToString()), MySqlHelper.EscapeString(firstRow["Address"].ToString()), MySqlHelper.EscapeString(firstRow["Function Code"].ToString()),
@@ -1334,14 +1333,14 @@ namespace EnMon_Driver_Manager.DataBase
                                             MySqlHelper.EscapeString(lastRow["Identification"].ToString()), MySqlHelper.EscapeString(lastRow["Address"].ToString()), MySqlHelper.EscapeString(lastRow["Function Code"].ToString()),
                                             MySqlHelper.EscapeString(lastRow["Word Count"].ToString()), MySqlHelper.EscapeString(lastRow["Bit Number"].ToString()), MySqlHelper.EscapeString(isEvent.ToString()),
                                             MySqlHelper.EscapeString(lastRow["Status ID"].ToString()), MySqlHelper.EscapeString(lastRow["Command Type"].ToString())));
-                //                vals ON m.id = vals.id
+                // vals ON m.id = vals.id
                 //SET col1 = _col1, col2 = _col2;
-                query.Append(String.Format("vals ON ass.command_signal_id = vals._command_signal_id SET command_signal_id = _command_signal_id, device_id = _device_id, name = _name, identification = _identification, address = _address, function_code = _function_code, word_count = _word_count, bit_number = _bit_number, is_event = _is_event, status_id = _status_id, command_type = _command_type;"));
+                query.Append("vals ON ass.command_signal_id = vals._command_signal_id SET command_signal_id = _command_signal_id, device_id = _device_id, name = _name, identification = _identification, address = _address, function_code = _function_code, word_count = _word_count, bit_number = _bit_number, is_event = _is_event, status_id = _status_id, command_type = _command_type;");
                 return ExecuteNonQuery(query.ToString()) > 0;
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Komut sinyalleri update edilirken hata => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Komut sinyalleri update edilirken hata => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -1349,7 +1348,7 @@ namespace EnMon_Driver_Manager.DataBase
         public bool AddModbusTCPDeviceToDatabase(string stationName, string deviceName, string ipAddress, string slaveID)
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractDBHelper.AddModbusTCPDeviceToDatabase(string, string, string, string)'
         {
-            Log.Instance.Trace("{0}: {1} methodu {2} adlý cihazý eklemek için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, deviceName);
+            Instance.Trace("{0}: {1} methodu {2} adlý cihazý eklemek için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, deviceName);
 
             try
             {
@@ -1358,7 +1357,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Database Hata: {0} adlý cihaz database'e eklenemedi => {1}", deviceName, ex.Message);
+                Instance.Error("Database Hata: {0} adlý cihaz database'e eklenemedi => {1}", deviceName, ex.Message);
                 return false;
             }
         }
@@ -1370,7 +1369,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         public List<AbstractDevice> GetStationDevicesBasicInfo(string _stationName)
         {
-            Log.Instance.Trace("{0}: {1} methodu cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Instance.Trace("{0}: {1} methodu cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
             List<AbstractDevice> _deviceList = new List<AbstractDevice>();
             AbstractDevice _device;
 
@@ -1392,15 +1391,15 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Warn("{0} adlý station için device bulunamadý", _stationName);
+                    Instance.Warn("{0} adlý station için device bulunamadý", _stationName);
                 }
 
                 //CloseConnection();
             }
             catch (Exception ex)
             {
-                Log.Instance.Trace("{0}.{1}", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-                Log.Instance.Fatal("Database hatasý: {0}", ex.Message);
+                Instance.Trace("{0}.{1}", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                Instance.Fatal("Database hatasý: {0}", ex.Message);
                 //throw;
             }
 
@@ -1414,7 +1413,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         public List<BinarySignal> GetDeviceBinarySignalsInfo(ushort _deviceID)
         {
-            Log.Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
+            Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
 
             List<BinarySignal> _binarySignalList = new List<BinarySignal>();
             BinarySignal _binarySignal;
@@ -1460,12 +1459,12 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Info("{0} id numarasýna sahip device için kayýtlý binary sinyal bulunamadý.", _deviceID.ToString());
+                    Instance.Info("{0} id numarasýna sahip device için kayýtlý binary sinyal bulunamadý.", _deviceID.ToString());
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Database baglantý hatasý => {0} nolu cihaza ait binary sinyalleri database'den dogru bir þekilde okunamadý... {1}", _deviceID.ToString(), ex.Message);
+                Instance.Error("Database baglantý hatasý => {0} nolu cihaza ait binary sinyalleri database'den dogru bir þekilde okunamadý... {1}", _deviceID.ToString(), ex.Message);
                 throw;
             }
 
@@ -1496,7 +1495,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Binary sinyallerin ID'leri database'den okunamadý => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Binary sinyallerin ID'leri database'den okunamadý => {1}", this.GetType().Name, ex.Message);
                 return allBinarySignalsID;
             }
         }
@@ -1525,7 +1524,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Analog sinyallerin ID'leri database'den okunamadý => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Analog sinyallerin ID'leri database'den okunamadý => {1}", this.GetType().Name, ex.Message);
                 return allAnalogSignalsID;
             }
         }
@@ -1551,7 +1550,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Komut sinyallerinin ID'leri database'den okunamadý => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Komut sinyallerinin ID'leri database'den okunamadý => {1}", this.GetType().Name, ex.Message);
                 return allCommandSignalsID;
             }
         }
@@ -1563,7 +1562,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         public List<BinarySignal> GetDeviceBinarySignalsValue(ushort _deviceID)
         {
-            Log.Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
+            Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
 
             List<BinarySignal> _binarySignalList = new List<BinarySignal>();
 
@@ -1590,12 +1589,12 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Warn("{0} id numarasýna sahip device için kayýtlý binary sinyallerin son degerleri databasede bulunamadý.", _deviceID.ToString());
+                    Instance.Warn("{0} id numarasýna sahip device için kayýtlý binary sinyallerin son degerleri databasede bulunamadý.", _deviceID.ToString());
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Database baglantý hatasý => {0} nolu cihaza ait binary sinyallerin degerleri database'den dogru bir þekilde okunamadý... {1}", _deviceID.ToString(), ex.Message);
+                Instance.Error("Database baglantý hatasý => {0} nolu cihaza ait binary sinyallerin degerleri database'den dogru bir þekilde okunamadý... {1}", _deviceID.ToString(), ex.Message);
                 throw;
             }
 
@@ -1609,7 +1608,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         public List<AnalogSignal> GetDeviceAnalogSignalsInfo(ushort _deviceID)
         {
-            Log.Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
+            Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
 
             List<AnalogSignal> _analogSignalList = new List<AnalogSignal>();
             AnalogSignal _analogSignal;
@@ -1646,12 +1645,12 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Warn("{0} id numarasýna sahip device için kayýtlý analog sinyal bulunamadý.", _deviceID.ToString());
+                    Instance.Warn("{0} id numarasýna sahip device için kayýtlý analog sinyal bulunamadý.", _deviceID.ToString());
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Database baglantý hatasý => {1} nolu cihaza ait analog sinyallerin verileri database'den dogru bir þekilde okunamadý... {2}", this.GetType().Name, _deviceID.ToString(), ex.Message);
+                Instance.Error("{0}: Database baglantý hatasý => {1} nolu cihaza ait analog sinyallerin verileri database'den dogru bir þekilde okunamadý... {2}", this.GetType().Name, _deviceID.ToString(), ex.Message);
                 throw;
             }
 
@@ -1665,7 +1664,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <returns></returns>
         public List<AnalogSignal> GetDeviceAnalogSignalsValue(ushort _deviceID)
         {
-            Log.Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
+            Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
 
             List<AnalogSignal> _analogSignalList = new List<AnalogSignal>();
 
@@ -1691,12 +1690,12 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
-                    Log.Instance.Warn("{0} id numarasýna sahip device için kayýtlý analog sinyallerin son degerleri databasede bulunamadý.", _deviceID.ToString());
+                    Instance.Warn("{0} id numarasýna sahip device için kayýtlý analog sinyallerin son degerleri databasede bulunamadý.", _deviceID.ToString());
                 }
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("Database baglantý hatasý => {0} nolu cihaza ait analog sinyallerin deðerleri database'den dogru bir þekilde okunamadý... {1}", _deviceID.ToString(), ex.Message);
+                Instance.Error("Database baglantý hatasý => {0} nolu cihaza ait analog sinyallerin deðerleri database'den dogru bir þekilde okunamadý... {1}", _deviceID.ToString(), ex.Message);
                 throw;
             }
 
@@ -1709,7 +1708,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <param name="_tableName">Name of the table.</param>
         public void ResetTable(string _tableName)
         {
-            Log.Instance.Trace("{0}.{1} methodu cagrýldý", "DBHelper", MethodBase.GetCurrentMethod().Name);
+            Instance.Trace("{0}.{1} methodu cagrýldý", "DBHelper", MethodBase.GetCurrentMethod().Name);
             string query = String.Format("CALL resetTable('{0}');", _tableName);
             try
             {
@@ -1717,7 +1716,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception e)
             {
-                Log.Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
+                Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
             }
         }
 
@@ -1885,7 +1884,7 @@ namespace EnMon_Driver_Manager.DataBase
                     }
                     catch (Exception ex)
                     {
-                        Log.Instance.Error("{0}: Analog sinyal veritabanýna deðer yazma hatasý => {1}", this.GetType().Name, ex.Message);
+                        Instance.Error("{0}: Analog sinyal veritabanýna deðer yazma hatasý => {1}", this.GetType().Name, ex.Message);
                         //throw;
                     }
                     Thread.Sleep(200);
@@ -1911,7 +1910,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: AnalogSignals buffer'ýndaki veriler veritabanýna yazýlamadý. Veri sayýsý: {1} => {2}", this.GetType().Name, count, ex.Message);
+                Instance.Error("{0}: AnalogSignals buffer'ýndaki veriler veritabanýna yazýlamadý. Veri sayýsý: {1} => {2}", this.GetType().Name, count, ex.Message);
                 return false;
             }
         }
@@ -1952,7 +1951,7 @@ namespace EnMon_Driver_Manager.DataBase
                     }
                     catch (Exception ex)
                     {
-                        Log.Instance.Error("{0}: Binary sinyal veritabanýna deðer yazma hatasý => {1}", this.GetType().Name, ex.Message);
+                        Instance.Error("{0}: Binary sinyal veritabanýna deðer yazma hatasý => {1}", this.GetType().Name, ex.Message);
                         //throw;
                     }
                     Thread.Sleep(200);
@@ -1988,7 +1987,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: BinarySignals buffer'ýndaki veriler veritabanýna yazýlamadý => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: BinarySignals buffer'ýndaki veriler veritabanýna yazýlamadý => {1}", this.GetType().Name, ex.Message);
                 return false;
             }
         }
@@ -2015,7 +2014,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// <param name="_state">if set to <c>true</c> [state].</param>
         public void UpdateDeviceActiveState(ushort _deviceID, bool _state)
         {
-            Log.Instance.Trace("{0}.{1} methodu {2} nolu device için cagrýldý", "DBHelper", MethodBase.GetCurrentMethod().Name, _deviceID);
+            Instance.Trace("{0}.{1} methodu {2} nolu device için cagrýldý", "DBHelper", MethodBase.GetCurrentMethod().Name, _deviceID);
             string query = String.Format("CALL updateDeviceActiveState({0},{1})", _deviceID.ToString(), _state.ToString());
             try
             {
@@ -2023,7 +2022,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception e)
             {
-                Log.Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
+                Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
             }
         }
 
@@ -2034,19 +2033,19 @@ namespace EnMon_Driver_Manager.DataBase
         /// <param name="_state">if set to <c>true</c> [state].</param>
         public void UpdateDeviceConnectedState(ushort _deviceID, bool _state)
         {
-            Log.Instance.Trace("{0}.{1} methodu {2} nolu device için cagrýldý", "DBHelper", MethodBase.GetCurrentMethod().Name, _deviceID);
+            Instance.Trace("{0}.{1} methodu {2} nolu device için cagrýldý", "DBHelper", MethodBase.GetCurrentMethod().Name, _deviceID);
             string query = String.Format("CALL updateDeviceConnectedState({0},{1})", _deviceID.ToString(), _state.ToString());
             try
             {
                 ExecuteNonQuery(query);
                 if (_state)
                 {
-                    Log.Instance.Info("{0} nolu device haberleþmesi tekrardan saðlandý.", _deviceID);
+                    Instance.Info("{0} nolu device haberleþmesi tekrardan saðlandý.", _deviceID);
                 }
             }
             catch (Exception e)
             {
-                Log.Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
+                Instance.Fatal("{0} hata: {1}", "DBHelper", e.Message);
             }
         }
 
@@ -2078,7 +2077,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Analog sinyaller database'e eklenemedi => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Analog sinyaller database'e eklenemedi => {1}", this.GetType().Name, ex.Message);
                 return false;
                 throw;
             }
@@ -2108,7 +2107,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Binary sinyaller database'e eklenemedi => {1}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Binary sinyaller database'e eklenemedi => {1}", this.GetType().Name, ex.Message);
                 return false;
                 throw;
             }
@@ -2140,7 +2139,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: Komut sinyalleri database'e eklenemedi => {0}", this.GetType().Name, ex.Message);
+                Instance.Error("{0}: Komut sinyalleri database'e eklenemedi => {0}", this.GetType().Name, ex.Message);
                 return false;
             }
         }

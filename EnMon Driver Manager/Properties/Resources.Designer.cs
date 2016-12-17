@@ -111,6 +111,16 @@ namespace EnMon_Driver_Manager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Binary sinyal bilgileri veritabanından okunamadı.
+        ///Ayrıntılı bilgi için log dosyasına bakınız..
+        /// </summary>
+        internal static string frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_ {
+            get {
+                return ResourceManager.GetString("frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap green {

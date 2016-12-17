@@ -9,10 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using EnMon_Driver_Manager.Properties;
 
 namespace EnMon_Driver_Manager
 {
 
+    [System.Runtime.InteropServices.Guid("D1B0EC7D-244A-4BBF-B04C-F11DD010C91D")]
     public partial class frm_OnlineValues : Form
 
     {
@@ -169,7 +171,8 @@ namespace EnMon_Driver_Manager
             }
             else
             {
-                MessageBox.Show("Binary sinyal bilgileri veritabanından okunamadı.\nAyrıntılı bilgi için log dosyasına bakınız.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (Resources.frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_ != null)
+                    MessageBox.Show(Resources.frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_, Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
@@ -199,8 +202,11 @@ namespace EnMon_Driver_Manager
         {
             dt_BinaryValues = DBHelper_OnlineValues.GetAllBinarySignalsInfoWithLastValues();
             //     dt_AnalogValues.Columns["Alarm"].DataType = System.Type.GetType("System.Boolean");
-            dgv_BinaryValues.DataSource = dt_BinaryValues;
-            dgv_BinaryValues.Columns["driver_id"].Visible = false;   
+            if (dgv_BinaryValues != null)
+            {
+                dgv_BinaryValues.DataSource = dt_BinaryValues;
+                dgv_BinaryValues.Columns["driver_id"].Visible = false;
+            }
         }
 
         #endregion
