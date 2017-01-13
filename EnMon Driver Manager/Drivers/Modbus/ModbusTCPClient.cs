@@ -1,18 +1,16 @@
-﻿using EnMon_Driver_Manager.Drivers;
-using EnMon_Driver_Manager.Models;
-using EnMon_Driver_Manager.Models.Device;
+﻿using EnMon_Driver_Manager.Models.Devices;
 using Modbus;
 using Modbus.Device;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Reflection;
-using System.Timers;
+using EnMon_Driver_Manager.Models.Signals;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 
 namespace EnMon_Driver_Manager.Drivers
 {
@@ -98,17 +96,17 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        private void WriteValueMultipleRegisters(AbstractDevice _d, ModbusCommandSignal _commandSignal)
+        private void WriteValueMultipleRegisters(Device _d, ModbusCommandSignal _commandSignal)
         {
             //throw new NotImplementedException();
         }
 
-        private void WriteMultipleCoils(AbstractDevice _d, ModbusCommandSignal _commandSignal)
+        private void WriteMultipleCoils(Device _d, ModbusCommandSignal _commandSignal)
         {
             //throw new NotImplementedException();
         }
 
-        private void WriteSingleRegister(AbstractDevice _d, ModbusCommandSignal _commandSignal)
+        private void WriteSingleRegister(Device _d, ModbusCommandSignal _commandSignal)
         {
             ModbusTCPDevice d = Devices.Where(device => device.ID == _d.ID).First();
             ushort value = 0;
@@ -138,7 +136,7 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        private void WriteSingleCoil(AbstractDevice _d, ModbusCommandSignal _commandSignal)
+        private void WriteSingleCoil(Device _d, ModbusCommandSignal _commandSignal)
         {
             ModbusTCPDevice d = Devices.Where((device) => device.ID == _d.ID).First();
             try
@@ -759,7 +757,7 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        public override bool WriteValue(AbstractDevice d, CommandSignal c)
+        public override bool WriteValue(Device d, CommandSignal c)
         {
             ModbusTCPDevice _d = Devices.Where(device => device.ID == d.ID).FirstOrDefault();
             ModbusCommandSignal _commandSignal = _d.CommandSignals.Where(command => command.ID == c.ID).FirstOrDefault();

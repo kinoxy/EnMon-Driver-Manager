@@ -1,5 +1,4 @@
-﻿using EnMon_Driver_Manager.Models.Device;
-using System;
+﻿using EnMon_Driver_Manager.Models.Devices;
 using System.Collections.Generic;
 using System.Data;
 
@@ -30,9 +29,14 @@ namespace EnMon_Driver_Manager
 
         public ushort ID { get; set; }
 
-        public String Name { get; set; }
+        public string Name { get; set; }
 
-        public List<AbstractDevice> Devices { get; set; }
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public List<Device> Devices { get; set; }
 
         public List<ModbusTCPDevice> ModbusTCPDevices { get; set; }
 

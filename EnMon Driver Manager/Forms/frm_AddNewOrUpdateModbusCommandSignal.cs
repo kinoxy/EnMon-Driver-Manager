@@ -2,7 +2,12 @@
 using EnMon_Driver_Manager.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
+using EnMon_Driver_Manager.Models.DataTypes;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
+using EnMon_Driver_Manager.Models.StatusTexts;
 
 namespace EnMon_Driver_Manager
 {
@@ -37,7 +42,16 @@ namespace EnMon_Driver_Manager
         private void cbx_StationName_SelectionChangeCommitted(object sender, EventArgs e)
         {
             cbx_DeviceName.Items.Clear();
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
+            var devices = ((Station)(cbx_StationName.SelectedItem)).Devices;
+            if (devices != null)
+            {
+                var list_modbusTCPDevices = devices.Where(((d) => d.communicationProtocol.Name == "ModbusTCP"));
+                var array_modbusTcpDevices = list_modbusTCPDevices as Device[] ?? list_modbusTCPDevices.ToArray();
+                if (array_modbusTcpDevices.Any())
+                {
+                    cbx_DeviceName.Items.AddRange(array_modbusTcpDevices);
+                }
+            }
             cbx_DeviceName.Enabled = true;
             cbx_DeviceName.ResetText();
             cbx_DeviceName.SelectedIndex = -1;
@@ -168,7 +182,7 @@ namespace EnMon_Driver_Manager
         {
             txt_SignalID.Enabled = false;
             txt_SignalID.Text = "ID";
-            cbx_StationName.Items.AddRange(GetStationNames().ToArray());
+            cbx_StationName.Items.AddRange(GetStationsInfo().ToArray());
             cbx_DeviceName.Enabled = false;
 
             cbx_FunctionCode.Items.AddRange(new string[] { "FC 5", "FC 6" });
@@ -199,17 +213,17 @@ namespace EnMon_Driver_Manager
             }
             catch (Exception ex)
             {
-                return statusTexts;
+                return null;
                 throw;
             }
         }
 
-        private List<Station> GetStationNames()
+        private List<Station> GetStationsInfo()
         {
             List<Station> stations = new List<Station>();
             try
             {
-                stations = DBHelper_AddNewOrUpdateCommandSignalForm.GetAllStationsInfo();
+                stations = DBHelper_AddNewOrUpdateCommandSignalForm.GetAllStationsInfoWithDeviceInfo();
                 return stations;
             }
             catch (Exception ex)
@@ -225,7 +239,7 @@ namespace EnMon_Driver_Manager
 
             GetCommunicationInfo();
 
-            return DBHelper_AddNewOrUpdateCommandSignalForm.addNewCommandSignal(commandSignal);
+            return DBHelper_AddNewOrUpdateCommandSignalForm.AddNewModbusCommandSignal(commandSignal);
         }
 
         private void GetCommunicationInfo()
@@ -250,7 +264,7 @@ namespace EnMon_Driver_Manager
         private void GetGeneralInfo()
         {
             commandSignal.ID = uint.Parse(txt_SignalID.Text);
-            commandSignal.DeviceID = ((AbstractDevice)cbx_DeviceName.SelectedItem).ID;
+            commandSignal.deviceID = ((Device)cbx_DeviceName.SelectedItem).ID;
             commandSignal.Name = txt_SignalName.Text;
             commandSignal.Identification = txt_SignalIdentification.Text;
         }
@@ -268,7 +282,7 @@ namespace EnMon_Driver_Manager
 
         private void SetTextAtIdentificationTextBox()
         {
-            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((AbstractDevice)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
+            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((Device)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
         }
 
         #endregion Private Methods

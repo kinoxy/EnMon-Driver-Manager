@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager.Forms
@@ -62,8 +55,6 @@ namespace EnMon_Driver_Manager.Forms
             frm_email.Dock = DockStyle.Fill;
             frm_email.TopLevel = false;
             frm_email.Anchor = (AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top);
-            panel1.Controls.Clear();
-            panel1.Controls.Add(frm_email);
             frm_email.Visible = true;
         }
     }

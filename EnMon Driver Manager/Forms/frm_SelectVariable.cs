@@ -1,26 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using EnMon_Driver_Manager.DataBase;
-using EnMon_Driver_Manager;
-using EnMon_Driver_Manager.Models;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 
 namespace EnMon_Driver_Manager
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariable'
+
     public partial class frm_SelectVariable : Form
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariable'
     {
         private AbstractDBHelper DbHelper_SelectVariable;
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariable.frm_SelectVariable()'
         public frm_SelectVariable()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'frm_SelectVariable.frm_SelectVariable()'
         {
             InitializeComponent();
         }
@@ -30,7 +21,7 @@ namespace EnMon_Driver_Manager
             try
             {
                 DbHelper_SelectVariable = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
-                List<Station> stations = DbHelper_SelectVariable.GetAllStationsInfo();
+                List<Station> stations = DbHelper_SelectVariable.GetAllStationsInfoWithDeviceInfo();
                 cb_StationNames.Items.AddRange(stations.ToArray());
             }
             catch(Exception)
@@ -48,16 +39,15 @@ namespace EnMon_Driver_Manager
         {
             cb_DeviceNames.Enabled = true;
             cb_DeviceNames.Items.Clear();
-            cb_DeviceNames.Items.AddRange(((Station)cb_StationNames.SelectedItem).ModbusTCPDevices.ToArray());
+            cb_DeviceNames.Items.AddRange(((Station)cb_StationNames.SelectedItem).Devices.ToArray());
         }
 
         private void cb_DeviceNames_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            AbstractDevice device = ((AbstractDevice)cb_DeviceNames.SelectedItem);
+            Device device = ((Device)cb_DeviceNames.SelectedItem);
             if (rb_AnalogSignals.Checked)
             {
-                List<Signal> analogSignals;
-                analogSignals = DbHelper_SelectVariable.GetDeviceAnalogSignalsBasicInfo(device.ID);
+                var analogSignals = DbHelper_SelectVariable.GetDeviceSignalsInfo<ModbusAnalogSignal>(device);
                 if(analogSignals.Count>0)
                 {
                     cb_SignalNames.Items.Clear();
@@ -67,7 +57,7 @@ namespace EnMon_Driver_Manager
             }
             if (rb_BinarySignals.Checked)
             {
-                List<Signal> binarySignals = DbHelper_SelectVariable.GetDeviceBinarySignalsBaiscInfo(device.ID);
+                var binarySignals = DbHelper_SelectVariable.GetDeviceSignalsInfo<ModbusBinarySignal>(device);
                 if (binarySignals.Count > 0)
                 {
                     cb_SignalNames.Items.Clear();

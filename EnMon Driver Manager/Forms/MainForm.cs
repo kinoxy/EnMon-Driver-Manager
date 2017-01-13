@@ -3,11 +3,9 @@ using EnMon_Driver_Manager.Drivers;
 using EnMon_Driver_Manager.Drivers.Archiving;
 using EnMon_Driver_Manager.Drivers.Mail;
 using EnMon_Driver_Manager.Modbus;
-using EnMon_Driver_Manager.Models;
 using IniParser;
 using IniParser.Model;
 using System;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -548,9 +546,8 @@ namespace EnMon_Driver_Manager
         }
 
         private void StartArchiving()
-#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously. Consider using the 'await' operator to await non-blocking API calls, or 'await Task.Run(...)' to do CPU-bound work on a background thread.
-        {
-            archivist = new EnMon_Driver_Manager.Drivers.Archiving.ArchiveToDatabase();
+       {
+            archivist = new ArchiveToDatabase();
         }
 
         private void InitializeDatabase()

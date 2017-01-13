@@ -167,12 +167,20 @@
     <Compile Include="Drivers\SNMP\SNMPDriver.cs" />
     <Compile Include="Drivers\Abstract\TCPClientEventArgs.cs" />
     <Compile Include="Extensions\ComboBoxExtensions.cs" />
+    <Compile Include="Extensions\CustomSortedCategoryAttribute.cs" />
+    <Compile Include="FormComponents\AnalogSignal_Basic.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FormComponents\AnalogSignal_Basic.Designer.cs">
+      <DependentUpon>AnalogSignal_Basic.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\deneme.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\deneme.Designer.cs">
       <DependentUpon>deneme.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\DynamicTypeDescriptor.cs" />
     <Compile Include="Forms\Form2.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -224,14 +232,20 @@
     </Compile>
     <Compile Include="Constants.cs" />
     <Compile Include="DataBase\AbstractDBHelper.cs" />
-    <Compile Include="DeviceInfo.cs">
+    <Compile Include="FormComponents\DeviceInfo.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DeviceInfo.Designer.cs">
+    <Compile Include="FormComponents\DeviceInfo.Designer.cs">
       <DependentUpon>DeviceInfo.cs</DependentUpon>
     </Compile>
     <Compile Include="Drivers\Archiving\AbstractArchive.cs" />
     <Compile Include="Drivers\Mail\MailClient.cs" />
+    <Compile Include="Forms\frm_ChooseProtocol.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_ChooseProtocol.Designer.cs">
+      <DependentUpon>frm_ChooseProtocol.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\frm_Email.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -262,6 +276,12 @@
     <Compile Include="Drivers\Modbus\ModbusTCP.cs" />
     <Compile Include="Drivers\Modbus\AbstractModbusDriver.cs" />
     <Compile Include="Drivers\Modbus\SocketUtils.cs" />
+    <Compile Include="Forms\frm_GetDatabaseConnectionProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_GetDatabaseConnectionProperties.Designer.cs">
+      <DependentUpon>frm_GetDatabaseConnectionProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\frm_GetEmailAddress.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -287,20 +307,24 @@
       <DependentUpon>frm_SignalList.cs</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Models\Device\AbstractTCPDevice.cs" />
-    <Compile Include="Models\Device\IModbusTCP.cs" />
-    <Compile Include="Models\Device\ModbusTCPDevice.cs" />
-    <Compile Include="Models\Device\SNMPDevice.cs" />
+    <Compile Include="Models\ArchivePeriods\ArchivePeriodConverter.cs" />
+    <Compile Include="Models\DataTypes\DataTypeConverter.cs" />
+    <Compile Include="Models\Devices\AbstractTCPDevice.cs" />
+    <Compile Include="Models\Devices\DeviceConverter.cs" />
+    <Compile Include="Models\Devices\IModbus.cs" />
+    <Compile Include="Models\Devices\ModbusTCPDevice.cs" />
+    <Compile Include="Models\Devices\SNMPDevice.cs" />
     <Compile Include="Models\Signals\Modbus\IModbusSignal.cs" />
-    <Compile Include="Models\Signals\SNMP\AbstractSNMPSignal.cs" />
+    <Compile Include="Models\Signals\PageShownConverter.cs" />
+    <Compile Include="Models\Signals\SNMP\ISNMPSignal.cs" />
     <Compile Include="Models\AlarmMail.cs" />
-    <Compile Include="Models\ArchivePeriod.cs" />
+    <Compile Include="Models\ArchivePeriods\ArchivePeriod.cs" />
     <Compile Include="Models\Signals\AnalogSignal.cs" />
     <Compile Include="Models\Signals\BinarySignal.cs" />
     <Compile Include="Models\Signals\CommandSignal.cs" />
     <Compile Include="Models\Signals\Modbus\ModbusCommandSignal.cs" />
     <Compile Include="Drivers\Abstract\AbstractTCPClient.cs" />
-    <Compile Include="Models\DataType.cs" />
+    <Compile Include="Models\DataTypes\DataType.cs" />
     <Compile Include="Models\MailGroup.cs" />
     <Compile Include="Drivers\Modbus\ModbusTCPClient.cs" />
     <Compile Include="Models\PollingTimer.cs">
@@ -310,23 +334,26 @@
     <Compile Include="Models\Signals\Signal.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\Alarm.cs" />
-    <Compile Include="Models\Device\AbstractDevice.cs" />
+    <Compile Include="Models\Devices\Device.cs" />
     <Compile Include="Models\Signals\SNMP\SNMPAnalogSignal.cs" />
     <Compile Include="Models\Signals\SNMP\SNMPBinarySignal.cs" />
     <Compile Include="Models\Signals\SNMP\SNMPCommandSignal.cs" />
-    <Compile Include="Models\Station.cs" />
+    <Compile Include="Models\Stations\StationConverter.cs" />
+    <Compile Include="Models\Stations\Station.cs" />
     <Compile Include="Models\Signals\Modbus\ModbusAnalogSignal.cs" />
     <Compile Include="Models\Signals\Modbus\ModbusBinarySignal.cs" />
     <Compile Include="DataBase\MySqlDBHelper.cs" />
-    <Compile Include="Forms\Form1.cs">
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Forms\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Log.cs" />
     <Compile Include="DataBase\ConnectionString.cs" />
-    <Compile Include="Models\StatusText.cs" />
+    <Compile Include="Models\StatusTexts\StatusText.cs" />
+    <Compile Include="Models\StatusTexts\StatusTextTypeConverter.cs" />
+    <Compile Include="Models\TemporaryValues.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -347,12 +374,13 @@
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="StaticHelper.cs" />
-    <Compile Include="SwitchButton.cs">
+    <Compile Include="FormComponents\SwitchButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="SwitchButton.Designer.cs">
+    <Compile Include="FormComponents\SwitchButton.Designer.cs">
       <DependentUpon>SwitchButton.cs</DependentUpon>
     </Compile>
+    <None Include="ClassDiagram2.cd" />
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -363,6 +391,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="3rd Party Codes\YaTabControl\YaTabPage.resx">
       <DependentUpon>YaTabPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormComponents\AnalogSignal_Basic.resx">
+      <DependentUpon>AnalogSignal_Basic.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\deneme.resx">
       <DependentUpon>deneme.cs</DependentUpon>
@@ -388,8 +419,11 @@
     <EmbeddedResource Include="Forms\frm_ChangeGroupName.resx">
       <DependentUpon>frm_ChangeGroupName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DeviceInfo.resx">
+    <EmbeddedResource Include="FormComponents\DeviceInfo.resx">
       <DependentUpon>DeviceInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_ChooseProtocol.resx">
+      <DependentUpon>frm_ChooseProtocol.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\frm_Email.resx">
       <DependentUpon>frm_Email.cs</DependentUpon>
@@ -403,6 +437,9 @@
     <EmbeddedResource Include="Forms\frm_Devices.resx">
       <DependentUpon>frm_Devices.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_GetDatabaseConnectionProperties.resx">
+      <DependentUpon>frm_GetDatabaseConnectionProperties.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\frm_GetEmailAddress.resx">
       <DependentUpon>frm_GetEmailAddress.cs</DependentUpon>
     </EmbeddedResource>
@@ -415,7 +452,7 @@
     <EmbeddedResource Include="Forms\frm_SignalList.resx">
       <DependentUpon>frm_SignalList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SwitchButton.resx">
+    <EmbeddedResource Include="FormComponents\SwitchButton.resx">
       <DependentUpon>SwitchButton.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Resources\Icons\Minus32MouseOut.png" />
@@ -441,8 +478,8 @@
     </None>
     <None Include="Resources\green.png" />
     <None Include="Resources\red.png" />
-    <EmbeddedResource Include="Forms\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -489,7 +526,9 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="NewFolder1\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

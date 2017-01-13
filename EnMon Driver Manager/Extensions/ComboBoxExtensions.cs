@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace EnMon_Driver_Manager.Extensions
+﻿namespace EnMon_Driver_Manager.Extensions
 {
     static class ComboBoxExtensions
     {

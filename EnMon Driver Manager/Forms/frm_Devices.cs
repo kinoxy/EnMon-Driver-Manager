@@ -1,13 +1,9 @@
 ﻿using EnMon_Driver_Manager.DataBase;
-using EnMon_Driver_Manager.Modbus;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,6 +14,7 @@ namespace EnMon_Driver_Manager
         private AbstractDBHelper DBHelper_Devices;
         private List<Station> stations;
         private int index;
+
         public frm_Devices()
         {
             InitializeComponent();
@@ -32,7 +29,6 @@ namespace EnMon_Driver_Manager
             {
                 stations = DBHelper_Devices.GetAllStationsInfoWithDeviceInfo();
 
-                
                 if (stations.Count > 0)
                 {
                     Task t1 = Task.Factory.StartNew(AddDeviceInfoControl);
@@ -53,7 +49,7 @@ namespace EnMon_Driver_Manager
         {
             foreach (Station s in stations)
             {
-                foreach (AbstractDevice d in s.ModbusTCPDevices)
+                foreach (var d in s.Devices)
                 {
                     DeviceInfo deviceInfo = new DeviceInfo();
                     deviceInfo.lbl_StationName.Text = s.Name;
@@ -76,7 +72,7 @@ namespace EnMon_Driver_Manager
                     deviceInfo.SwitchButtonStateChanged += DeviceInfo_SwitchButtonStateChanged;
                     //control.Invoke((MethodInvoker)(() => control.Text = "new text"));
                     this.Invoke((MethodInvoker)(() => this.Controls.Add(deviceInfo))); //.Controls.Add(deviceInfo);
-                } 
+                }
             }
         }
 
@@ -93,7 +89,7 @@ namespace EnMon_Driver_Manager
             frm_DevicesEventArgs args = new frm_DevicesEventArgs();
             args.state = _state;
             args.deviceId = _deviceID;
-            if(StateChanged != null)
+            if (StateChanged != null)
             {
                 StateChanged(this, args);
             }
@@ -105,7 +101,7 @@ namespace EnMon_Driver_Manager
 
             Task t1 = Task.Factory.StartNew(UpdateDeviceStatuses);
             await t1;
-            
+
             timer_Loop2Seconds.Start();
         }
 
@@ -118,8 +114,9 @@ namespace EnMon_Driver_Manager
                 {
                     if (c is DeviceInfo)
                     {
-
-                        if (stations.Where((s) => (s.ModbusTCPDevices.Any((d) => d.ID == (c as DeviceInfo).DeviceId))).First().ModbusTCPDevices.Find((d) => d.ID == (c as DeviceInfo).DeviceId).Connected)
+                        //stations.Where((s) => (s.ModbusTCPDevices.Any((d) => d.ID == (c as DeviceInfo).DeviceId))).First().ModbusTCPDevices.Find((d) => d.ID == (c as DeviceInfo).DeviceId).Connected)
+                        //{
+                        if (stations.Where((s) => (s.Devices.Any((d) => d.ID == (c as DeviceInfo).DeviceId))).First().Devices.Find((d) => d.ID == (c as DeviceInfo).DeviceId).Connected)
                         {
                             (c as DeviceInfo).pictureBox_ConnectionStatus.Image = Properties.Resources.green;
                         }
@@ -141,8 +138,9 @@ namespace EnMon_Driver_Manager
         {
             DBHelper_Devices = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
             AddDevicesToForm();
-        }        
+        }
     }
+
     public delegate void frm_DevicesEventHandler(object source, frm_DevicesEventArgs args);
 
     public class frm_DevicesEventArgs : EventArgs

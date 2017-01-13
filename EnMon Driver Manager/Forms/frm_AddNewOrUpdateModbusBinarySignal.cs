@@ -2,7 +2,11 @@
 using EnMon_Driver_Manager.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
+using EnMon_Driver_Manager.Models.StatusTexts;
 
 namespace EnMon_Driver_Manager
 {
@@ -123,9 +127,9 @@ namespace EnMon_Driver_Manager
         private void InsertInfoToGeneralSettingsGroup()
         {
             txt_SignalID.Text = binarySignal.ID.ToString();
-            cbx_StationName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == binarySignal.DeviceID));
+            cbx_StationName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == binarySignal.deviceID));
             cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
-            cbx_DeviceName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == binarySignal.DeviceID)).ModbusTCPDevices.Find((d) => d.ID == binarySignal.DeviceID);
+            cbx_DeviceName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == binarySignal.deviceID)).ModbusTCPDevices.Find((d) => d.ID == binarySignal.deviceID);
             cbx_DeviceName.Enabled = true;
             //cbx_DeviceName.fi
             txt_SignalName.Text = binarySignal.Name;
@@ -141,7 +145,16 @@ namespace EnMon_Driver_Manager
         private void cbx_StationName_SelectionChangeCommitted(object sender, EventArgs e)
         {
             cbx_DeviceName.Items.Clear();
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
+            var devices = ((Station)(cbx_StationName.SelectedItem)).Devices;
+            if (devices != null)
+            {
+                var list_modbusTCPDevices = devices.Where(((d) => d.communicationProtocol.Name == "ModbusTCP"));
+                var array_modbusTcpDevices = list_modbusTCPDevices as Device[] ?? list_modbusTCPDevices.ToArray();
+                if (array_modbusTcpDevices.Any())
+                {
+                    cbx_DeviceName.Items.AddRange(array_modbusTcpDevices);
+                }
+            }
             cbx_DeviceName.Enabled = true;
             cbx_DeviceName.ResetText();
             cbx_DeviceName.SelectedIndex = -1;
@@ -174,7 +187,7 @@ namespace EnMon_Driver_Manager
 
         private void txt_SignalName_KeyUp(object sender, KeyEventArgs e)
         {
-            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((AbstractDevice)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
+            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((Device)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
         }
 
         private void cbx_DeviceName_SelectionChangeCommitted(object sender, EventArgs e)
@@ -263,7 +276,7 @@ namespace EnMon_Driver_Manager
 
         private bool AddNewBinarySignalToDatabase()
         {
-            return DBHelper_AddNewOrUpdateModbusBinarySignalForm.addNewBinarySignal(binarySignal);
+            return DBHelper_AddNewOrUpdateModbusBinarySignalForm.AddNewModbusBinarySignal(binarySignal);
         }
 
         private void GetAlarmEventInfo()
@@ -336,7 +349,7 @@ namespace EnMon_Driver_Manager
         {
             binarySignal.Name = txt_SignalName.Text;
             binarySignal.Identification = txt_SignalIdentification.Text;
-            binarySignal.DeviceID = ((AbstractDevice)cbx_DeviceName.SelectedItem).ID;
+            binarySignal.deviceID = ((Device)cbx_DeviceName.SelectedItem).ID;
         }
 
         private void TrimAllInputFields()
@@ -389,7 +402,7 @@ namespace EnMon_Driver_Manager
 
         private bool UpdateBinarySignalAtDatabase()
         {
-            return DBHelper_AddNewOrUpdateModbusBinarySignalForm.UpdateBinarySignal(binarySignal);
+            return DBHelper_AddNewOrUpdateModbusBinarySignalForm.UpdateModbusBinarySignal(binarySignal);
         }
 
         private void AddNewSignal()

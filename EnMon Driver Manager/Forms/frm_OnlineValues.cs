@@ -1,19 +1,12 @@
 ﻿using EnMon_Driver_Manager.DataBase;
-using EnMon_Driver_Manager.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using EnMon_Driver_Manager.Properties;
+using System;
+using System.Data;
+using System.Windows.Forms;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 
 namespace EnMon_Driver_Manager
 {
-
     [System.Runtime.InteropServices.Guid("D1B0EC7D-244A-4BBF-B04C-F11DD010C91D")]
     public partial class frm_OnlineValues : Form
 
@@ -26,7 +19,7 @@ namespace EnMon_Driver_Manager
         private DataTable dt_AnalogValues;
         private DataTable dt_BinaryValues;
 
-        #endregion
+        #endregion Private Properties
 
         #region Constructors
 
@@ -38,7 +31,7 @@ namespace EnMon_Driver_Manager
             InitializeTimers();
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Events
 
@@ -75,7 +68,6 @@ namespace EnMon_Driver_Manager
 
         private void txt_Filtre_TextChanged(object sender, EventArgs e)
         {
-
         }
 
         private void FilterDataGridView(DataGridView dgv, string text)
@@ -89,7 +81,6 @@ namespace EnMon_Driver_Manager
 
             for (int i = 1; i < filtre.Length; i++)
             {
-
                 if (filtre[i] != "")
                 {
                     fs += string.Format("AND [Sinyal İsmi] Like '%{0}%'", filtre[i]);
@@ -100,7 +91,6 @@ namespace EnMon_Driver_Manager
                 (dgv.DataSource as DataTable).DefaultView.RowFilter = fs;
             }
         }
-
 
         private void btn_SendChanges_Click(object sender, EventArgs e)
         {
@@ -148,38 +138,78 @@ namespace EnMon_Driver_Manager
         private void dgv_AnalogValues_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             string signalIdentification = dgv_AnalogValues.Rows[e.RowIndex].Cells[0].Value.ToString();
-            AnalogSignal analogSignal = DBHelper_OnlineValues.GetAnalogSignalsInfoByIdentification(signalIdentification);
-            if (analogSignal != null)
+            string protocol_id = dgv_AnalogValues.Rows[e.RowIndex].Cells["protocol_id"].Value.ToString();
+            switch (protocol_id)
             {
-                frm_AddNewOrUpdateModbusAnalogSignal frm_UpdateAnalogSignal = new frm_AddNewOrUpdateModbusAnalogSignal(analogSignal);
-                frm_UpdateAnalogSignal.ShowDialog();
+                // ModbusTCP
+                case "1":
+                    ModbusAnalogSignal analogSignal =
+                        DBHelper_OnlineValues.GetAnalogSignalsInfoByIdentification<ModbusAnalogSignal>(signalIdentification);
+                    if (analogSignal != null)
+                    {
+                        frm_AddNewOrUpdateModbusAnalogSignal frm_UpdateAnalogSignal = new frm_AddNewOrUpdateModbusAnalogSignal(analogSignal);
+                        frm_UpdateAnalogSignal.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Modus analog sinyal bilgileri veritabanından okunamadı.\nAyrıntılı bilgi için log dosyasına bakınız.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    break;
+                case "2":
+                    MessageBox.Show("SNMP updade signal Not implemented");
+                    //SNMPAnalogSignal analogSignal =
+                    //    DBHelper_OnlineValues.GetSignalsInfoByIdentification<SNMPAnalogSignal>(signalIdentification);
+                    //if (analogSignal != null)
+                    //{
+                    //    frm_AddNewOrUpdateModbusAnalogSignal frm_UpdateAnalogSignal = new frm_AddNewOrUpdateModbusAnalogSignal(analogSignal);
+                    //    frm_UpdateAnalogSignal.ShowDialog();
+                    //}
+                    //else
+                    //{
+                    //    MessageBox.Show("SNMP analog sinyal bilgileri veritabanından okunamadı.\nAyrıntılı bilgi için log dosyasına bakınız.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    //}
+                    break;
+                default:
+                    Log.Instance.Error("{0}: Sinyala ait protocol bilgisi bulunamadı", this.GetType().Name);
+                    break;
             }
-            else
-            {
-                MessageBox.Show("Analog sinyal bilgileri veritabanından okunamadı.\nAyrıntılı bilgi için log dosyasına bakınız.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            
         }
 
         private void dgv_BinaryValues_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            string signalIdentification = dgv_BinaryValues.Rows[e.RowIndex].Cells[0].Value.ToString();
-            BinarySignal binarySignal = DBHelper_OnlineValues.GetBinarySignalsInfoByIdentification(signalIdentification);
-            if (binarySignal != null)
+            var protocol_id = dgv_BinaryValues.Rows[e.RowIndex].Cells["protocol_id"].Value.ToString();
+            var signalIdentification = dgv_BinaryValues.Rows[e.RowIndex].Cells["identification"].Value.ToString();
+
+            switch (protocol_id)
             {
-                frm_AddNewOrUpdateModbusBinarySignal frm_UpdateBinarySignal = new frm_AddNewOrUpdateModbusBinarySignal(binarySignal);
-                frm_UpdateBinarySignal.ShowDialog();
-            }
-            else
-            {
-                if (Resources.frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_ != null)
-                    MessageBox.Show(Resources.frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_, Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // ModbusTCP
+                case "1":
+                    ModbusBinarySignal binarySignal = DBHelper_OnlineValues.GetBinarySignalInfoByIdentification<ModbusBinarySignal>(signalIdentification);
+                    if (binarySignal != null)
+                    {
+                        frm_AddNewOrUpdateModbusBinarySignal frm_UpdateBinarySignal = new frm_AddNewOrUpdateModbusBinarySignal(binarySignal);
+                        frm_UpdateBinarySignal.ShowDialog();
+                    }
+                    else
+                    {
+                        if (Resources.frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_ != null)
+                            MessageBox.Show(Resources.frm_OnlineValues__dgv_BinaryValues_CellContentDoubleClick_,
+                                Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    break;
+                // SNMP
+                case "2":
+                    MessageBox.Show("SNMP not implemented yet");
+                    break;
             }
 
         }
 
-        #endregion
+        #endregion Events
 
         #region Private Properties
+
         private void InitializeTimers()
         {
             timer_GetAnalogSignals = new Timer();
@@ -194,22 +224,25 @@ namespace EnMon_Driver_Manager
         private void LoaddgvAnalogValuesWithData()
         {
             dt_AnalogValues = DBHelper_OnlineValues.GetAllAnalogSignalsInfoWithLastValues();
-       //     dt_AnalogValues.Columns["Alarm"].DataType = System.Type.GetType("System.Boolean");
-           dgv_AnalogValues.DataSource = dt_AnalogValues;
+            //     dt_AnalogValues.Columns["Alarm"].DataType = System.Type.GetType("System.Boolean");
+            dgv_AnalogValues.DataSource = dt_AnalogValues;
         }
 
         private void LoaddgvBinaryValuesWithData()
         {
             dt_BinaryValues = DBHelper_OnlineValues.GetAllBinarySignalsInfoWithLastValues();
-            //     dt_AnalogValues.Columns["Alarm"].DataType = System.Type.GetType("System.Boolean");
             if (dgv_BinaryValues != null)
             {
                 dgv_BinaryValues.DataSource = dt_BinaryValues;
-                dgv_BinaryValues.Columns["driver_id"].Visible = false;
+                // Online deger gosterirken sinyalin protokol bilgisi gizleniyor.
+                var dataGridViewColumn = dgv_BinaryValues.Columns["protocol_id"];
+                if (dataGridViewColumn != null)
+                {
+                    dataGridViewColumn.Visible = false;
+                }
             }
         }
 
-        #endregion
-
+        #endregion Private Properties
     }
 }

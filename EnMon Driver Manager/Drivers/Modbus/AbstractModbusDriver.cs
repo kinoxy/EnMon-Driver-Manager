@@ -1,14 +1,8 @@
-﻿using IniParser;
-using IniParser.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using EnMon_Driver_Manager.DataBase;
-using System.Text;
 using EnMon_Driver_Manager.Drivers;
-using EnMon_Driver_Manager.Models.Device;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 
 namespace EnMon_Driver_Manager.Modbus
 {

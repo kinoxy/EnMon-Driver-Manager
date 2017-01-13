@@ -1,4 +1,7 @@
-﻿namespace EnMon_Driver_Manager
+﻿
+using EnMon_Driver_Manager.Models.Devices;
+
+namespace EnMon_Driver_Manager
 {
     partial class DeviceInfo
     {
@@ -130,6 +133,6 @@
 
 
 
-        public AbstractDevice device { get; set; }
+        public Device device { get; set; }
     }
 }

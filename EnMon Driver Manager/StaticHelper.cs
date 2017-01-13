@@ -7,87 +7,165 @@ using System.Text;
 using System;
 using EnMon_Driver_Manager.Drivers.Mail;
 using System.Collections.Generic;
+using EnMon_Driver_Manager.Forms;
+using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
 {
 
     public static class StaticHelper
     {
-       public static AbstractDBHelper InitializeDatabase(string _fileName)
+        public static string DatabaseType { get; set; }
+        public static string ServerAddress { get; set; }
+        public static string DatabaseName { get; set; }
+        public static string UserName { get; set; }
+        public static string Password { get; set; }
+
+        private static  AbstractDBHelper DBHelper;
+        public static AbstractDBHelper InitializeDatabase(string _fileName)
        {
+            InitializeDatabaseConnectionStringProperties();
             try
             {
+                // Databaseconfig dosyası mevcutsa veritabanı bağlantı bilgileri dosyadan okunarak veritabanına bağlanmaya çalışılır.
                 if (File.Exists(_fileName))
                 {
-                    string _databaseType = string.Empty;
-                    string _serverAddress = string.Empty;
-                    string _databaseName = string.Empty;
-                    string _userName = string.Empty;
-                    string _password = string.Empty;
-                    var parser = new FileIniDataParser();
+                    ReadDatabaseConnectionStringPropertiesFromFile(_fileName);
 
-                    IniData data = parser.ReadFile(_fileName, Encoding.UTF8);
-
-                    var _parameters = data["DataBase Parameters"];
-
-                    foreach (KeyData kd in _parameters)
+                    // Databaseconfig dosyasından okunan bilgiler ile veritabanına bağlanılamaz ise kullanıcadan yeni bilgiler istenir.
+                    if(!TryConnectToDatabase())
                     {
-                        switch (kd.KeyName.Trim())
+                        Log.Instance.Warn("Databaseconfig dosyasından okunan veriler ile database bağlantısı kurulamadı.Kullanıcıdan veritabanı bağlantısı için gerekli bilgiler isteniyor...");
+                        MessageBox.Show("Veritabanı bağlantısı kurulumadı.\nBağlantı bilgilerini kontrol ederek tekrardan veritabanına bağlanmayı deneyiniz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        //Kullanıcıdan veritabanı bilgileri istenir
+                        if (GetDatabaseConnectionInfoFromUser(DatabaseType, DatabaseName, ServerAddress, UserName, Password))
                         {
-                            case "DatabaseType":
-                                _databaseType = kd.Value.Trim();
-                                break;
-
-                            case "ServerAddress":
-                                _serverAddress = kd.Value.Trim();
-                                break;
-
-                            case "DatabaseName":
-                                _databaseName = kd.Value.Trim();
-                                break;
-
-                            case "UserName":
-                                _userName = kd.Value.Trim();
-                                break;
-
-                            case "Password":
-                                _password = kd.Value.Trim();
-                                break;
-
-                            default:
-                                break;
+                            // Kullanıcı veritabanı bilgilerini girdiyse tekrardan bağlantı kurma denenir.
+                            TryConnectToDatabase();
                         }
                     }
-                    if (_databaseType != string.Empty & _serverAddress != string.Empty & _databaseType != string.Empty & _userName != string.Empty & _password != string.Empty)
-                    {
-                        switch (_databaseType)
-                        {
-                            case "MySQL":
-                                return new MySqlDBHelper(_serverAddress, _databaseName, _userName, _password);
 
-                            default:
-                                Log.Instance.Error("{0} database tipi için driver bulunamadı.", _databaseType);
-                                return null;
-                        }
-                    }
-                    else
-                    {
-                        Log.Instance.Trace("{0}", MethodBase.GetCurrentMethod().Name);
-                        Log.Instance.Error("Database baglantısı olusturulamadı");
-                        return null;
-                    }
-
+                    return DBHelper;
                 }
                 else
                 {
-                    Log.Instance.Error("DatabaseConfig dosyası okunamadı");
-                    return null;
+                    Log.Instance.Warn("Database config dosyası bulunamadı. Kullanıcıdan veritabanı bağlantısı için gerekli bilgiler isteniyor...");
+                    if(GetDatabaseConnectionInfoFromUser())
+                    {
+                        TryConnectToDatabase();
+                    }
+                    
+                    return DBHelper;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Instance.Error("{0}: Veritabanı bağlantısı oluşturulamadı => {1}", "StaticHelper", ex.Message);
+                return null;
             }
+        }
+
+        private static bool GetDatabaseConnectionInfoFromUser(string databaseType, string databaseName, string serverAddress, string userName, string password)
+        {
+            frm_GetDatabaseConnectionProperties form = new frm_GetDatabaseConnectionProperties(databaseType, databaseName, serverAddress, userName, password);
+            form.FormSubmitted += GetDatabaseConnectionPropertiesFromForm;
+            DialogResult result = form.ShowDialog();
+            if (result == DialogResult.OK) return true;
+            return false;
+        }
+
+        private static bool GetDatabaseConnectionInfoFromUser()
+        {
+            frm_GetDatabaseConnectionProperties form = new frm_GetDatabaseConnectionProperties();
+            form.FormSubmitted += GetDatabaseConnectionPropertiesFromForm;
+            DialogResult result = form.ShowDialog();
+            if (result == DialogResult.OK) return true;
+            return false;
+        }
+
+        private static void GetDatabaseConnectionPropertiesFromForm(object source, frm_GetDatabaseConnectionPropertiesEventArgs e)
+        {
+            DatabaseName = e.DatabaseName;
+            DatabaseType = e.DataBaseType;
+            ServerAddress = e.ServerAddress;
+            UserName = e.UserName;
+            Password = e.Password;
+        }
+
+        private static bool TryConnectToDatabase()
+        {
+            if (DatabaseType != string.Empty & ServerAddress != string.Empty & DatabaseName != string.Empty & UserName != string.Empty & Password != string.Empty)
+            {
+                switch (DatabaseType)
+                {
+                    case "MySQL":
+
+                        try
+                        {
+                            DBHelper = new MySqlDBHelper(ServerAddress, DatabaseName, UserName, Password);
+                            // DBHelper null değilse veritabanı bağlantısı kurulmuştur.
+                            if (DBHelper != null) return DBHelper.CheckDBConnection();
+                            return false;
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Instance.Error("{0}: Veritabanı bağlantısı kurulumu esnasında hata oluştu => {1}", "StaticHelper", ex.Message);
+                            return false;
+                        }
+
+                    default:
+                        Log.Instance.Error("{0} database tipi için driver bulunamadı.", DatabaseType);
+                        return false;
+                }
+            }
+            return false;
+        }
+
+        private static void ReadDatabaseConnectionStringPropertiesFromFile(string _fileName)
+        {
+            var parser = new FileIniDataParser();
+
+            IniData data = parser.ReadFile(_fileName, Encoding.UTF8);
+
+            var _parameters = data["DataBase Parameters"];
+
+            foreach (KeyData kd in _parameters)
+            {
+                switch (kd.KeyName.Trim())
+                {
+                    case "DatabaseType":
+                        DatabaseType = kd.Value.Trim();
+                        break;
+
+                    case "ServerAddress":
+                        ServerAddress = kd.Value.Trim();
+                        break;
+
+                    case "DatabaseName":
+                        DatabaseName = kd.Value.Trim();
+                        break;
+
+                    case "UserName":
+                        UserName = kd.Value.Trim();
+                        break;
+
+                    case "Password":
+                        Password = kd.Value.Trim();
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private static void InitializeDatabaseConnectionStringProperties()
+        {
+            DatabaseType = string.Empty;
+            ServerAddress = string.Empty;
+            DatabaseName = string.Empty;
+            UserName = string.Empty;
+            Password = string.Empty;
         }
 
         public static MailClient InitializeMailClient(string _fileName)

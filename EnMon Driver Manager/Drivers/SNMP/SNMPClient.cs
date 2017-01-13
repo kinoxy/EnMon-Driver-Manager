@@ -1,32 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EnMon_Driver_Manager.Models;
-using EnMon_Driver_Manager.Models.Device;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.Signals;
+using EnMon_Driver_Manager.Models.Signals.SNMP;
 
 namespace EnMon_Driver_Manager.Drivers.SNMP
 {
     public class SNMPClient : AbstractTCPClient
     {
         #region Public Properties
+
         public new List<SNMPDevice> Devices { get; set; }
 
+        public enum SNMPVersion
+        {
+            V1 = 0,
+            V2 = 1,
+            V3 = 2
+        }
+
+        public SNMPVersion Version;
         #endregion
 
         #region Constructors
-        public SNMPClient(string _ipAddress, int _readTimeOut, int _retryNumber, double _pollingtime) : base(_ipAddress, _readTimeOut, _retryNumber, _pollingtime)
+        public SNMPClient(string _ipAddress, int _readTimeOut, int _retryNumber, double _pollingtime, SNMPVersion Version = SNMPVersion.V1) : base(_ipAddress, _readTimeOut, _retryNumber, _pollingtime)
         {
             
         }
+
         #endregion
+
         public override void ReadValues()
         {
             throw new NotImplementedException();
         }
 
-        public override bool WriteValue(AbstractDevice d, CommandSignal c)
+        public override bool WriteValue(Device d, CommandSignal c)
         {
             SNMPDevice _d = Devices.Where(device => device.ID == d.ID).FirstOrDefault();
             SNMPCommandSignal _commandSignal = _d.CommandSignals.Where(command => command.ID == c.ID).FirstOrDefault();

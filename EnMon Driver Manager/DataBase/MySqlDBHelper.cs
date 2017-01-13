@@ -1,7 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Data;
-using System.Reflection;
 
 namespace EnMon_Driver_Manager.DataBase
 {

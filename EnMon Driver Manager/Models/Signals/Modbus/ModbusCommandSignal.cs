@@ -1,7 +1,6 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 
-namespace EnMon_Driver_Manager.Models
+namespace EnMon_Driver_Manager.Models.Signals.Modbus
 {
     public class ModbusCommandSignal : CommandSignal, IModbusSignal
 
@@ -30,7 +29,7 @@ namespace EnMon_Driver_Manager.Models
 
         public byte WordCount { get; set; }
 
-        public void GetInfosFromDataRow(DataRow dr)
+        public override void GetPropertyValuesFromDataRow(DataRow dr)
         {
             for(int i = 0; i < dr.Table.Columns.Count; i++)
             {
@@ -55,7 +54,7 @@ namespace EnMon_Driver_Manager.Models
                         IsEvent = dr.Field<bool>("is_event");
                         break;
                     case "device_id":
-                        DeviceID = dr.Field<ushort>("device_id");
+                        deviceID = dr.Field<ushort>("device_id");
                         break;
                     case "command_type":
                         switch (dr.Field<string>("command_type"))
@@ -71,8 +70,6 @@ namespace EnMon_Driver_Manager.Models
                         break;
                     case "bit_number":
                         BitNumber = dr.Field<byte>("bit_number");
-                        break;
-                    default:
                         break;
                 }
             }

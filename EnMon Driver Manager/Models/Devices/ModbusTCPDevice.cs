@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 
-namespace EnMon_Driver_Manager.Models.Device
+namespace EnMon_Driver_Manager.Models.Devices
 {
-    public class ModbusTCPDevice : AbstractTCPDevice
+    public class ModbusTCPDevice : Device, IModbus, ITCPDevice
     {
         public List<ModbusAnalogSignal> AnalogSignals { get; set; }
 
@@ -17,9 +14,11 @@ namespace EnMon_Driver_Manager.Models.Device
 
         public byte SlaveID { get; set; }
 
+        public string IpAddress { get; set; }
+
         public ModbusTCPDevice() { }
 
-        public ModbusTCPDevice(DataRow dr)
+        public virtual void GetPropertyValuesFromDataRow(DataRow dr)
         {
             for (int i = 0; i < dr.Table.Columns.Count; i++)
             {
@@ -39,8 +38,18 @@ namespace EnMon_Driver_Manager.Models.Device
 
                     case "protocol_id":
                         byte protocolID = dr.Field<byte>("protocol_id");
+                        if (communicationProtocol == null)
+                            communicationProtocol = new CommunicationProtocol() { ID = protocolID, Name = "ModbusTCP"};
+                        else
+                            communicationProtocol.ID = protocolID;
+                        break;
+                    case "protocol_name":
                         string protocolName = dr.Field<string>("protocol_name");
-                        communicationProtocol = new CommunicationProtocol() { ID = protocolID, Name = protocolName };
+                        ;
+                        if (communicationProtocol == null)
+                            communicationProtocol = new CommunicationProtocol() { Name = protocolName };
+                        else
+                            communicationProtocol.Name = protocolName;
                         break;
                     case "is_active":
                         isActive = dr.Field<bool>("is_active");
@@ -48,7 +57,14 @@ namespace EnMon_Driver_Manager.Models.Device
                     case "connected":
                         Connected = dr.Field<bool>("connected");
                         break;
+                    case "slave_id":
+                        SlaveID = dr.Field<byte>("slave_id");
+                        break;
+                    case "ip_address":
+                        IpAddress = dr.Field<string>("ip_address");
+                        break;
                     default:
+                        Log.Instance.Error("{0}: ModbusTCP Deevice tanımlanmamış property adı => {1}", this.GetType().Name, dr.Table.Columns[i].ToString());
                         break;
                 }
             }

@@ -82,5 +82,16 @@ namespace EnMon_Driver_Manager.Properties {
                 this["StartDrivers"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("server=46.101.240.185;user id=root;password=Qweasd123;persistsecurityinfo=True;da" +
+            "tabase=utmdb")]
+        public string utmdbConnectionString {
+            get {
+                return ((string)(this["utmdbConnectionString"]));
+            }
+        }
     }
 }

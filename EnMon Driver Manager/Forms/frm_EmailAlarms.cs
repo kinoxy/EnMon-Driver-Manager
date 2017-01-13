@@ -145,7 +145,7 @@ namespace EnMon_Driver_Manager
         {
             try
             {
-                if (!DBHelper_EmailAlarms.UpdateExistingMailAlarm(args.alarmMail.ID, args.alarmMail.Name, args.alarmMail.LogicText, args.alarmMail.MailGroupID, args.alarmMail.EMailSubject, args.alarmMail.EmailText, args.alarmMail.Delaytime))
+                if (!DBHelper_EmailAlarms.UpdateExistingMailAlarm(args.alarmMail.ID, args.alarmMail.Name, args.alarmMail.LogicText, args.alarmMail.MailGroupID, args.alarmMail.EMailSubject, args.alarmMail.EmailText))
                 {
                     MessageBox.Show("Yeni alarm database'e  eklenemedi", Constants.MessageBoxHeader);
                 }

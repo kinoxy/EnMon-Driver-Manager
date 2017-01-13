@@ -6,16 +6,13 @@ using IniParser;
 using IniParser.Model;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 //using System.Windows.Controls;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace EnMon_Driver_Manager
 {
@@ -48,7 +45,7 @@ namespace EnMon_Driver_Manager
             {
 
                 //OnMailClientSettingsUpdateRequested(txt_MailServerName.Text, txt_MailServerPort.Text, txt_UserName.Text, txt_Password.Text);
-                if (UpdateMailClientSettings(txt_MailServerName.Text, txt_MailServerPort.Text, txt_UserName.Text, txt_Password.Text, txt_From.Text, cbx_UseSSL.Checked) & UpdateAlarmGroups() & AddMailGroupsToComboBox())
+                if (UpdateMailClientSettings(txt_MailServerName.Text, txt_MailServerPort.Text, txt_UserName.Text, txt_Password.Text, txt_From.Text, cbx_UseSSL.Checked) & UpdateMailGroups() & AddMailGroupsToComboBox())
                 {
                     MessageBox.Show("Ayarlar başarılı bir şekilde güncellendi", Constants.MessageBoxHeader, MessageBoxButtons.OK);
                 }
@@ -449,7 +446,7 @@ namespace EnMon_Driver_Manager
 
         private List<User> GetUsersForSelectedGroup(uint _groupID)
         {
-            List<User> users = DBHelper_EmailSettings.GetMailGroupUsers(_groupID);
+            List<User> users = DBHelper_EmailSettings.GetMailRecipients(_groupID);
 
             return users;
         }
@@ -474,42 +471,25 @@ namespace EnMon_Driver_Manager
             frm_addNewMailGroup.ShowDialog();
         }
 
-        private bool UpdateAlarmGroups()
+        private bool UpdateMailGroups()
         {
-            MailGroup mg = (MailGroup)comboBox1.SelectedItem;
-
             try
             {
-
-
-                if (mg != null)
+                MailGroup mg = (MailGroup)comboBox1.SelectedItem;
+                foreach (var item in lstBox_UsersNotAddedToGroup.Items)
                 {
-                    // Mail grubuna eklenmeyen kullanıcılar gruptan çıkartılıyor
-                    foreach (var item in lstBox_UsersNotAddedToGroup.Items)
-                    {
-                        DBHelper_EmailSettings.RemoveUserFromMailGroup(((User)item).ID, mg.ID);
-                    }
-
-
-                    List<User> existingUsersInGroup = DBHelper_EmailSettings.GetMailGroupUsers(mg.ID);
-
-                    // Mail gruba eklenen kullanıcılar veritabanında gruba ekleniyor.
-                    foreach (var item in lstBox_UsersAddedToGroup.Items)
-                    {
-                        // User ilgili mail group da ekli değilse;
-                        if (existingUsersInGroup.FindIndex((u) => u.ID == ((User)item).ID) == -1)
-                        {
-                            DBHelper_EmailSettings.AddUserToMailGroup(((User)item).ID, mg.ID);
-                        }
-
-                    }
+                    DBHelper_EmailSettings.UpdateUserMailGroup(((User)item).ID, 1);
+                }
+                foreach (var item in lstBox_UsersAddedToGroup.Items)
+                {
+                    DBHelper_EmailSettings.UpdateUserMailGroup(((User)item).ID, mg.ID);
                 }
                 return true;
             }
             catch (Exception ex)
             {
-                Log.Instance.Error("{0}: E-posta Alarmlarını güncellerken hata oluştu => {1}", this.GetType().Name, ex.Message);
-                throw ex;
+                Log.Instance.Error("{0}: E-posta kullanıcı grupları güncellenirken beklenmedik hata oluştu => {1}", this.GetType().Name, ex.Message);
+                return false;
             }
         }
 

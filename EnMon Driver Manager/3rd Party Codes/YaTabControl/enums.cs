@@ -1,5 +1,3 @@
-using System;
-
 namespace GrayIris.Utilities.UI.Controls
 {
 	/// <summary>

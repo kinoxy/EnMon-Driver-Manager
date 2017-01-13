@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EnMon_Driver_Manager.Models
+﻿namespace EnMon_Driver_Manager.Models.ArchivePeriods
 {
 
     public class ArchivePeriod
@@ -16,7 +10,10 @@ namespace EnMon_Driver_Manager.Models
 
         public uint Period { get; set; }
 
-        
+        public override string ToString()
+        {
+            return Description;
+        }
 
     }
 }

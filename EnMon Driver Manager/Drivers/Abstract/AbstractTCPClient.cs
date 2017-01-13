@@ -1,6 +1,6 @@
-﻿using EnMon_Driver_Manager.Drivers;
-using EnMon_Driver_Manager.Models;
-using EnMon_Driver_Manager.Models.Device;
+﻿using EnMon_Driver_Manager.Models;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.Signals;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
@@ -18,7 +18,7 @@ namespace EnMon_Driver_Manager.Drivers
 
         public PollingTimer pollingTimer { get; set; }
 
-        public List<AbstractTCPDevice> Devices { get; set; }
+        public List<Device> Devices { get; set; }
 
         public string ipAddress { get; set; }
 
@@ -66,7 +66,7 @@ namespace EnMon_Driver_Manager.Drivers
 
             InitializeClientProperties();
 
-            Devices = new List<AbstractTCPDevice>();
+            Devices = new List<Device>();
         }
 
         public AbstractTCPClient(string _ipAddress) : this()
@@ -138,12 +138,12 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        protected void OnDisconnectedFromServer(List<AbstractTCPDevice> _devices)
+        protected void OnDisconnectedFromServer(List<Device> _devices)
         {
             Log.Instance.Trace("{1}: {2} methodu {0} ip adresi için cagrıldı", ipAddress, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
 
             Log.Instance.Error("{0}: Driver baglantı hatası => {1} ip adresi ile bağlantı problemi", this.GetType().Name, ipAddress);
-            foreach (AbstractTCPDevice d in Devices)
+            foreach (Device d in Devices)
             {
                 d.Connected = false;
             }
@@ -176,7 +176,7 @@ namespace EnMon_Driver_Manager.Drivers
             }
         }
 
-        protected void OnDeviceConnectionStateChanged(AbstractTCPDevice _device)
+        protected void OnDeviceConnectionStateChanged(Device _device)
         {
             if (DeviceConnectionStateChanged != null)
             {
@@ -255,7 +255,7 @@ namespace EnMon_Driver_Manager.Drivers
 
         #region Protected Methods
 
-        protected void SetDeviceConnectionStatus<T>(T _device, ConnectionStatus _connectionStatus) where T : AbstractTCPDevice
+        protected void SetDeviceConnectionStatus(Device _device, ConnectionStatus _connectionStatus)
         {
             switch (_connectionStatus)
             {
@@ -338,7 +338,7 @@ namespace EnMon_Driver_Manager.Drivers
 
         public abstract void ReadValues();
 
-        public abstract bool WriteValue(AbstractDevice d, CommandSignal c);
+        public abstract bool WriteValue(Device d, CommandSignal c);
 
         #endregion Public Abstract Methods
 

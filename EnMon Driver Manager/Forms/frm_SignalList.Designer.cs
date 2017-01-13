@@ -362,7 +362,7 @@ namespace EnMon_Driver_Manager
             this.btn_AddCommandSignal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_AddCommandSignal.ForeColor = System.Drawing.Color.Black;
             this.btn_AddCommandSignal.Icon = null;
-            this.btn_AddCommandSignal.Location = new System.Drawing.Point(9, 103);
+            this.btn_AddCommandSignal.Location = new System.Drawing.Point(365, 60);
             this.btn_AddCommandSignal.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_AddCommandSignal.Name = "btn_AddCommandSignal";
             this.btn_AddCommandSignal.Primary = false;
@@ -380,7 +380,7 @@ namespace EnMon_Driver_Manager
             this.btn_ShowOnlineValues.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_ShowOnlineValues.ForeColor = System.Drawing.Color.Black;
             this.btn_ShowOnlineValues.Icon = null;
-            this.btn_ShowOnlineValues.Location = new System.Drawing.Point(189, 18);
+            this.btn_ShowOnlineValues.Location = new System.Drawing.Point(5, 18);
             this.btn_ShowOnlineValues.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_ShowOnlineValues.Name = "btn_ShowOnlineValues";
             this.btn_ShowOnlineValues.Primary = false;
@@ -398,7 +398,7 @@ namespace EnMon_Driver_Manager
             this.btn_AddAnalogSignal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_AddAnalogSignal.ForeColor = System.Drawing.Color.Black;
             this.btn_AddAnalogSignal.Icon = null;
-            this.btn_AddAnalogSignal.Location = new System.Drawing.Point(9, 61);
+            this.btn_AddAnalogSignal.Location = new System.Drawing.Point(185, 60);
             this.btn_AddAnalogSignal.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_AddAnalogSignal.Name = "btn_AddAnalogSignal";
             this.btn_AddAnalogSignal.Primary = false;
@@ -416,7 +416,7 @@ namespace EnMon_Driver_Manager
             this.btn_AddDigitalSignal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btn_AddDigitalSignal.ForeColor = System.Drawing.Color.Black;
             this.btn_AddDigitalSignal.Icon = null;
-            this.btn_AddDigitalSignal.Location = new System.Drawing.Point(9, 18);
+            this.btn_AddDigitalSignal.Location = new System.Drawing.Point(5, 60);
             this.btn_AddDigitalSignal.MouseState = MaterialSkin.MouseState.HOVER;
             this.btn_AddDigitalSignal.Name = "btn_AddDigitalSignal";
             this.btn_AddDigitalSignal.Primary = false;

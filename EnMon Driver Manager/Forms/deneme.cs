@@ -2,26 +2,27 @@
 using Lextm.SharpSnmpLib.Messaging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using EnMon_Driver_Manager.DataBase;
+using EnMon_Driver_Manager.Models;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 
 namespace EnMon_Driver_Manager.Forms
 {
     public partial class deneme : Form
     {
+        private AbstractDBHelper DatabaseHelper;
         public deneme()
         {
             InitializeComponent();
+            DatabaseHelper = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
+            ModbusAnalogSignal signal = new ModbusAnalogSignal();
+            propertyGrid1.SelectedObject = signal;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             try
             {
@@ -32,11 +33,17 @@ namespace EnMon_Driver_Manager.Forms
                 // readTimeOut süresi sonunda TCP baglantısı kurulamazsa
                 if (asyncResult.IsCompleted)
                 {
-                    IList<Variable> result = Messenger.Get(VersionCode.V1,
-                                                new IPEndPoint(IPAddress.Parse(textBox1.Text), 161),
-                                                new OctetString("public"),
-                                                new List<Variable> { new Variable(new ObjectIdentifier(textBox2.Text)) },
-                                                5000);
+                    var result = await  Messenger.GetAsync(VersionCode.V1,
+                        new IPEndPoint(IPAddress.Parse(textBox1.Text), 161),
+                        new OctetString("public"),
+                        new List<Variable> {new Variable(new ObjectIdentifier(textBox2.Text))});
+                    
+                    //result = Messenger.Get(VersionCode.V1,
+                    //    new IPEndPoint(IPAddress.Parse(textBox1.Text), 161),
+                    //    new OctetString("public"),
+                    //    new List<Variable> { new Variable(new ObjectIdentifier(textBox2.Text)) },
+                    //    5000);
+
 
                     textBox3.Text = result[0].Data.ToString();
 
@@ -59,6 +66,24 @@ namespace EnMon_Driver_Manager.Forms
                 MessageBox.Show(ex.ToString());
             }
 
+        }
+
+        private void deneme_Load(object sender, EventArgs e)
+        {
+            TemporaryValues.stations = DatabaseHelper.GetAllStationsInfoWithDeviceInfo();
+            TemporaryValues.archivePeriods = DatabaseHelper.GetArchivePeriods();
+            TemporaryValues.dataTypes = DatabaseHelper.GetAllDataTypes();
+            TemporaryValues.statusTexts = DatabaseHelper.GetAllStatusTexts();
+        }
+
+        private void PropertyGrid1OnKeyPress(object sender, KeyPressEventArgs keyPressEventArgs)
+        {
+            propertyGrid1.Refresh();
+        }
+
+        private void propertyGrid1_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            
         }
     }
 }

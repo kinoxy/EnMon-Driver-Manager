@@ -1,15 +1,14 @@
-﻿using Lextm.SharpSnmpLib.Messaging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Timers;
-using EnMon_Driver_Manager.Models;
 using System.Reflection;
-using EnMon_Driver_Manager.Models.Device;
+using EnMon_Driver_Manager.Models.Devices;
 using EnMon_Driver_Manager.Drivers.Abstract;
+using EnMon_Driver_Manager.Models.Signals.SNMP;
 using IniParser;
 using IniParser.Model;
 
@@ -21,9 +20,7 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
         #region Public Properties
         public int PollingTime { get; set; }
 
-        public int ReadTimeOut { get; set; }
 
-        public int RetryNumber { get; set; }
 
         public byte MaxRegisterInOnePoll { get; set; }
 
@@ -174,7 +171,7 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
                 cycleForCommands.Stop();
 
                 // Veritabanından active_commands tablosu okunuyor.
-                DataTable dt_activeCommands = DBHelper.GetActiveCommands(2);
+                DataTable dt_activeCommands = DBHelper.GetDriverActiveCommands(communicationProtocol.Name);
 
                 // active_commands tablosundan veri donduyse web scadadan komut gelmiş demektir.
                 if (dt_activeCommands != null)
@@ -277,21 +274,17 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
             {
                 foreach (Station s in Stations)
                 {
-                    //TODO: Verifyprotocolofdevices methodu kullanmak yerine cihazlar database'den protokolune göre çekilebilir
-                    List<SNMPDevice> _stationDevices = DBHelper.GetStationModbusTCPDevices(s);
 
-
-                    // Haberleşme protokolü farklı olan device'lar bu driver ile haberleşemeyeceği için listeden çıkartılıyor
-                    _stationDevices = VerifyProtocolofDevices(_stationDevices, ProtocolID);
+                    List<SNMPDevice> _stationDevices = DBHelper.GetStationDevices<SNMPDevice>(s);
 
                     if (_stationDevices.Count > 0)
                     {
                         // Her device için device'a ait sinyaller veritabanından çekilir
                         foreach (SNMPDevice d in _stationDevices)
                         {
-                            d.BinarySignals = DBHelper.GetModbusDeviceBinarySignalsInfo(d.ID);
-                            d.AnalogSignals = DBHelper.GetModbusTCPDeviceAnalogSignalsInfo(d.ID);
-                            d.CommandSignals = DBHelper.GetModbusDeviceCommandSignalsInfo(d.ID);
+                            d.BinarySignals = DBHelper.GetDeviceSignalsInfo<SNMPBinarySignal>(d);
+                            d.AnalogSignals = DBHelper.GetDeviceSignalsInfo<SNMPAnalogSignal>(d);
+                            d.CommandSignals = DBHelper.GetDeviceSignalsInfo<SNMPCommandSignal>(d);
                         }
 
                         s.SNMPDevices = _stationDevices;
@@ -345,7 +338,12 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
         {
             Log.Instance.Trace("{0}: {1} baglantı kuruldu", MethodBase.GetCurrentMethod().Name, e.ipAddress);
         }
-    
+
+        public override void SetAllDevicesDisconnected()
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Protected Override Methods

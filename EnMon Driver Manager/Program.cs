@@ -1,9 +1,6 @@
 ﻿using EnMon_Driver_Manager.Forms;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace EnMon_Driver_Manager
@@ -40,8 +37,8 @@ namespace EnMon_Driver_Manager
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
-           // Application.Run(new deneme());
+           // Application.Run(new MainForm());
+            Application.Run(new deneme());
         }
     }
 

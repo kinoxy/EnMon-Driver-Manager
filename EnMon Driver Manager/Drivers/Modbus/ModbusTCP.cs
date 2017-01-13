@@ -1,8 +1,8 @@
-﻿using EnMon_Driver_Manager.DataBase;
-using EnMon_Driver_Manager.Drivers;
+﻿using EnMon_Driver_Manager.Drivers;
 using EnMon_Driver_Manager.Drivers.Abstract;
 using EnMon_Driver_Manager.Models;
-using EnMon_Driver_Manager.Models.Device;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 using IniParser;
 using IniParser.Model;
 using System;
@@ -257,7 +257,7 @@ namespace EnMon_Driver_Manager.Modbus
                 foreach (Station s in Stations)
                 {
                     //TODO: Verifyprotocolofdevices methodu kullanmak yerine cihazlar database'den protokolune göre çekilebilir
-                    List<ModbusTCPDevice> _stationDevices = DBHelper.GetStationModbusTCPDevices(s);
+                    List<ModbusTCPDevice> _stationDevices = DBHelper.GetStationDevices<ModbusTCPDevice>(s);
 
 
                     // Haberleşme protokolü farklı olan device'lar bu driver ile haberleşemeyeceği için listeden çıkartılıyor
@@ -268,9 +268,9 @@ namespace EnMon_Driver_Manager.Modbus
                         // Her device için device'a ait sinyaller veritabanından çekilir
                         foreach (ModbusTCPDevice d in _stationDevices)
                         {
-                            d.BinarySignals = DBHelper.GetModbusDeviceSignalsInfo<ModbusBinarySignal>(d);
-                            d.AnalogSignals = DBHelper.GetModbusDeviceSignalsInfo<ModbusAnalogSignal>(d);
-                            d.CommandSignals = DBHelper.GetModbusDeviceSignalsInfo<ModbusCommandSignal>(d);
+                            d.BinarySignals = DBHelper.GetDeviceSignalsInfo<ModbusBinarySignal>(d);
+                            d.AnalogSignals = DBHelper.GetDeviceSignalsInfo<ModbusAnalogSignal>(d);
+                            d.CommandSignals = DBHelper.GetDeviceSignalsInfo<ModbusCommandSignal>(d);
                         }
 
                         s.ModbusTCPDevices = _stationDevices;
@@ -312,11 +312,14 @@ namespace EnMon_Driver_Manager.Modbus
             ModbusCommandSignal _command;
 
             // Komutun gideceği cihaz bulunur.
-            _device = Devices.Where((d) => d.CommandSignals.Exists((c) => c.ID == dr.Field<uint>("command_signal_id"))).FirstOrDefault();
+            _device = Devices.Where((d) =>
+            {
+                return d.CommandSignals != null && d.CommandSignals.Exists((c) => c.ID == dr.Field<uint>("command_signal_id"));
+            }).FirstOrDefault();
 
             if (_device != null)
             {
-                // Komut sinyalinin bilgileri alınır.
+                // Device'tan komut sinyalinin bilgileri alınır.
                 _command = _device.CommandSignals.Where((c) => c.ID == dr.Field<uint>("command_signal_id")).First();
                 _command.CommandValue = dr.Field<float>("value");
                 try

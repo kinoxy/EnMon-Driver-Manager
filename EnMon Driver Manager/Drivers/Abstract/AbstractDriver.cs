@@ -1,12 +1,11 @@
 ﻿using EnMon_Driver_Manager.DataBase;
 using EnMon_Driver_Manager.Models;
-using EnMon_Driver_Manager.Models.Device;
+using EnMon_Driver_Manager.Models.Devices;
 using IniParser;
 using IniParser.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text;
 using System.Timers;
 
@@ -15,6 +14,10 @@ namespace EnMon_Driver_Manager.Drivers
     public abstract class AbstractDriver
     {
         #region Public Properties
+
+        public int ReadTimeOut { get; set; }
+
+        public int RetryNumber { get; set; }
 
         public List<Station> Stations { get; set; }
 
@@ -27,6 +30,8 @@ namespace EnMon_Driver_Manager.Drivers
         public CommunicationProtocol communicationProtocol { get; set; }
 
         #endregion Public Properties
+
+
 
         #region Private Properties
 
@@ -83,9 +88,9 @@ namespace EnMon_Driver_Manager.Drivers
 
         #region Public Methods
 
-        public void SetDevicesAsDisconnected<T>(List<T> _devices) where T : AbstractDevice
+        public void SetDevicesAsDisconnected<T>(List<T> _devices) where T : Device
         {
-            foreach (AbstractDevice d in _devices)
+            foreach (Device d in _devices)
             {
                 DBHelper.UpdateDeviceConnectedState(d.ID, false);
                 d.Connected = false;
@@ -150,16 +155,17 @@ namespace EnMon_Driver_Manager.Drivers
             Stations = VerifyStationNames(_stationNames);
         }
 
-        protected List<T> VerifyProtocolofDevices<T>(List<T> _devices, string _protocolName) where T : AbstractDevice
+        protected List<T> VerifyProtocolofDevices<T>(List<T> _devices, string _protocolName) where T : Device
         {
+            List<T> protocolDevices = new List<T>();
             foreach (T device in _devices)
             {
-                if (device.communicationProtocol.Name != _protocolName)
+                if (device.communicationProtocol.Name == _protocolName)
                 {
-                    _devices.Remove(device);
+                    protocolDevices.Add(device);
                 }
             }
-            return _devices;
+            return protocolDevices;
         }
     
         #endregion Protected Methods

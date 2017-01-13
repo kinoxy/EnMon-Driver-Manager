@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
 
-namespace EnMon_Driver_Manager.Models.Device
+namespace EnMon_Driver_Manager.Models.Devices
 {
-    public interface IModbusTCP
+    public interface IModbus
     {
         List<ModbusBinarySignal> BinarySignals { get; set; }
 
         List<ModbusAnalogSignal> AnalogSignals { get; set; }
 
         List<ModbusCommandSignal> CommandSignals { get; set; }
-
-
 
         byte SlaveID { get; set; }
     }

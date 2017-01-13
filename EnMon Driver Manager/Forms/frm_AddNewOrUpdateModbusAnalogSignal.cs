@@ -1,20 +1,26 @@
 ﻿using EnMon_Driver_Manager.DataBase;
-using EnMon_Driver_Manager.Extensions;
 using EnMon_Driver_Manager.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
+using EnMon_Driver_Manager.FormComponents;
+using EnMon_Driver_Manager.Models.ArchivePeriods;
+using EnMon_Driver_Manager.Models.DataTypes;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
+using EnMon_Driver_Manager.Models.StatusTexts;
 
 namespace EnMon_Driver_Manager
 {
 
-    public partial class frm_AddNewOrUpdateModbusAnalogSignal : Form
+    public partial class frm_AddNewOrUpdateModbusAnalogSignal : Form 
 
     {
         #region Private Properties
 
         private AbstractDBHelper DBHelper_AddNewOrUpdateAnalogSignalForm;
-
+        private AnalogSignal_BasicValues AnalogSignalBasicValues;
         private ModbusAnalogSignal analogSignal;
 
         private uint ID;
@@ -39,97 +45,27 @@ namespace EnMon_Driver_Manager
 
             ID = DBHelper_AddNewOrUpdateAnalogSignalForm.GetNextAnalogSignalID();
 
-            InitializeControlProperties();
-
-            btn_Delete.Enabled = false;
-            btn_Delete.Hide();
-
-            analogSignal = new ModbusAnalogSignal();
+            
         }
 
         public frm_AddNewOrUpdateModbusAnalogSignal(ModbusAnalogSignal analogSignal) 
         {
+            InitializeDatabase();
+
             InitializeComponent();
 
-            InitializeDatabase();
+            ID = DBHelper_AddNewOrUpdateAnalogSignalForm.GetNextAnalogSignalID();
+
+            AddComponents();
 
             InitializeControlProperties();
 
             this.Text = "Analog Sinyal Güncelle";
-            this.btn_OK.Text = "Güncelle"; 
+            this.btn_OK.Text = "Güncelle";
             this.analogSignal = analogSignal;
 
             UpdateControlsWithSignalInfo();
 
-        }
-    
-        private void UpdateControlsWithSignalInfo()
-        {
-            InsertInfoToGeneralSettingsGroup();
-
-            InsertInfoToCommmunicationSettingGroup();
-
-            InsertInfoToArchivingGroup();
-
-            InsertInfoToMaxAlarmSettingsGroup();
-
-            InsertInfoToMinAlarmSettingsGroup();
-        }
-
-        private void InsertInfoToMaxAlarmSettingsGroup()
-        {
-            cbx_HasMaxAlarm.Checked = analogSignal.HasMaxAlarm ? true : false;
-            txt_MaxAlarmValue.Enabled = analogSignal.HasMaxAlarm ? true : false;
-            txt_MaxAlarmValue.Text = analogSignal.MaxAlarmValue.ToString();
-            cbx_MaxAlarmStatus.SelectedItem = statusTexts.Find((s) => s.StatusID == analogSignal.MaxAlarmStatusID);
-        }
-
-        private void InsertInfoToMinAlarmSettingsGroup()
-        {
-            cbx_HasMinAlarm.Checked = analogSignal.HasMinAlarm ? true : false;
-            txt_MinAlarmValue.Enabled = analogSignal.HasMinAlarm ? true : false;
-            txt_MinAlarmValue.Text = analogSignal.MinAlarmValue.ToString();
-            cbx_MinAlarmStatus.SelectedItem = statusTexts.Find((s) => s.StatusID == analogSignal.MinAlarmStatusID);
-        }
-
-        private void InsertInfoToArchivingGroup()
-        {
-            cbx_IsArchive.Checked = analogSignal.IsArchive ? true : false;
-            cbx_Archive.Enabled = analogSignal.IsArchive ? true : false;
-            cbx_Archive.SelectedItem = archivePeriods.Find((ap) => ap.ID == analogSignal.archivePeriod.ID);
-        }
-
-        private void InsertInfoToCommmunicationSettingGroup()
-        {
-            txt_ModbusAddress.Text = analogSignal.Address.ToString();
-            switch(analogSignal.FunctionCode)
-            {
-                case 3:
-                    cbx_FunctionCode.SelectedItem = "FC 3";
-                    break;
-                case 4:
-                    cbx_FunctionCode.SelectedItem = "FC 4";
-                    break;
-                default:
-                    break;
-            }
-            txt_WordCount.Text = analogSignal.WordCount.ToString();
-            txt_ScaleValue.Text = analogSignal.ScaleValue.ToString();
-            cbx_DataType.SelectedItem = dataTypes.Find((dt) => dt.ID == analogSignal.dataType.ID);
-        }
-
-        private void InsertInfoToGeneralSettingsGroup()
-        {
-            txt_SignalID.Text = analogSignal.ID.ToString();
-            cbx_StationName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == analogSignal.DeviceID));
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
-            cbx_DeviceName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == analogSignal.DeviceID)).ModbusTCPDevices.Find((d) => d.ID == analogSignal.DeviceID);
-            cbx_DeviceName.Enabled = true;
-            //cbx_DeviceName.fi
-            txt_SignalName.Text = analogSignal.Name;
-            txt_SignalName.Enabled = true;
-            txt_SignalIdentification.Text = analogSignal.Identification;
-            txt_Unit.Text = analogSignal.Unit;
         }
 
         #endregion Constructors
@@ -140,17 +76,6 @@ namespace EnMon_Driver_Manager
         {
             DeleteSignal(analogSignal);
 
-        }
-
-
-        private void cbx_StationName_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            cbx_DeviceName.Items.Clear();
-            cbx_DeviceName.Items.AddRange(((Station)cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
-            cbx_DeviceName.Enabled = true;
-            cbx_DeviceName.ResetText();
-            cbx_DeviceName.SelectedIndex = -1;
-            txt_SignalName.Enabled = false;
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -171,16 +96,6 @@ namespace EnMon_Driver_Manager
             this.Close();
         }
 
-        private void txt_SignalName_KeyUp(object sender, KeyEventArgs e)
-        {
-            SetTextAtIdentificationTextBox();
-        }
-        private void cbx_DeviceName_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            txt_SignalName.Enabled = cbx_DeviceName.SelectedItem != null ? true : false;
-            SetTextAtIdentificationTextBox();
-        }
-
         private void cbx_HasMaxAlarm_CheckedChanged(object sender, EventArgs e)
         {
             txt_MaxAlarmValue.Enabled = cbx_HasMaxAlarm.Checked ? true : false;
@@ -193,11 +108,6 @@ namespace EnMon_Driver_Manager
             cbx_MinAlarmStatus.Enabled = cbx_HasMinAlarm.Checked ? true : false;
         }
 
-        private void cbx_StationName_SelectedValueChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void cbx_IsArchive_CheckedChanged(object sender, EventArgs e)
         {
             cbx_Archive.Enabled = cbx_IsArchive.Checked ? true : false;
@@ -205,12 +115,20 @@ namespace EnMon_Driver_Manager
 
         private void frm_AddNewOrUpdateAnalogSignal_Load(object sender, EventArgs e)
         {
-            
+            AddComponents();
+
+            InitializeControlProperties();
+
+            this.Text = "Analog Sinyal Güncelle";
+            this.btn_OK.Text = "Ekle";
+
+
         }
 
         #endregion Events
 
         #region Private Methods
+
         private void DeleteSignal(ModbusAnalogSignal analogSignal)
         {
             DialogResult result = MessageBox.Show($"İşleme devam ederseniz {analogSignal.Identification} sinyali ve bu sinyale ait diğer tüm kayıtlar silinecektir.\nİşleme devam etmek istiyor musunuz? ", Constants.MessageBoxHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -228,6 +146,7 @@ namespace EnMon_Driver_Manager
 
             }
         }
+
         private void InitializeDatabase()
         {
             try
@@ -277,7 +196,7 @@ namespace EnMon_Driver_Manager
 
             GetArchiveInfo();
 
-            return DBHelper_AddNewOrUpdateAnalogSignalForm.UpdateAnalogSignal(analogSignal);
+            return DBHelper_AddNewOrUpdateAnalogSignalForm.UpdateModbusAnalogSignal(analogSignal);
         }
 
         private void AddNewSignal()
@@ -308,7 +227,7 @@ namespace EnMon_Driver_Manager
         {
             TrimAllInputFields();
 
-            return VerifyGeneralSettings() & VerifyCommunicationSettings() & VerifyArchivingSettings() & VerifyAlarmSettings();    
+            return AnalogSignalBasicValues.VerifyInputs() & VerifyCommunicationSettings() & VerifyArchivingSettings() & VerifyAlarmSettings();    
            
         }
 
@@ -401,42 +320,14 @@ namespace EnMon_Driver_Manager
             return true;
         }
 
-        private bool VerifyGeneralSettings()
-        {
-            if (txt_SignalName.Text == string.Empty)
-            {
-                MessageBox.Show("Sinyal Adı bilgisi boş bırakılamaz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txt_SignalName.Focus();
-                return false;
-            }
-            else if (txt_SignalIdentification.Text == string.Empty)
-            {
-                MessageBox.Show("Sinyal Uzun Adı bilgisi boş bırakılamaz.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txt_SignalIdentification.Focus();
-                return false;
-            }
-            else if (cbx_StationName.SelectedItem == null)
-            {
-                MessageBox.Show("Station Adı bilgisi boş bırakılamaz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cbx_StationName.Focus();
-                return false;
-            }
-            else if (cbx_DeviceName.SelectedItem == null)
-            {
-                MessageBox.Show("Cihaz Adı bilgisi boş bırakılamaz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cbx_DeviceName.Focus();
-                return false;
-            }
-            return true;
-        }
+        
 
         private void InitializeControlProperties()
         {
 
-            txt_SignalID.Text = ID.ToString();
+            AnalogSignalBasicValues.AnalogSignalID = ID;
 
-            stations = GetStations();
-            cbx_StationName.Items.AddRange(stations.ToArray());
+            
 
             cbx_FunctionCode.Items.AddRange(new string[] { "FC 3", "FC 4" });
 
@@ -497,20 +388,7 @@ namespace EnMon_Driver_Manager
             }
         }
 
-        private List<Station> GetStations()
-        {
-            List<Station> stations = new List<Station>();
-            try
-            {
-                stations = DBHelper_AddNewOrUpdateAnalogSignalForm.GetAllStationsInfoWithDeviceInfo();
-                return stations;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Station bilgileri veritabanından okunamadı =>{1}", this.GetType().Name, ex.Message);
-                return stations;
-            }
-        }
+        
 
         private bool AddNewAnalogSignalToDatabase()
         {
@@ -524,7 +402,7 @@ namespace EnMon_Driver_Manager
             GetArchiveInfo();
             
 
-            return DBHelper_AddNewOrUpdateAnalogSignalForm.addNewAnalogSignal(analogSignal);
+            return DBHelper_AddNewOrUpdateAnalogSignalForm.AddNewModbusAnalogSignal(analogSignal);
         }
 
         private void GetArchiveInfo()
@@ -559,11 +437,11 @@ namespace EnMon_Driver_Manager
 
         private void GetGeneralInfo()
         {
-            analogSignal.ID = uint.Parse(txt_SignalID.Text);
-            analogSignal.DeviceID = ((AbstractDevice)cbx_DeviceName.SelectedItem).ID;
-            analogSignal.Name = txt_SignalName.Text;
-            analogSignal.Identification = txt_SignalIdentification.Text;
-            analogSignal.Unit = txt_Unit.Text;
+            analogSignal.ID = AnalogSignalBasicValues.AnalogSignalID;
+            analogSignal.deviceID = ((Device)AnalogSignalBasicValues.cbx_DeviceName.SelectedItem).ID;
+            analogSignal.Name = AnalogSignalBasicValues.SignalName;
+            analogSignal.Identification = AnalogSignalBasicValues.Identification;
+            analogSignal.Unit = AnalogSignalBasicValues.Unit;
         }
 
         private void GetAlarmInfo()
@@ -573,23 +451,23 @@ namespace EnMon_Driver_Manager
             analogSignal.MaxAlarmValue = float.Parse(txt_MaxAlarmValue.Text.Replace(".",","));
             analogSignal.MinAlarmValue = float.Parse(txt_MinAlarmValue.Text.Replace(".",","));
 
-            if (cbx_MaxAlarmStatus.SelectedItem == null)
-            {
-                analogSignal.MaxAlarmStatusID = 1;
-            }
-            else
-            {
-                analogSignal.MaxAlarmStatusID = ((StatusText)(cbx_MinAlarmStatus.SelectedItem)).StatusID;
-            }
+            //if (cbx_MaxAlarmStatus.SelectedItem == null)
+            //{
+            //    analogSignal.MaxAlarmStatusText = "GittiGeldi";
+            //}
+            //else
+            //{
+            //    analogSignal.MaxAlarmStatusText = ((StatusText)(cbx_MinAlarmStatus.SelectedItem)).Name;
+            //}
 
-            if (cbx_MinAlarmStatus.SelectedItem == null)
-            {
-                analogSignal.MinAlarmStatusID = 1;
-            }
-            else
-            {
-                analogSignal.MinAlarmStatusID = ((StatusText)(cbx_MinAlarmStatus.SelectedItem)).StatusID;
-            }
+            //if (cbx_MinAlarmStatus.SelectedItem == null)
+            //{
+            //    analogSignal.MinAlarmStatusText = "GittiGeldi";
+            //}
+            //else
+            //{
+            //    analogSignal.MinAlarmStatusText = ((StatusText)(cbx_MinAlarmStatus.SelectedItem)).Name;
+            //}
         }
 
         private void TrimAllInputFields()
@@ -603,11 +481,86 @@ namespace EnMon_Driver_Manager
             }
         }
 
-        private void SetTextAtIdentificationTextBox()
+        private void UpdateControlsWithSignalInfo()
         {
-            txt_SignalIdentification.Text = ((Station)cbx_StationName.SelectedItem).Name + " " + ((AbstractDevice)cbx_DeviceName.SelectedItem).Name + " " + txt_SignalName.Text;
+            InsertInfoToGeneralSettingsGroup();
+
+            InsertInfoToCommmunicationSettingGroup();
+
+            InsertInfoToArchivingGroup();
+
+            InsertInfoToMaxAlarmSettingsGroup();
+
+            InsertInfoToMinAlarmSettingsGroup();
         }
 
+        private void InsertInfoToMaxAlarmSettingsGroup()
+        {
+            cbx_HasMaxAlarm.Checked = analogSignal.HasMaxAlarm ? true : false;
+            txt_MaxAlarmValue.Enabled = analogSignal.HasMaxAlarm ? true : false;
+            txt_MaxAlarmValue.Text = analogSignal.MaxAlarmValue.ToString();
+            //cbx_MaxAlarmStatus.SelectedItem = statusTexts.Find((s) => s.Name == analogSignal.MaxAlarmStatusText);
+        }
+
+        private void InsertInfoToMinAlarmSettingsGroup()
+        {
+            cbx_HasMinAlarm.Checked = analogSignal.HasMinAlarm ? true : false;
+            txt_MinAlarmValue.Enabled = analogSignal.HasMinAlarm ? true : false;
+            txt_MinAlarmValue.Text = analogSignal.MinAlarmValue.ToString();
+            //cbx_MinAlarmStatus.SelectedItem = statusTexts.Find((s) => s.Name == analogSignal.MinAlarmStatusText);
+        }
+
+        private void InsertInfoToArchivingGroup()
+        {
+            cbx_IsArchive.Checked = analogSignal.IsArchive ? true : false;
+            cbx_Archive.Enabled = analogSignal.IsArchive ? true : false;
+            cbx_Archive.SelectedItem = archivePeriods.Find((ap) => ap.ID == analogSignal.archivePeriod.ID);
+        }
+
+        private void InsertInfoToCommmunicationSettingGroup()
+        {
+            txt_ModbusAddress.Text = analogSignal.Address.ToString();
+            switch (analogSignal.FunctionCode)
+            {
+                case 3:
+                    cbx_FunctionCode.SelectedItem = "FC 3";
+                    break;
+                case 4:
+                    cbx_FunctionCode.SelectedItem = "FC 4";
+                    break;
+                default:
+                    break;
+            }
+            txt_WordCount.Text = analogSignal.WordCount.ToString();
+            txt_ScaleValue.Text = analogSignal.ScaleValue.ToString();
+            cbx_DataType.SelectedItem = dataTypes.Find((dt) => dt.ID == analogSignal.dataType.ID);
+        }
+
+        private void InsertInfoToGeneralSettingsGroup()
+        {
+            AnalogSignalBasicValues.AnalogSignalID = analogSignal.ID;
+            AnalogSignalBasicValues.cbx_StationName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == analogSignal.deviceID));
+            AnalogSignalBasicValues.cbx_DeviceName.Items.AddRange(((Station)AnalogSignalBasicValues.cbx_StationName.SelectedItem).ModbusTCPDevices.ToArray());
+            AnalogSignalBasicValues.cbx_DeviceName.SelectedItem = stations.Find((s) => s.ModbusTCPDevices.Exists((d) => d.ID == analogSignal.deviceID)).ModbusTCPDevices.Find((d) => d.ID == analogSignal.deviceID);
+            AnalogSignalBasicValues.cbx_DeviceName.Enabled = true;
+            //cbx_DeviceName.fi
+            AnalogSignalBasicValues.SignalName = analogSignal.Name;
+            AnalogSignalBasicValues.Identification = analogSignal.Identification;
+            AnalogSignalBasicValues.Unit = analogSignal.Unit;
+        }
+
+        private void AddComponents()
+        {
+            AddAnalogSignalBasicValuesComponent();
+        }
+
+        private void AddAnalogSignalBasicValuesComponent()
+        {
+            AnalogSignalBasicValues = new AnalogSignal_BasicValues(new CommunicationProtocol() { Name = "ModbusTCP", ID = 1 }, DBHelper_AddNewOrUpdateAnalogSignalForm);
+            AnalogSignalBasicValues.Location = new Point(0, 0);
+            AnalogSignalBasicValues.Dock = DockStyle.Top;
+            this.Invoke((MethodInvoker)(() => this.Controls.Add(AnalogSignalBasicValues)));
+        }
 
         #endregion Private Methods    
     }
