@@ -37,8 +37,8 @@ namespace EnMon_Driver_Manager
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-           // Application.Run(new MainForm());
-            Application.Run(new deneme());
+           Application.Run(new MainForm2());
+           // Application.Run(new deneme());
         }
     }
 

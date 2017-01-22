@@ -39,7 +39,7 @@ namespace EnMon_Driver_Manager.Forms
         {
             frm_GetDatabaseConnectionPropertiesEventArgs args = new frm_GetDatabaseConnectionPropertiesEventArgs()
             {
-                DataBaseType = cbx_DatabaseType.SelectedText,
+                DataBaseType = cbx_DatabaseType.SelectedItem.ToString(),
                 ServerAddress = txt_ServerAddress.Text,
                 DatabaseName = txt_DatabaseName.Text,
                 UserName = txt_DatabaseUserName.Text,

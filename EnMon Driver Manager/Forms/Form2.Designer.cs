@@ -1,6 +1,6 @@
 ﻿namespace EnMon_Driver_Manager.Forms
 {
-    partial class Form2
+    partial class MainForm2
     {
         /// <summary>
         /// Required designer variable.
@@ -42,8 +42,8 @@
             System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Alarm Listesi");
             System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Log Kayıtları");
             System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("E-Posta Grupları");
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form2));
-            this.treeView1 = new System.Windows.Forms.TreeView();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm2));
+            this.ProjectTreeView = new System.Windows.Forms.TreeView();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -61,10 +61,10 @@
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // treeView1
+            // ProjectTreeView
             // 
-            this.treeView1.Location = new System.Drawing.Point(0, 49);
-            this.treeView1.Name = "treeView1";
+            this.ProjectTreeView.Location = new System.Drawing.Point(0, 49);
+            this.ProjectTreeView.Name = "ProjectTreeView";
             treeNode1.Name = "Node3";
             treeNode1.Text = "Modbus TCP";
             treeNode2.Name = "Node5";
@@ -85,7 +85,7 @@
             treeNode9.Text = "Log Kayıtları";
             treeNode10.Name = "Node_EmailGroups";
             treeNode10.Text = "E-Posta Grupları";
-            this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            this.ProjectTreeView.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode4,
             treeNode5,
             treeNode6,
@@ -93,9 +93,11 @@
             treeNode8,
             treeNode9,
             treeNode10});
-            this.treeView1.Size = new System.Drawing.Size(183, 583);
-            this.treeView1.TabIndex = 0;
-            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            this.ProjectTreeView.Size = new System.Drawing.Size(183, 583);
+            this.ProjectTreeView.TabIndex = 0;
+            this.ProjectTreeView.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.ProjectTreeView_BeforeCollapse);
+            this.ProjectTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.ProjectTreeView_BeforeExpand);
+            this.ProjectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
             // contextMenuStrip1
             // 
@@ -194,7 +196,7 @@
             this.pnl_Drivers_ModbusTCP.Size = new System.Drawing.Size(847, 583);
             this.pnl_Drivers_ModbusTCP.TabIndex = 4;
             // 
-            // Form2
+            // MainForm2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -203,11 +205,12 @@
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.treeView1);
+            this.Controls.Add(this.ProjectTreeView);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Name = "Form2";
+            this.Name = "MainForm2";
             this.Text = "EnMon Sürücü Yöneticisi";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.contextMenuStrip1.ResumeLayout(false);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
@@ -220,7 +223,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.TreeView ProjectTreeView;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.StatusStrip statusStrip1;

@@ -17,9 +17,7 @@ namespace EnMon_Driver_Manager.Forms
         public deneme()
         {
             InitializeComponent();
-            DatabaseHelper = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
-            ModbusAnalogSignal signal = new ModbusAnalogSignal();
-            propertyGrid1.SelectedObject = signal;
+            
         }
 
         private async void button1_Click(object sender, EventArgs e)
@@ -70,10 +68,16 @@ namespace EnMon_Driver_Manager.Forms
 
         private void deneme_Load(object sender, EventArgs e)
         {
-            TemporaryValues.stations = DatabaseHelper.GetAllStationsInfoWithDeviceInfo();
-            TemporaryValues.archivePeriods = DatabaseHelper.GetArchivePeriods();
-            TemporaryValues.dataTypes = DatabaseHelper.GetAllDataTypes();
-            TemporaryValues.statusTexts = DatabaseHelper.GetAllStatusTexts();
+            DatabaseHelper = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation);
+            ModbusAnalogSignal signal = new ModbusAnalogSignal();
+            if (DatabaseHelper != null)
+            {
+                TemporaryValues.stations = DatabaseHelper.GetAllStationsInfoWithDeviceInfo();
+                TemporaryValues.archivePeriods = DatabaseHelper.GetArchivePeriods();
+                TemporaryValues.dataTypes = DatabaseHelper.GetAllDataTypes();
+                TemporaryValues.statusTexts = DatabaseHelper.GetAllStatusTexts();
+            }
+            propertyGrid1.SelectedObject = signal;
         }
 
         private void PropertyGrid1OnKeyPress(object sender, KeyPressEventArgs keyPressEventArgs)

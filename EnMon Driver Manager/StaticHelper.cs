@@ -40,28 +40,77 @@ namespace EnMon_Driver_Manager
                         //Kullanıcıdan veritabanı bilgileri istenir
                         if (GetDatabaseConnectionInfoFromUser(DatabaseType, DatabaseName, ServerAddress, UserName, Password))
                         {
+                            
                             // Kullanıcı veritabanı bilgilerini girdiyse tekrardan bağlantı kurma denenir.
-                            TryConnectToDatabase();
+                            if(TryConnectToDatabase())
+                            {
+                                WriteNewDatabaseConnectionSettingsToDatabaseConfigFile();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Database bağlantısı kurulamadı.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
                         }
                     }
 
-                    return DBHelper;
+                   
                 }
                 else
                 {
                     Log.Instance.Warn("Database config dosyası bulunamadı. Kullanıcıdan veritabanı bağlantısı için gerekli bilgiler isteniyor...");
                     if(GetDatabaseConnectionInfoFromUser())
                     {
-                        TryConnectToDatabase();
+                        if(TryConnectToDatabase())
+                        {
+                            WriteNewDatabaseConnectionSettingsToDatabaseConfigFile();
+                        }
                     }
                     
-                    return DBHelper;
+                    
                 }
+                return DBHelper;
             }
             catch (Exception ex)
             {
                 Log.Instance.Error("{0}: Veritabanı bağlantısı oluşturulamadı => {1}", "StaticHelper", ex.Message);
                 return null;
+            }
+        }
+
+        private static void WriteNewDatabaseConnectionSettingsToDatabaseConfigFile()
+        {
+            try
+            {
+                if (File.Exists(Constants.DatabaseConfigFileLocation))
+                {
+                    var parser = new FileIniDataParser();
+                    IniData data = parser.ReadFile(Constants.DatabaseConfigFileLocation);
+
+                    data["DataBase Parameters"]["DatabaseType"] = DatabaseType;
+                    data["DataBase Parameters"]["ServerAddress"] = ServerAddress;
+                    data["DataBase Parameters"]["DatabaseName"] = DatabaseName;
+                    data["DataBase Parameters"]["UserName"] = UserName;
+                    data["DataBase Parameters"]["Password"] = Password;
+                    parser.WriteFile(Constants.DatabaseConfigFileLocation, data);
+                }
+                else
+                {
+
+                    var parser = new FileIniDataParser();
+                    IniData data = new IniData();
+                    SectionData sectionData = new SectionData("DataBase Parameters");
+                    sectionData.Keys.AddKey("DatabaseType", DatabaseType);
+                    sectionData.Keys.AddKey("ServerAddress", ServerAddress);
+                    sectionData.Keys.AddKey("DatabaseName", DatabaseName);
+                    sectionData.Keys.AddKey("UserName", UserName);
+                    sectionData.Keys.AddKey("Password", Password);
+                    data.Sections.Add(sectionData);
+                    parser.WriteFile(Constants.DatabaseConfigFileLocation, data);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("StaticHelper: Database bağlantı bilgileri kaydedilirken hata oluştu => {0}", ex.Message); 
             }
         }
 
@@ -234,10 +283,8 @@ namespace EnMon_Driver_Manager
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.GetStringsBetweenGivenChar(string, char)'
         public static List<string> GetStringsBetweenGivenChar(string text, char v)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'StaticHelper.GetStringsBetweenGivenChar(string, char)'
-        {
+       {
             List<string> strings = new List<string>();
             int c = 0;
             while (c != text.Length)

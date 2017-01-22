@@ -106,6 +106,7 @@ namespace EnMon_Driver_Manager.Forms
             // propertyGrid1
             // 
             this.propertyGrid1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.propertyGrid1.LargeButtons = true;
             this.propertyGrid1.Location = new System.Drawing.Point(264, 2);
             this.propertyGrid1.Margin = new System.Windows.Forms.Padding(10);
             this.propertyGrid1.Name = "propertyGrid1";
