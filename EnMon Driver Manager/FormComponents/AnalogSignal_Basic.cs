@@ -93,7 +93,7 @@ namespace EnMon_Driver_Manager.FormComponents
             var devices = ((Station)(cbx_StationName.SelectedItem)).Devices;
             if (devices != null)
             {
-                var list_modbusTCPDevices = devices.Where(((d) => d.communicationProtocol.Name == "ModbusTCP"));
+                var list_modbusTCPDevices = devices.Where(((d) => d.Protocol.Name == "ModbusTCP"));
                 var array_modbusTcpDevices = list_modbusTCPDevices as Device[] ?? list_modbusTCPDevices.ToArray();
                 if (array_modbusTcpDevices.Any())
                 {

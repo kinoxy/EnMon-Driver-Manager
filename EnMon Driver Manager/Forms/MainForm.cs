@@ -20,9 +20,7 @@ namespace EnMon_Driver_Manager
     {
         #region Private Properties
 
-#pragma warning disable CS0649 // Field 'MainForm.frm_devices' is never assigned to, and will always have its default value null
         private frm_Devices frm_devices;
-#pragma warning restore CS0649 // Field 'MainForm.frm_devices' is never assigned to, and will always have its default value null
         private frm_SignalList frm_signallist;
         private frm_Email frm_email;
         private frm_EmailAlarms frm_emailAlarms;
@@ -56,7 +54,6 @@ namespace EnMon_Driver_Manager
             InitializeDatabase();
 
             GetActiveDrivers();
-
         }
 
         #endregion Constructors
@@ -546,7 +543,7 @@ namespace EnMon_Driver_Manager
         }
 
         private void StartArchiving()
-       {
+        {
             archivist = new ArchiveToDatabase();
         }
 
@@ -660,7 +657,6 @@ namespace EnMon_Driver_Manager
                     while (dbhelper.HasAnyValuAtBuffers())
                     {
                     }
-
                 }
                 modbusTCP = null;
             }
@@ -695,6 +691,10 @@ namespace EnMon_Driver_Manager
         {
             Properties.Settings.Default.StartDrivers = cbx_AutoStart.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
         }
     }
 

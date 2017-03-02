@@ -47,7 +47,7 @@ namespace EnMon_Driver_Manager
             Device device = ((Device)cb_DeviceNames.SelectedItem);
             if (rb_AnalogSignals.Checked)
             {
-                var analogSignals = DbHelper_SelectVariable.GetDeviceSignalsInfo<ModbusAnalogSignal>(device);
+                var analogSignals = DbHelper_SelectVariable.GetDeviceAnalogSignalsInfo<ModbusAnalogSignal>(device);
                 if(analogSignals.Count>0)
                 {
                     cb_SignalNames.Items.Clear();
@@ -57,7 +57,7 @@ namespace EnMon_Driver_Manager
             }
             if (rb_BinarySignals.Checked)
             {
-                var binarySignals = DbHelper_SelectVariable.GetDeviceSignalsInfo<ModbusBinarySignal>(device);
+                var binarySignals = DbHelper_SelectVariable.GetDeviceBinarySignalsInfo<ModbusBinarySignal>(device);
                 if (binarySignals.Count > 0)
                 {
                     cb_SignalNames.Items.Clear();

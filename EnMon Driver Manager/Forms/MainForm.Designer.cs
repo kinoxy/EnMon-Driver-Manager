@@ -56,6 +56,11 @@ namespace EnMon_Driver_Manager
             this.cbx_AutoStart = new System.Windows.Forms.CheckBox();
             this.mainTabControl = new GrayIris.Utilities.UI.Controls.YaTabControl();
             this.tab_DriverSettings = new GrayIris.Utilities.UI.Controls.YaTabPage();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.chkBox_AlarmMailingActivated = new System.Windows.Forms.CheckBox();
             this.txt_MailClientConfigFileLocation = new System.Windows.Forms.TextBox();
@@ -78,11 +83,6 @@ namespace EnMon_Driver_Manager
             this.panel_EmailAlarms = new System.Windows.Forms.Panel();
             this.button3 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
             this.headerPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -91,6 +91,7 @@ namespace EnMon_Driver_Manager
             this.panel_Main.SuspendLayout();
             this.mainTabControl.SuspendLayout();
             this.tab_DriverSettings.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -98,7 +99,6 @@ namespace EnMon_Driver_Manager
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
-            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_start
@@ -276,6 +276,63 @@ namespace EnMon_Driver_Manager
             this.tab_DriverSettings.Size = new System.Drawing.Size(775, 498);
             this.tab_DriverSettings.TabIndex = 0;
             this.tab_DriverSettings.Text = "Sürücü Ayarları";
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.checkBox1);
+            this.groupBox4.Controls.Add(this.textBox1);
+            this.groupBox4.Controls.Add(this.label3);
+            this.groupBox4.Controls.Add(this.button1);
+            this.groupBox4.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.groupBox4.Location = new System.Drawing.Point(6, 107);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(762, 98);
+            this.groupBox4.TabIndex = 18;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "SNMP Haberleşmesi";
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Checked = true;
+            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.checkBox1.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.checkBox1.Location = new System.Drawing.Point(128, 60);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(266, 20);
+            this.checkBox1.TabIndex = 3;
+            this.checkBox1.Text = "SNMP Haberleşmesini Sürücü İle Başlat";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBox1.Location = new System.Drawing.Point(128, 19);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(510, 22);
+            this.textBox1.TabIndex = 2;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.label3.Location = new System.Drawing.Point(6, 24);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(116, 13);
+            this.label3.TabIndex = 1;
+            this.label3.Text = "Ayar Dosyası Konumu :";
+            // 
+            // button1
+            // 
+            this.button1.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.button1.Location = new System.Drawing.Point(655, 17);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(86, 27);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "Değiştir";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // groupBox3
             // 
@@ -518,62 +575,6 @@ namespace EnMon_Driver_Manager
             this.button5.Text = "button5";
             this.button5.UseVisualStyleBackColor = true;
             // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.checkBox1);
-            this.groupBox4.Controls.Add(this.textBox1);
-            this.groupBox4.Controls.Add(this.label3);
-            this.groupBox4.Controls.Add(this.button1);
-            this.groupBox4.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.groupBox4.Location = new System.Drawing.Point(6, 107);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(762, 98);
-            this.groupBox4.TabIndex = 18;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "SNMP Haberleşmesi";
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Checked = true;
-            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.checkBox1.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.checkBox1.Location = new System.Drawing.Point(128, 60);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(266, 20);
-            this.checkBox1.TabIndex = 3;
-            this.checkBox1.Text = "SNMP Haberleşmesini Sürücü İle Başlat";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.textBox1.Location = new System.Drawing.Point(128, 19);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(510, 22);
-            this.textBox1.TabIndex = 2;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.label3.Location = new System.Drawing.Point(6, 24);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(116, 13);
-            this.label3.TabIndex = 1;
-            this.label3.Text = "Ayar Dosyası Konumu :";
-            // 
-            // button1
-            // 
-            this.button1.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.button1.Location = new System.Drawing.Point(655, 17);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(86, 27);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Değiştir";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -600,6 +601,8 @@ namespace EnMon_Driver_Manager
             this.panel_Main.PerformLayout();
             this.mainTabControl.ResumeLayout(false);
             this.tab_DriverSettings.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -610,8 +613,6 @@ namespace EnMon_Driver_Manager
             this.tabPage2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
 
         }

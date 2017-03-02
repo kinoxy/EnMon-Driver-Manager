@@ -39,40 +39,41 @@
             // 
             // btn_DeleteAlarm
             // 
-            this.btn_DeleteAlarm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_DeleteAlarm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btn_DeleteAlarm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btn_DeleteAlarm.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_DeleteAlarm.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_DeleteAlarm.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.btn_DeleteAlarm.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.btn_DeleteAlarm.Location = new System.Drawing.Point(516, 389);
             this.btn_DeleteAlarm.Margin = new System.Windows.Forms.Padding(1);
             this.btn_DeleteAlarm.Name = "btn_DeleteAlarm";
             this.btn_DeleteAlarm.Size = new System.Drawing.Size(185, 35);
             this.btn_DeleteAlarm.TabIndex = 2;
             this.btn_DeleteAlarm.Text = "Seçili Alarmı Sil";
-            this.btn_DeleteAlarm.UseVisualStyleBackColor = true;
+            this.btn_DeleteAlarm.UseVisualStyleBackColor = false;
             this.btn_DeleteAlarm.Click += new System.EventHandler(this.btn_DeleteAlarm_Click);
             // 
             // btn_AddNewAlarm
             // 
-            this.btn_AddNewAlarm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_AddNewAlarm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btn_AddNewAlarm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btn_AddNewAlarm.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.btn_AddNewAlarm.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_AddNewAlarm.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.btn_AddNewAlarm.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.btn_AddNewAlarm.Location = new System.Drawing.Point(320, 389);
             this.btn_AddNewAlarm.Margin = new System.Windows.Forms.Padding(1);
             this.btn_AddNewAlarm.Name = "btn_AddNewAlarm";
             this.btn_AddNewAlarm.Size = new System.Drawing.Size(185, 35);
             this.btn_AddNewAlarm.TabIndex = 1;
             this.btn_AddNewAlarm.Text = "Yeni Alarm Ekle";
-            this.btn_AddNewAlarm.UseVisualStyleBackColor = true;
+            this.btn_AddNewAlarm.UseVisualStyleBackColor = false;
             this.btn_AddNewAlarm.Click += new System.EventHandler(this.btn_AddNewAlarm_Click);
             // 
             // dgv_MailAlarms
             // 
             this.dgv_MailAlarms.AllowUserToAddRows = false;
             this.dgv_MailAlarms.AllowUserToDeleteRows = false;
-            this.dgv_MailAlarms.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.dgv_MailAlarms.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgv_MailAlarms.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgv_MailAlarms.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
@@ -108,7 +109,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.SteelBlue;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(706, 432);
             this.Controls.Add(this.btn_DeleteAlarm);
             this.Controls.Add(this.btn_AddNewAlarm);

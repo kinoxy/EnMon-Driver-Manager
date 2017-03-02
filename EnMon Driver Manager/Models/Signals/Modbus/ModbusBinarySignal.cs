@@ -1,3 +1,5 @@
+using EnMon_Driver_Manager.Extensions;
+using System.ComponentModel;
 using System.Data;
 
 
@@ -5,23 +7,54 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
 {
     public class ModbusBinarySignal : BinarySignal, IModbusSignal
     {
+        [Browsable(false)]
         public float ComparisonValue { get; set; }
 
+        [Browsable(false)]
         public enum ComparisonType
         {
             bit,
             value
         }
 
+        [Browsable(false)]
         public ComparisonType comparisonType { get; set;}
 
+        [Browsable(true)]
+        [ReadOnly(false)]
+        [Description("Okunacak Bit Sýra Numarasý")]
+        [CustomSortedCategory("Haberleþme Ayarlarý", 3)]
+        [CustomSortedDisplayName("Okunacak Bit Sýra Numarasý", 6)]
         public byte ComparisonBitNumber { get; set; }
 
+        [Browsable(true)]
+        [ReadOnly(false)]
+        [Description("Modbus Adresi")]
+        [CustomSortedCategory("Haberleþme Ayarlarý", 3)]
+        [CustomSortedDisplayName("Adres", 4)]
         public ushort Address { get; set; }
 
+        [Browsable(true)]
+        [ReadOnly(false)]
+        [Description("Fonksiyon Kodu")]
+        [CustomSortedCategory("Haberleþme Ayarlarý", 3)]
+        [CustomSortedDisplayName("Fonksiyon Kodu", 2)]
         public byte FunctionCode { get; set; }
 
+        [Browsable(true)]
+        [ReadOnly(false)]
+        [Description("Register sayýsý")]
+        [CustomSortedCategory("Haberleþme Ayarlarý", 3)]
+        [CustomSortedDisplayName("Register Sayýsý", 3)]
         public byte WordCount { get; set; }
+
+        public ModbusBinarySignal() : base()
+        {
+            FunctionCode = 1;
+            Address = 10001;
+            WordCount = 1;
+            ComparisonBitNumber = 1;
+        }
 
         public override void GetPropertyValuesFromDataRow(DataRow dr)
         {
@@ -40,6 +73,12 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
                         break;
                     case "device_id":
                         deviceID = dr.Field<ushort>("device_id");
+                        break;
+                    case "device_name":
+                        DeviceName = dr.Field<string>("device_name");
+                        break;
+                    case "station_name":
+                        StationName = dr.Field<string>("station_name");
                         break;
                     case "status_id":
                         StatusID = dr.Field<uint>("status_id");
@@ -72,7 +111,7 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
                         ComparisonBitNumber = dr.Field<byte>("comparison_bit_number");
                         break;
                     case "comparison_value":
-                        ComparisonValue = dr.Field<int>("comparison_value");
+                        ComparisonValue = dr.Field<float>("comparison_value");
                         break;
                     case "comparison_type":
                         switch (dr.Field<string>("comparison_type"))
@@ -86,8 +125,16 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
                                 break;
                         }
                         break;
+                    case "current_value":
+                        CurrentValue = dr.Field<bool>("current_value");
+                        break;
                 }
             }
+        }
+
+        public override string GetBaseClassType()
+        {
+            return typeof(BinarySignal).ToString();
         }
     }
 }

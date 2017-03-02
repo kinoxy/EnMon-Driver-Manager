@@ -1,5 +1,12 @@
 using EnMon_Driver_Manager.Extensions;
 using EnMon_Driver_Manager.Models;
+using EnMon_Driver_Manager.Models.ArchivePeriods;
+using EnMon_Driver_Manager.Models.DataTypes;
+using EnMon_Driver_Manager.Models.Devices;
+using EnMon_Driver_Manager.Models.DeviceTypes;
+using EnMon_Driver_Manager.Models.Signals;
+using EnMon_Driver_Manager.Models.Signals.Modbus;
+using EnMon_Driver_Manager.Models.StatusTexts;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Concurrent;
@@ -9,12 +16,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using EnMon_Driver_Manager.Models.ArchivePeriods;
-using EnMon_Driver_Manager.Models.DataTypes;
-using EnMon_Driver_Manager.Models.Devices;
-using EnMon_Driver_Manager.Models.Signals;
-using EnMon_Driver_Manager.Models.Signals.Modbus;
-using EnMon_Driver_Manager.Models.StatusTexts;
 
 namespace EnMon_Driver_Manager.DataBase
 {
@@ -28,7 +29,11 @@ namespace EnMon_Driver_Manager.DataBase
         /// <summary>
         /// The string server address
         /// </summary>
-        protected static string str_serverAddress; //= "46.101.240.185";
+        public static string str_serverAddress
+        {
+            get;
+            protected set;
+        }
 
         /// <summary>
         /// The string database name
@@ -53,6 +58,82 @@ namespace EnMon_Driver_Manager.DataBase
         /// </value>
         public static ConcurrentQueue<BinarySignal> buffer_BinarySignals { get; protected set; }
 
+        public bool UpdateSignal<T>(T signal)
+        {
+
+
+            try
+            {
+                switch (typeof(T).ToString())
+                {
+                    case "EnMon_Driver_Manager.Models.Signals.Modbus.ModbusBinarySignal":
+
+                        ModbusBinarySignal binary_signal = signal as ModbusBinarySignal;
+
+                        return UpdateModbusBinarySignal(binary_signal);
+
+                    case "EnMon_Driver_Manager.Models.Signals.Modbus.ModbusAnalogSignal":
+
+                        ModbusAnalogSignal analog_signal = signal as ModbusAnalogSignal;
+
+                        return UpdateModbusAnalogSignal(analog_signal);
+                    default:
+                        return false;
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Sinyal veritabanýna kaydedilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                return false;
+            }
+
+            
+
+            return false;
+        }
+
+        public void UpdateStation<T>(T _object) where T : Station
+        {
+            Station station = _object as Station;
+            ExecuteNonQuery($"Update stations SET name ='{station.Name} where station_id = '{station.ID}';");
+        }
+
+        public void UpdateDevice<T>(T device)
+        {
+            switch (typeof(T).ToString())
+            {
+                case "EnMon_Driver_Manager.Models.Devices.ModbusTCPDevice":
+                    ModbusTCPDevice modbustcpdevice = device as ModbusTCPDevice;
+                    ExecuteNonQuery($"Update devices SET name = '{modbustcpdevice.Name}', ip_address = '{modbustcpdevice.IpAddress}', slave_id = '{modbustcpdevice.SlaveID}', is_active = '{Convert.ToInt32(modbustcpdevice.isActive)}', device_type = '{modbustcpdevice.TypeID}' where device_id = '{modbustcpdevice.ID}';");
+                    break;
+            }
+        }
+
+        public ushort GetNextStationID()
+        {
+            string query = "CALL getNextStationID()";
+            try
+            {
+                DataTable dt = ExecuteQuery(query);
+                if (dt.HasRows())
+                {
+                    return dt.Rows[0].Field<ushort>("ID");
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Yeni istasyon için ID bilgisi alýnýrken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                return 0;
+                throw;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the buffer analog signals.
         /// </summary>
@@ -69,62 +150,6 @@ namespace EnMon_Driver_Manager.DataBase
             get { return String.Format("Server={0};Database={1};Uid={2};Pwd={3};charset=utf8", str_serverAddress, str_databaseName, str_userName, str_password); }
         }
 
-        public List<StatusText> GetAllStatusTexts()
-        {
-            List<StatusText> statusTexts = new List<StatusText>();
-            string query = "CALL getAllStatusTexts();";
-            DataTable dt = new DataTable();
-            try
-            {
-                dt = ExecuteQuery(query);
-                foreach (DataRow dr in dt.Rows)
-                {
-                    StatusText statusText = new StatusText();
-                    statusText.StatusID = dr.Field<uint>("status_id");
-                    statusText.Name = dr.Field<string>("name");
-                    statusTexts.Add(statusText);
-                }
-                return statusTexts;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Status bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
-                return statusTexts;
-                throw;
-            }
-        }
-
-        public string GetSignalValueByIdentification(string _identification)
-        {
-            string query = string.Format("CALL getSignalValueByIdentification('{0}')", _identification);
-            DataTable dt = new DataTable();
-            try
-            {
-                dt = ExecuteQuery(query);
-                if (dt.HasRows())
-                {
-                    if (dt.Rows[0].ItemArray[0].ToString() == "")
-                    {
-                        return "0";
-                    }
-                    else
-                    {
-                        return dt.Rows[0].ItemArray[0].ToString();
-                    }
-                }
-                else
-                {
-                    Log.Instance.Error("Sinyal deðeri database'den okunamadý");
-                    throw new Exception();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("Sinyal deðeri database'den okunamadý => {0}", ex.Message);
-                throw ex;
-            }
-        }
-
         /// <summary>
         /// Gets or sets a value indicating whether this instance is database write enabled.
         /// </summary>
@@ -134,6 +159,96 @@ namespace EnMon_Driver_Manager.DataBase
         public bool IsWriteEnabled { get; protected set; }
 
         public bool IsConnected { get; protected set; }
+
+        public bool DeleteSignal<T>(T signal) where T : Signal
+        {
+            try
+            {
+                string type = signal.GetBaseClassType();
+                switch (type)
+                {
+                    case "EnMon_Driver_Manager.Models.Signals.BinarySignal":
+                        ExecuteNonQuery($"Delete from binary_signals where binary_signal_id = '{signal.ID}'");
+                        return true;
+
+                    case "EnMon_Driver_Manager.Models.Signals.AnalogSignal":
+                        ExecuteNonQuery($"Delete from analog_signals where analog_signal_id ='{signal.ID}'");
+                        return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error($"{this.GetType()}: {signal.ID} - {signal.Identification} adlý sinyal silinirken hata oluþtu => {ex.Message}.");
+                return false;
+            }
+        }
+
+        public bool AddBinarySignalToDataBase<T>(T s)
+        {
+           
+            switch (s.GetType().ToString())
+            {
+                case "EnMon_Driver_Manager.Models.Signals.Modbus.ModbusBinarySignal":
+                    try
+                    {
+                        string query;
+                        ModbusBinarySignal signal = s as ModbusBinarySignal;
+                        query = $"Insert into binary_signals(binary_signal_id, device_id, name, identification, status_id, is_alarm, is_event, is_detail_page, is_summary) Values('{signal.ID}', '{signal.deviceID}', '{signal.Name}', '{signal.Identification}', '{signal.StatusID}', '{Convert.ToInt32(signal.IsAlarm)}', '{Convert.ToInt32(signal.IsEvent)}', '{Convert.ToInt32(signal.DisplayAtDeviceDetailPage)}', '{Convert.ToInt32(signal.DisplayAtStationDetailPage)}')";
+                        ExecuteNonQuery(query);
+                        query = $"Insert Into modbus_binary_signals(binary_signal_id, function_code, address, word_count, comparison_bit_number, comparison_value, comparison_type) Values('{signal.ID}', '{signal.FunctionCode}', '{signal.Address}', '{signal.WordCount}', '{signal.ComparisonBitNumber}', '{signal.ComparisonValue}', '{signal.comparisonType}');";
+                        ExecuteNonQuery(query);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Instance.Error("{0}: Yeni modbus binary sinyal oluþturulurken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                        return false;
+                    }
+            }
+            return false;
+        }
+
+        public bool AddAnalogSignalToDataBase<T>(T s)
+        {
+            switch (s.GetType().ToString())
+            {
+                case "EnMon_Driver_Manager.Models.Signals.Modbus.ModbusAnalogSignal":
+                    try
+                    {
+                        string query;
+                        ModbusAnalogSignal signal = s as ModbusAnalogSignal;
+                        query = $"Insert into analog_signals(analog_signal_id, device_id, name, identification, data_type_id, unit, scale_value, max_value, max_status_id, has_max_alarm, min_value, min_status_id, has_min_alarm, is_event, is_archive, archive_period_id, is_summary, is_gauge) Values('{signal.ID}', '{signal.deviceID}', '{signal.Name}', '{signal.Identification}', '{signal.dataType.ID}', '{signal.Unit}', '{signal.ScaleValue}', '{signal.MaxAlarmValue}', '{signal.MaxAlarmStatusTextID}', '{Convert.ToInt32(signal.HasMaxAlarm)}', '{signal.MinAlarmValue}', '{signal.MinAlarmStatusTextID}', '{Convert.ToInt32(signal.HasMinAlarm)}','{Convert.ToInt32(signal.IsEvent)}','{Convert.ToInt32(signal.IsArchive)}', '{signal.archivePeriod.ID}', '{Convert.ToInt32(signal.DisplayAtStationDetailPage)}', '{Convert.ToInt32(signal.DisplayAtDeviceDetailPage)}' )";
+                        ExecuteNonQuery(query);
+                        query = $"Insert Into modbus_analog_signals(analog_signal_id, function_code, address, word_count) Values('{signal.ID}', '{signal.FunctionCode}', '{signal.Address}', '{signal.WordCount}');";
+                        ExecuteNonQuery(query);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Instance.Error("{0}: Yeni modbus analog sinyal oluþturulurken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                        return false;
+                    }
+            }
+            return false;
+        }
+
+        public bool AddStation<T>(T station) where T : Station
+        {
+            try
+            {
+                string query = $"Insert into stations(station_id, name) VALUES('{station.ID}', '{station.Name}');";
+                int result = ExecuteNonQuery(query);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+                Log.Instance.Error("{0}: Yeni istasyon oluþturulurken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                return false;
+            }
+        }
 
         #endregion Public Properties
 
@@ -170,8 +285,6 @@ namespace EnMon_Driver_Manager.DataBase
         /// </summary>
         /// <returns></returns>
         protected abstract bool OpenConnection();
-
-
 
         /// <summary>
         /// Closes the connection.
@@ -214,117 +327,6 @@ namespace EnMon_Driver_Manager.DataBase
         internal void AddBinarySignalValueToDataBaseWriteBuffer(List<BinarySignal> binarySignals)
         {
             throw new NotImplementedException();
-        }
-
-        //public BinarySignal GetBinarySignalsInfoByIdentification(string _identification)
-        //{
-        //    //todo
-        //    string query = string.Format("CALL getBinarySignalInfoByIdentification('{0}')", _identification);
-        //    BinarySignal binarySignal = new BinarySignal();
-        //    DataTable dt = new DataTable();
-        //    try
-        //    {
-        //        dt = ExecuteQuery(query);
-        //        if (dt.HasRows())
-        //        {
-        //            foreach (DataRow dr in dt.Rows)
-        //            {
-        //                binarySignal.ID = dr.Field<uint>("binary_signal_id");
-        //                binarySignal.Name = dr.Field<string>("name");
-        //                binarySignal.Identification = _identification;
-        //                binarySignal.Address = dr.Field<ushort>("address");
-        //                binarySignal.FunctionCode = dr.Field<byte>("function_code");
-        //                binarySignal.WordCount = dr.Field<byte>("word_count");
-        //                binarySignal.ComparisonBitNumber = dr.Field<byte>("comparison_bit_number");
-        //                binarySignal.ComparisonValue = dr.Field<int>("comparison_value");
-        //                binarySignal.IsAlarm = dr.Field<bool>("is_alarm");
-        //                binarySignal.IsEvent = dr.Field<bool>("is_event");
-        //                binarySignal.StatusID = dr.Field<uint>("status_id");
-        //                binarySignal.DeviceID = dr.Field<ushort>("device_id"); ;
-        //                binarySignal.IsReversed = dr.Field<bool>("is_reversed");
-        //                switch (dr.Field<string>("comparison_type"))
-        //                {
-        //                    case "bit":
-        //                        binarySignal.comparisonType = BinarySignal.ComparisonType.bit;
-        //                        break;
-
-        //                    case "value":
-        //                        binarySignal.comparisonType = BinarySignal.ComparisonType.value;
-        //                        break;
-
-        //                    default:
-        //                        break;
-        //                }
-        //            }
-        //        }
-        //        return binarySignal;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Instance.Error("{0}: Binary sinyal bilgisi veritabanýndan okunamadý => {1}", this.GetType().Name, ex.Message);
-        //        return null;
-        //    }
-        //}
-
-        public List<T> GetDeviceSignalsInfo<T>(Device d) where T : Signal, new()
-        {
-            string type_T = typeof(T).ToString();
-            string query;
-
-            query = GetDeviceSignalsInfoQueryText(type_T, d.ID);
-            
-            T signal;
-            List<T> signals = new List<T>();
-            DataTable dt = new DataTable();
-            try
-            {
-                dt = ExecuteQuery(query);
-                if (dt.HasRows())
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        signal = new T();
-                        signal.GetPropertyValuesFromDataRow(dr);
-                        signals.Add(signal);
-                    }
-                }
-
-                return signals;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: {1} adlý device için veritabananýndan {2} bilgileri okunurken hata oluþtu => {3}", this.GetType().Namespace, d.Name, type_T, ex.Message);
-                return null;
-            }
-        }
-
-        
-
-        public List<T> GetStationDevices<T>(Station s) where T :  Device, new()
-        {
-            string query = GetStationDevicesQueryText(typeof(T), s);
-            List<T> devices = new List<T>();
-            DataTable dt = new DataTable();
-            try
-            {
-
-                dt = ExecuteQuery(query);
-                if (dt.HasRows())
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        T device = new T();
-                        device.GetPropertyValuesFromDataRow(dr);
-                        devices.Add(device);
-                    }
-                }
-                return devices;
-            }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: {1} adlý istasyona ait cihaz bilgileri okunurken hata oluþtu => {2}", this.GetType().Name, s.Name, ex.Message);
-                throw;
-            }
         }
 
         protected bool SetAnalogSignalValue(uint _signalID, UInt32 _signalValue, string _datetime)
@@ -398,6 +400,195 @@ namespace EnMon_Driver_Manager.DataBase
             return _returnValue;
         }
 
+        #endregion Protected Methods
+
+        #region Public  Methods
+
+        //public BinarySignal GetBinarySignalsInfoByIdentification(string _identification)
+        //{
+        //    //todo
+        //    string query = string.Format("CALL getBinarySignalInfoByIdentification('{0}')", _identification);
+        //    BinarySignal binarySignal = new BinarySignal();
+        //    DataTable dt = new DataTable();
+        //    try
+        //    {
+        //        dt = ExecuteQuery(query);
+        //        if (dt.HasRows())
+        //        {
+        //            foreach (DataRow dr in dt.Rows)
+        //            {
+        //                binarySignal.ID = dr.Field<uint>("binary_signal_id");
+        //                binarySignal.Name = dr.Field<string>("name");
+        //                binarySignal.Identification = _identification;
+        //                binarySignal.Address = dr.Field<ushort>("address");
+        //                binarySignal.FunctionCode = dr.Field<byte>("function_code");
+        //                binarySignal.WordCount = dr.Field<byte>("word_count");
+        //                binarySignal.ComparisonBitNumber = dr.Field<byte>("comparison_bit_number");
+        //                binarySignal.ComparisonValue = dr.Field<int>("comparison_value");
+        //                binarySignal.IsAlarm = dr.Field<bool>("is_alarm");
+        //                binarySignal.IsEvent = dr.Field<bool>("is_event");
+        //                binarySignal.StatusID = dr.Field<uint>("status_id");
+        //                binarySignal.DeviceID = dr.Field<ushort>("device_id"); ;
+        //                binarySignal.IsReversed = dr.Field<bool>("is_reversed");
+        //                switch (dr.Field<string>("comparison_type"))
+        //                {
+        //                    case "bit":
+        //                        binarySignal.comparisonType = BinarySignal.ComparisonType.bit;
+        //                        break;
+
+        //                    case "value":
+        //                        binarySignal.comparisonType = BinarySignal.ComparisonType.value;
+        //                        break;
+
+        //                    default:
+        //                        break;
+        //                }
+        //            }
+        //        }
+        //        return binarySignal;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Instance.Error("{0}: Binary sinyal bilgisi veritabanýndan okunamadý => {1}", this.GetType().Name, ex.Message);
+        //        return null;
+        //    }
+        //}
+
+        // T'nin type deðerine göre database'den sinyaller okunur
+        public List<T> GetDeviceBinarySignalsInfo<T>(Device d) where T : Signal, new()
+        {
+            T signal;
+            List<T> signals = new List<T>();
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery($"CALL getDeviceBinarySignalsInfo({d.ID})");
+                if (dt.HasRows())
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        signal = new T();
+                        signal.GetPropertyValuesFromDataRow(dr);
+                        signals.Add(signal);
+                    }
+                }
+
+                return signals;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: {1} adlý device için veritabananýndan {2} bilgileri okunurken hata oluþtu => {3}", this.GetType().Namespace, d.Name, typeof(T), ex.Message);
+                return null;
+            }
+        }
+
+        public List<T> GetDeviceAnalogSignalsInfo<T>(Device d) where T : Signal, new()
+        {
+            T signal;
+            List<T> signals = new List<T>();
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery($"CALL getDeviceAnalogSignalsInfo({d.ID})");
+                if (dt.HasRows())
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        signal = new T();
+                        signal.GetPropertyValuesFromDataRow(dr);
+                        signals.Add(signal);
+                    }
+                }
+
+                return signals;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: {1} adlý device için veritabananýndan {2} bilgileri okunurken hata oluþtu => {3}", this.GetType().Namespace, d.Name, typeof(T), ex.Message);
+                return null;
+            }
+        }
+
+        public bool AddNewDeviceToStation(Station station, int protocolID)
+        {
+            
+        }
+
+        public List<T> GetDeviceCommandSignalsInfo<T>(Device d) where T : Signal, new()
+        {
+            T signal;
+            List<T> signals = new List<T>();
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery($"CALL getDeviceCommandSignalsInfo({d.ID})");
+                if (dt.HasRows())
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        signal = new T();
+                        signal.GetPropertyValuesFromDataRow(dr);
+                        signals.Add(signal);
+                    }
+                }
+
+                return signals;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: {1} adlý device için veritabananýndan {2} bilgileri okunurken hata oluþtu => {3}", this.GetType().Namespace, d.Name, typeof(T), ex.Message);
+                return null;
+            }
+        }
+
+        public T GetDeviceInfo<T>(Device d) where T : Device, new()
+        {
+            T device = new T();
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery($"CALL getDeviceInfo('{d.ID}'); ");
+                foreach (DataRow dr in dt.Rows)
+                {
+                    device.GetPropertyValuesFromDataRow(dr);
+                }
+                return device;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: {1} adlý device için veritabananýndan bilgileri okunurken hata oluþtu => {3}", this.GetType().Namespace, d.Name, ex.Message);
+
+                return null;
+            }
+        }
+
+        public List<T> GetStationDevices<T>(Station s) where T : Device, new()
+        {
+            string query = GetStationDevicesQueryText(typeof(T), s);
+            List<T> devices = new List<T>();
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery(query);
+                if (dt.HasRows())
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        T device = new T();
+                        device.GetPropertyValuesFromDataRow(dr);
+                        devices.Add(device);
+                    }
+                }
+                return devices;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: {1} adlý istasyona ait cihaz bilgileri okunurken hata oluþtu => {2}", this.GetType().Name, s.Name, ex.Message);
+                return null;
+                throw;
+            }
+        }
+
         public void SetDriverDevicesDisconnected(CommunicationProtocol _communicationProtocol)
         {
             string query = $"CALL setDriverAllDevicesDisconnected({_communicationProtocol.ID})";
@@ -410,9 +601,62 @@ namespace EnMon_Driver_Manager.DataBase
                 Log.Instance.Error("{0}: Sürücü durdurulurken tüm cihazlarýn isConnected bilgisi deðiþtirilemedi =>{1}", this.GetType().Name, ex.Message);
             }
         }
-        #endregion Protected Methods
 
-        #region Public  Methods
+        public List<StatusText> GetAllStatusTexts()
+        {
+            List<StatusText> statusTexts = new List<StatusText>();
+            string query = "CALL getAllStatusTexts();";
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery(query);
+                foreach (DataRow dr in dt.Rows)
+                {
+                    StatusText statusText = new StatusText();
+                    statusText.StatusID = dr.Field<uint>("status_id");
+                    statusText.Name = dr.Field<string>("name");
+                    statusTexts.Add(statusText);
+                }
+                return statusTexts;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Status bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                return statusTexts;
+                throw;
+            }
+        }
+
+        public string GetSignalValueByIdentification(string _identification)
+        {
+            string query = string.Format("CALL getSignalValueByIdentification('{0}')", _identification);
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery(query);
+                if (dt.HasRows())
+                {
+                    if (dt.Rows[0].ItemArray[0].ToString() == "")
+                    {
+                        return "0";
+                    }
+                    else
+                    {
+                        return dt.Rows[0].ItemArray[0].ToString();
+                    }
+                }
+                else
+                {
+                    Log.Instance.Error("Sinyal deðeri database'den okunamadý");
+                    throw new Exception();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("Sinyal deðeri database'den okunamadý => {0}", ex.Message);
+                throw ex;
+            }
+        }
 
         public bool AddNewModbusAnalogSignal(ModbusAnalogSignal analogSignal)
         {
@@ -451,7 +695,7 @@ namespace EnMon_Driver_Manager.DataBase
                 displayAtStationPage = binarySignal.DisplayAtStationDetailPage.ToString().ToUpper() == "TRUE" ? 1 : 0;
                 displayAtDetailPage = binarySignal.DisplayAtDeviceDetailPage.ToString().ToUpper() == "TRUE" ? 1 : 0;
 
-                query =$"CALL addNewModbusBinarySignal('{binarySignal.ID}', '{binarySignal.deviceID}','{binarySignal.Name}', '{binarySignal.Identification}', '{binarySignal.StatusID}', '{isAlarm}', '{isEvent}', '{isReversed}', '{displayAtStationPage}', '{displayAtDetailPage}', '{binarySignal.Address}', '{binarySignal.FunctionCode}', '{binarySignal.WordCount}', '{binarySignal.ComparisonBitNumber}', '{binarySignal.ComparisonValue}', '{binarySignal.comparisonType}')";
+                query = $"CALL addNewModbusBinarySignal('{binarySignal.ID}', '{binarySignal.deviceID}','{binarySignal.Name}', '{binarySignal.Identification}', '{binarySignal.StatusID}', '{isAlarm}', '{isEvent}', '{isReversed}', '{displayAtStationPage}', '{displayAtDetailPage}', '{binarySignal.Address}', '{binarySignal.FunctionCode}', '{binarySignal.WordCount}', '{binarySignal.ComparisonBitNumber}', '{binarySignal.ComparisonValue}', '{binarySignal.comparisonType}')";
                 return ExecuteNonQuery(query) > 0;
             }
             catch (Exception ex)
@@ -541,15 +785,16 @@ namespace EnMon_Driver_Manager.DataBase
                 case "ModbusBinarySignal":
                     query = $"CALL getModbusBinarySignalByIdentification('{signalIdentification}')";
                     break;
+
                 case "SNMPBinarySignal":
                     query = $"CALL getSNMPBinarySignalByIdentification('{signalIdentification}')";
                     break;
+
                 default:
                     Log.Instance.Error("{0}: Bilinmeyen sinyal tipi => {1}", this.GetType().Name, typeof(T).ToString());
                     return null;
             }
 
-      
             DataTable dt;
             T binarySignal = new T();
             try
@@ -564,7 +809,6 @@ namespace EnMon_Driver_Manager.DataBase
                 Log.Instance.Error("{0}: {1} adlý sinyalin bilgileri veritanýndan okunurken hata oluþtu => {2}", this.GetType().Name, signalIdentification, ex.Message);
                 return null;
             }
-
         }
 
         public uint GetNextAnalogSignalID()
@@ -590,7 +834,7 @@ namespace EnMon_Driver_Manager.DataBase
             }
         }
 
-        public T GetAnalogSignalsInfoByIdentification<T>(string _identification) where T :AnalogSignal, new()
+        public T GetAnalogSignalsInfoByIdentification<T>(string _identification) where T : AnalogSignal, new()
         {
             string query;
             // Generic tipine göre sql sorgusu oluþturuluyor.
@@ -599,9 +843,11 @@ namespace EnMon_Driver_Manager.DataBase
                 case "ModbusAnalogSignal":
                     query = $"CALL getModbusAnalogSignalByIdentification('{_identification}')";
                     break;
+
                 case "SNMPAnalogSignal":
                     query = $"CALL getSNMPAnalogSignalByIdentification('{_identification}')";
                     break;
+
                 default:
                     Log.Instance.Error("{0}: Bilinmeyen sinyal tipi => {1}", this.GetType().Name, typeof(T).ToString());
                     return null;
@@ -727,51 +973,27 @@ namespace EnMon_Driver_Manager.DataBase
             }
         }
 
-        public bool UpdateModbusAnalogSignal(ModbusAnalogSignal analogSignal)
+        public bool UpdateModbusAnalogSignal(ModbusAnalogSignal analog_signal)
         {
-            int HasMaxAlarm, HasMinAlarm, isEvent, isArchive, displayAtStationPage, displayAtDetailPage;
-            string query;
-            try
+            if (UpdateAnalogSignalBasicProperties<ModbusAnalogSignal>(analog_signal))
             {
-                HasMaxAlarm = analogSignal.HasMaxAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                HasMinAlarm = analogSignal.HasMinAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                isArchive = analogSignal.IsArchive.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                string max_value = analogSignal.MaxAlarmValue.ToString().Replace(",", ".");
-                string min_value = analogSignal.MinAlarmValue.ToString().Replace(",", ".");
-                displayAtStationPage = analogSignal.DisplayAtStationDetailPage.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                displayAtDetailPage = analogSignal.DisplayAtDeviceDetailPage.ToString().ToUpper() == "TRUE" ? 1 : 0;
+                string query = $"Update modbus_analog_signals SET function_code = '{analog_signal.FunctionCode}', address = '{analog_signal.Address}', word_count =  '{analog_signal.WordCount}' where analog_signal_id = '{analog_signal.ID}';";
+                ExecuteNonQuery(query);
 
-                query =
-                    $"CALL updateModbusAnalogSignal('{analogSignal.ID}', '{analogSignal.deviceID}', '{analogSignal.Name}', '{analogSignal.Identification}', '{analogSignal.Identification}', '{analogSignal.Unit}', '{analogSignal.ScaleValue}', '{max_value}', '{min_value}', '{analogSignal.MaxAlarmStatusTextID}', '{analogSignal.MinAlarmStatusTextID}', '{HasMaxAlarm}', '{HasMinAlarm}', '{isArchive}', '{analogSignal.archivePeriod.ID}', '{displayAtStationPage}', '{displayAtDetailPage}', '{analogSignal.Address}', '{analogSignal.FunctionCode}', '{analogSignal.WordCount}')";
-                return ExecuteNonQuery(query) > 0;
+                return true;
             }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Modbus analog sinyali güncellenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
-                return false;
-            }
+            return false;
         }
 
-        public bool UpdateModbusBinarySignal(ModbusBinarySignal binarySignal)
+        public bool UpdateModbusBinarySignal(ModbusBinarySignal binary_signal)
         {
-            int IsAlarm, IsEvent, IsReversed, displayAtStationPage, displayAtDetailPage;
-            string query;
-            try
+            if (UpdateBinarySignalBasicProperties(binary_signal))
             {
-                IsAlarm = binarySignal.IsAlarm.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                IsEvent = binarySignal.IsEvent.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                IsReversed = binarySignal.IsReversed.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                displayAtStationPage = binarySignal.DisplayAtStationDetailPage.ToString().ToUpper() == "TRUE" ? 1 : 0;
-                displayAtDetailPage = binarySignal.DisplayAtDeviceDetailPage.ToString().ToUpper() == "TRUE" ? 1 : 0;
-
-                query = $"CALL updateModbusBinarySignal('{binarySignal.ID}', '{binarySignal.deviceID}', '{binarySignal.Name}', '{binarySignal.Identification}', '{binarySignal.StatusID}',  '{IsAlarm}', '{IsEvent}', '{IsReversed}', '{displayAtStationPage}', '{displayAtDetailPage}', '{binarySignal.Address}', '{binarySignal.FunctionCode}', '{binarySignal.WordCount}', '{binarySignal.ComparisonBitNumber}', '{binarySignal.ComparisonValue}', '{binarySignal.comparisonType}')";
-                return ExecuteNonQuery(query) > 0;
+                string query = $"Update modbus_binary_signals SET function_code = '{binary_signal.FunctionCode}', address = '{binary_signal.Address}', word_count =  '{binary_signal.WordCount}', comparison_bit_number = '{binary_signal.ComparisonBitNumber}', comparison_value = '{binary_signal.ComparisonValue}', comparison_type = '{binary_signal.comparisonType}' where binary_signal_id = '{binary_signal.ID}';";
+                ExecuteNonQuery(query);
+                return true;
             }
-            catch (Exception ex)
-            {
-                Log.Instance.Error("{0}: Modbus Binary sinyal güncellenirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
-                return false;
-            }
+            return false;
         }
 
         public bool IsSignalAvalibale(string v)
@@ -786,6 +1008,7 @@ namespace EnMon_Driver_Manager.DataBase
                 return false;
             }
         }
+
         /// <summary>
         /// Gets the active commands.
         /// </summary>
@@ -833,6 +1056,30 @@ namespace EnMon_Driver_Manager.DataBase
             }
         }
 
+        public List<DeviceType> GetAllDeviceTypes()
+        {
+            List<DeviceType> deviceTypes = new List<DeviceType>();
+            string query = "CALL getAllDeviceTypes();";
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = ExecuteQuery(query);
+                foreach (DataRow dr in dt.Rows)
+                {
+                    DeviceType deviceType = new DeviceType();
+                    deviceType.GetPropertyValuesFromDataRow(dr);
+                    deviceTypes.Add(deviceType);
+                }
+                return deviceTypes;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error("{0}: Cihaz tipi bilgileri veritabanýndan çekilirken hata oluþtu => {1}", this.GetType().Name, ex.Message);
+                return deviceTypes;
+                throw;
+            }
+        }
+
         public List<ArchivePeriod> GetAllArchivePeriods()
         {
             {
@@ -860,8 +1107,8 @@ namespace EnMon_Driver_Manager.DataBase
                 }
             }
         }
+
         public bool AddNewMailAlarm(AlarmMail _alarmMail)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractDBHelper.AddNewMailAlarm(AlarmMail)'
         {
             string query = string.Format("CALL addNewMailAlarm('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');", _alarmMail.Name, _alarmMail.LogicText, _alarmMail.MailGroupID.ToString(), _alarmMail.EMailSubject, _alarmMail.EmailText, _alarmMail.Delaytime.ToString());
             bool result = false;
@@ -873,8 +1120,9 @@ namespace EnMon_Driver_Manager.DataBase
             return result;
         }
 
+        
+
         public void DeleteActiveCommandFromDatabase(uint _commandID)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractDBHelper.DeleteActiveCommand(uint)'
         {
             string query = string.Format("CALL deleteActiveCommand('{0}');", _commandID);
             try
@@ -892,13 +1140,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// </summary>
         /// <param name="_stationName">Name of the station.</param>
         /// <returns></returns>
-        public bool AddStation(string _stationName)
-        {
-            string query = String.Format("Call addStation('{0}');", _stationName);
-            int result = ExecuteNonQuery(query);
-
-            return result > 0;
-        }
+        
 
         /// <summary>
         /// Gets all stations information with device information.
@@ -920,7 +1162,7 @@ namespace EnMon_Driver_Manager.DataBase
                         Station _station = new Station(dr);
 
                         // Ýstasyona ait cihazlar okunuyor
-                        _station.Devices = GetStationDevicesBasicInfo(_station.Name);
+                        _station.Devices = GetStationDevicesInfo<Device>(_station.Name);
 
                         _stations.Add(_station);
                     }
@@ -1245,7 +1487,7 @@ namespace EnMon_Driver_Manager.DataBase
                     MySqlHelper.EscapeString(firstRow["Analog Signal ID"].ToString()), MySqlHelper.EscapeString(firstRow["Device ID"].ToString()), MySqlHelper.EscapeString(firstRow["Name"].ToString()),
                                                         MySqlHelper.EscapeString(firstRow["Identification"].ToString()), MySqlHelper.EscapeString(firstRow["Address"].ToString()), MySqlHelper.EscapeString(firstRow["Function Code"].ToString()),
                                                         MySqlHelper.EscapeString(firstRow["Word Count"].ToString()), MySqlHelper.EscapeString(firstRow["Data Type ID"].ToString()), MySqlHelper.EscapeString(firstRow["Unit"].ToString()),
-                                                        MySqlHelper.EscapeString(firstRow["Scale Value"].ToString()), MySqlHelper.EscapeString(firstRow["Max Value"].ToString().Replace(",",".")), MySqlHelper.EscapeString(firstRow["Min Value"].ToString().Replace(",", ".")),
+                                                        MySqlHelper.EscapeString(firstRow["Scale Value"].ToString()), MySqlHelper.EscapeString(firstRow["Max Value"].ToString().Replace(",", ".")), MySqlHelper.EscapeString(firstRow["Min Value"].ToString().Replace(",", ".")),
                                                         MySqlHelper.EscapeString(firstRow["Max Alarm ID"].ToString()), MySqlHelper.EscapeString(firstRow["Min Alarm ID"].ToString()), MySqlHelper.EscapeString(HasMaxAlarm.ToString()), MySqlHelper.EscapeString(HasMinAlarm.ToString()),
                                                         MySqlHelper.EscapeString(isArchive.ToString()), MySqlHelper.EscapeString(firstRow["Archive Period ID"].ToString()), MySqlHelper.EscapeString(isSummary.ToString()), MySqlHelper.EscapeString(isGauge.ToString())));
                 for (int i = 1; i < _dt.Rows.Count - 1; i++)
@@ -1410,15 +1652,15 @@ namespace EnMon_Driver_Manager.DataBase
         /// </summary>
         /// <param name="_stationName">Name of the station.</param>
         /// <returns></returns>
-        public List<Device> GetStationDevicesBasicInfo(string _stationName)
+        public List<T> GetStationDevicesInfo<T>(string _stationName) where T : Device, new()
         {
             Log.Instance.Trace("{0}: {1} methodu cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-            List<Device> _deviceList = new List<Device>();
-            Device _device;
+            List<T> devices = new List<T>();
+            T device;
 
             try
             {
-                string query = String.Format("CALL getStationDevicesBasicInfo('{0}')", _stationName);
+                string query = String.Format("CALL getStationDevicesInfo('{0}')", _stationName);
                 DataTable dt = new DataTable();
                 dt = ExecuteQuery(query);
 
@@ -1426,9 +1668,9 @@ namespace EnMon_Driver_Manager.DataBase
                 {
                     foreach (DataRow dr in dt.Rows)
                     {
-                        _device = new Device();
-                        _device.GetPropertyValuesFromDataRow(dr);
-                        _deviceList.Add(_device);
+                        device = new T();
+                        device.GetPropertyValuesFromDataRow(dr);
+                        devices.Add(device);
                     }
                 }
                 else
@@ -1445,7 +1687,7 @@ namespace EnMon_Driver_Manager.DataBase
                 //throw;
             }
 
-            return _deviceList;
+            return devices;
         }
 
         /// <summary>
@@ -1453,7 +1695,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// </summary>
         /// <param name="_deviceID">The device identifier.</param>
         /// <returns></returns>
-        
+
         //public List<BinarySignal> GetDeviceBinarySignalsInfo(ushort _deviceID)
         //{
         //    Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID.ToString());
@@ -1649,7 +1891,7 @@ namespace EnMon_Driver_Manager.DataBase
         /// </summary>
         /// <param name="_deviceID">The device identifier.</param>
         /// <returns></returns>
-        public List<T> GetDeviceAnalogSignalsInfo<T>(ushort _deviceID) where T: Signal, new()
+        public List<T> GetDeviceAnalogSignalsInfo<T>(ushort _deviceID) where T : Signal, new()
         {
             Log.Instance.Trace("{0}: {1} methodu {2} ID numaralý device için cagrýldý", this.GetType().Name, MethodBase.GetCurrentMethod().Name, _deviceID);
 
@@ -1663,14 +1905,16 @@ namespace EnMon_Driver_Manager.DataBase
                     case "ModbusAnalogSignal":
                         query = $"CALL getDeviceModbusAnalogSignalsInfo({_deviceID})";
                         break;
+
                     case "SNMPAnalogSignal":
                         query = $"CALL getDeviceSNMPAnalogSignalsInfo({_deviceID})";
                         break;
+
                     default:
                         Log.Instance.Error("{0} : {1} nolu device için analog sinyal okuma sýrasýnda tanýmlanmamýþ generic veri tipi", this.GetType().Name, _deviceID);
                         return null;
                 }
-                
+
                 DataTable dt = new DataTable();
                 dt = ExecuteQuery(query);
 
@@ -1696,8 +1940,6 @@ namespace EnMon_Driver_Manager.DataBase
 
             return _analogSignalList;
         }
-
-
 
         /// <summary>
         /// Gets the device analg signals value.
@@ -1880,14 +2122,14 @@ namespace EnMon_Driver_Manager.DataBase
                         // 50'lik paketler halinde yüklemek yerine bufferý bir kere de yazma
                         // deneniyor.
                         AnalogSignal _signal = new AnalogSignal();
-                        if (buffer_AnalogSignals.Count>5)
+                        if (buffer_AnalogSignals.Count > 5)
                         {
                             List<AnalogSignal> signals = new List<AnalogSignal>();
                             signals = GetDataFromBuffer(buffer_AnalogSignals, buffer_AnalogSignals.Count);
                             if (!WriteMultipleAnalogValuesToDatabase(signals))
                             {
                                 AddSignalsBackToQueee(signals, buffer_AnalogSignals);
-                            } 
+                            }
                         }
                         else if (buffer_AnalogSignals.TryPeek(out _signal))
                         {
@@ -1896,9 +2138,6 @@ namespace EnMon_Driver_Manager.DataBase
                                 buffer_AnalogSignals.TryDequeue(out _signal);
                             }
                         }
-                        
-
-
                     }
                     catch (Exception ex)
                     {
@@ -1920,7 +2159,7 @@ namespace EnMon_Driver_Manager.DataBase
                 query.Append(string.Format("SELECT '{0}','{1}','{2}' UNION ALL ", signals[i].ID, signals[i].CurrentValue, signals[i].TimeTag));
             }
 
-            query.Append(string.Format("SELECT '{0}','{1}', '{2}') ", signals[count-1].ID, signals[count - 1].CurrentValue, signals[count - 1].TimeTag));
+            query.Append(string.Format("SELECT '{0}','{1}', '{2}') ", signals[count - 1].ID, signals[count - 1].CurrentValue, signals[count - 1].TimeTag));
             query.Append(string.Format(" vals ON ass.analog_signal_id = vals._id SET current_value = _value, ts_datetime = _ts_datetime "));
             try
             {
@@ -1956,7 +2195,6 @@ namespace EnMon_Driver_Manager.DataBase
                                     AddSignalsBackToQueee(signals, buffer_BinarySignals);
                                 }
                             }
-
                         }
                         // buffer'da 10'dan az veri varsa veriler teker teker yazýlýr.
                         else if (buffer_BinarySignals.TryPeek(out _signal))
@@ -2016,11 +2254,10 @@ namespace EnMon_Driver_Manager.DataBase
             for (int i = 0; i < numberOfData; i++)
             {
                 T signal = new T();
-                if(buffer_Signals.TryDequeue(out signal))
+                if (buffer_Signals.TryDequeue(out signal))
                 {
                     signals.Add(signal);
                 }
-                
             }
             return signals;
         }
@@ -2074,11 +2311,9 @@ namespace EnMon_Driver_Manager.DataBase
             List<string> Rows = new List<string>();
             try
             {
-                
                 query.Append("INSERT INTO analog_signals (analog_signal_id, device_id, name, identification, address, function_code, word_count, data_type_id,unit, scale_value, max_value, min_value, max_status_id, min_status_id, has_max_alarm, has_min_alarm, is_archive, archive_period_id, is_summary, is_gauge) VALUES ");
                 foreach (DataRow dr in _dt.Rows)
                 {
-             
                     HasMaxAlarm = dr["Max Alarm"].ToString().ToUpper() == "TRUE" ? 1 : 0;
                     HasMinAlarm = dr["Min Alarm"].ToString().ToUpper() == "TRUE" ? 1 : 0;
                     isArchive = dr["Archive"].ToString().ToUpper() == "TRUE" ? 1 : 0;
@@ -2086,7 +2321,7 @@ namespace EnMon_Driver_Manager.DataBase
                     isGauge = dr["Detail Page shown"].ToString().ToUpper() == "TRUE" ? 1 : 0;
                     Rows.Add(string.Format("('{0}', '{1}', '{2}', '{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}','{14}','{15}','{16}', '{17}', '{18}', '{19}')",
                         MySqlHelper.EscapeString(dr["Analog Signal ID"].ToString()), MySqlHelper.EscapeString(dr["Device ID"].ToString()), MySqlHelper.EscapeString(dr["Name"].ToString()), MySqlHelper.EscapeString(dr["Identification"].ToString()), MySqlHelper.EscapeString(dr["Address"].ToString()), MySqlHelper.EscapeString(dr["Function Code"].ToString()), MySqlHelper.EscapeString(dr["Word Count"].ToString()), MySqlHelper.EscapeString(dr["Data Type Id"].ToString()),
-                        MySqlHelper.EscapeString(dr["Unit"].ToString()), MySqlHelper.EscapeString(dr["Scale Value"].ToString()), MySqlHelper.EscapeString(dr["Max Value"].ToString().Replace(",",".")), MySqlHelper.EscapeString(dr["Min Value"].ToString().Replace(",",".")), MySqlHelper.EscapeString(dr["Max Alarm ID"].ToString()), MySqlHelper.EscapeString(dr["Min Alarm ID"].ToString()), MySqlHelper.EscapeString(HasMaxAlarm.ToString()), MySqlHelper.EscapeString(HasMinAlarm.ToString()),
+                        MySqlHelper.EscapeString(dr["Unit"].ToString()), MySqlHelper.EscapeString(dr["Scale Value"].ToString()), MySqlHelper.EscapeString(dr["Max Value"].ToString().Replace(",", ".")), MySqlHelper.EscapeString(dr["Min Value"].ToString().Replace(",", ".")), MySqlHelper.EscapeString(dr["Max Alarm ID"].ToString()), MySqlHelper.EscapeString(dr["Min Alarm ID"].ToString()), MySqlHelper.EscapeString(HasMaxAlarm.ToString()), MySqlHelper.EscapeString(HasMinAlarm.ToString()),
                         MySqlHelper.EscapeString(isArchive.ToString()), MySqlHelper.EscapeString(dr["Archive Period ID"].ToString()), MySqlHelper.EscapeString(isSummary.ToString()), MySqlHelper.EscapeString(isGauge.ToString())));
                 }
                 query.Append(string.Join(",", Rows));
@@ -2130,6 +2365,8 @@ namespace EnMon_Driver_Manager.DataBase
                 throw;
             }
         }
+
+        
 
         public bool AddCommandSignalsToDataBase(DataTable _dt)
         {
@@ -2288,14 +2525,44 @@ namespace EnMon_Driver_Manager.DataBase
 
         #region Private Methods
 
+        private bool UpdateBinarySignalBasicProperties<T>(T signal) where T : BinarySignal
+        {
+            try
+            {
+                ExecuteNonQuery($"Update binary_signals SET name = '{signal.Name}', identification = '{signal.Identification}', is_alarm = '{Convert.ToInt32(signal.IsAlarm)}', is_reversed = '{Convert.ToInt32(signal.IsReversed)}', is_event = '{Convert.ToInt32(signal.IsEvent)}' where binary_signal_id = '{signal.ID}';");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error($"{this.GetType()}: {signal.Identification} adlý sinyal güncellenirken hata oluþtu => {ex.Message}.");
+                return false;
+            }
+        }
+
+        private bool UpdateAnalogSignalBasicProperties<T>(T signal) where T : AnalogSignal
+        {
+            try
+            {
+                ExecuteNonQuery($"Update analog_signals SET name = '{signal.Name}', identification =  '{signal.Identification}', data_type_id =  '{signal.DataTypeID}', unit = '{signal.Unit}', scale_value =  '{signal.ScaleValue}', max_value =  '{signal.MaxAlarmValue}', max_status_id = '{signal.MaxAlarmStatusTextID}', has_max_alarm = '{Convert.ToInt32(signal.HasMaxAlarm)}', min_value = '{signal.MinAlarmValue}', min_status_id = '{signal.MinAlarmStatusTextID}', has_min_alarm = '{Convert.ToInt32(signal.HasMinAlarm)}', is_archive  = '{Convert.ToInt32(signal.IsArchive)}', archive_period_id = '{signal.archivePeriod.ID}', is_summary = '{Convert.ToInt32(signal.DisplayAtStationDetailPage)}', is_gauge = '{Convert.ToInt32(signal.DisplayAtDeviceDetailPage)}' where analog_signal_id =  '{signal.ID}';");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Error($"{this.GetType()}: {signal.Identification} adlý sinyal güncellenirken hata oluþtu => {ex.Message}.");
+                return false;
+            }
+        }
+
         private string GetStationDevicesQueryText(Type type, Station s)
         {
             switch (type.ToString())
             {
                 case ("EnMon_Driver_Manager.Models.Device.ModbusTCPDevice"):
                     return $"CALL GetStationModbusTCPDevicesInfo('{s.ID}')";
+
                 case "EnMon_Driver_Manager.Models.Device.SNMPDevice":
                     return $"CALL GetStationSNMPDevicesInfo('{s.ID}')";
+
                 default:
                     throw new Exception($"{this.GetType().Name}: Veritabanýndan device bilgileri okunurken tanýmlanmamýþ device tipi");
             }
@@ -2306,24 +2573,50 @@ namespace EnMon_Driver_Manager.DataBase
             ;
             switch (type_T)
             {
-                case "EnMon_Driver_Manager.Models.ModbusBinarySignal":
+                case "EnMon_Driver_Manager.Models.Signals.Modbus.ModbusBinarySignal":
                     return string.Format("CALL getModbusDeviceBinarySignalsInfo('{0}')", device_id);
-                case "EnMon_Driver_Manager.Models.ModbusAnalogSignal":
+
+                case "EnMon_Driver_Manager.Models.Signals.Modbus.ModbusAnalogSignal":
                     return string.Format("CALL getModbusDeviceAnalogSignalsInfo('{0}')", device_id);
-                case "EnMon_Driver_Manager.Models.ModbusCommandSignal":
+
+                case "EnMon_Driver_Manager.Models.Signals.Modbus.ModbusCommandSignal":
                     return string.Format("CALL getModbusCommandSignalsInfo('{0}')", device_id);
+
                 case "EnMon_Driver_Manager.Models.SNMPBinarySignal":
                     return string.Format("CALL getSNMPDeviceBinarySignalsInfo('{0}')", device_id);
+
                 case "EnMon_Driver_Manager.Models.SNMPAnalogSignal":
                     return string.Format("CALL getSNMPDeviceAnalogSignalsInfo('{0}')", device_id);
+
                 case "EnMon_Driver_Manager.Models.SNMPCommandSignal":
                     return string.Format("CALL getSNMPCommandSignalsInfo('{0}')", device_id);
+
                 default:
                     Log.Instance.Error("{0}: Tanýmlanmamýþ veri tipi => {1}", this.GetType().Namespace, type_T);
                     return null;
             }
         }
 
-        #endregion
+        #endregion Private Methods
+
+        #region Events
+
+        public DatabaseConnectionEventHandler DatabaseConnected;
+
+        public DatabaseConnectionEventHandler DatabaseDisconnected;
+
+        protected void OnDatabaseConnected()
+        {
+            DatabaseConnectionEventArgs args = new DatabaseConnectionEventArgs();
+            DatabaseConnected?.Invoke(this, args);
+        }
+
+        protected void OnDatabaseDisconnected()
+        {
+            DatabaseConnectionEventArgs args = new DatabaseConnectionEventArgs();
+            DatabaseDisconnected?.Invoke(this, args);
+        }
+
+        #endregion Events
     }
 }

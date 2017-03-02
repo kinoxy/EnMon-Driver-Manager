@@ -4,6 +4,7 @@ using EnMon_Driver_Manager.Models.DataTypes;
 using EnMon_Driver_Manager.Models.Signals;
 using EnMon_Driver_Manager.Models.Devices;
 using EnMon_Driver_Manager.Models.StatusTexts;
+using EnMon_Driver_Manager.Models.DeviceTypes;
 
 namespace EnMon_Driver_Manager.Models
 {
@@ -27,5 +28,12 @@ namespace EnMon_Driver_Manager.Models
 
         public static StatusText statusText;
         public static List<StatusText> statusTexts;
+
+        public static CommunicationProtocol protocol;
+        public static List<CommunicationProtocol> protocols;
+
+        public static DeviceType deviceType;
+        public static List<DeviceType> deviceTypes;
+
     }
 }

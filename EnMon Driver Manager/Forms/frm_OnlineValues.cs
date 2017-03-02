@@ -244,5 +244,10 @@ namespace EnMon_Driver_Manager
         }
 
         #endregion Private Properties
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

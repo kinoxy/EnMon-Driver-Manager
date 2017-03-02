@@ -160,7 +160,7 @@ namespace EnMon_Driver_Manager.Drivers
             List<T> protocolDevices = new List<T>();
             foreach (T device in _devices)
             {
-                if (device.communicationProtocol.Name == _protocolName)
+                if (device.Protocol.Name == _protocolName)
                 {
                     protocolDevices.Add(device);
                 }

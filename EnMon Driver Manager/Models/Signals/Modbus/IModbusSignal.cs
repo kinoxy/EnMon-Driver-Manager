@@ -6,8 +6,6 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
     {
         [Browsable(true)]
         ushort Address { get; set; }
-
-
         byte FunctionCode { get; set; }
         byte WordCount { get; set; }
 

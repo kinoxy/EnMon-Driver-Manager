@@ -282,9 +282,9 @@ namespace EnMon_Driver_Manager.Drivers.SNMP
                         // Her device için device'a ait sinyaller veritabanından çekilir
                         foreach (SNMPDevice d in _stationDevices)
                         {
-                            d.BinarySignals = DBHelper.GetDeviceSignalsInfo<SNMPBinarySignal>(d);
-                            d.AnalogSignals = DBHelper.GetDeviceSignalsInfo<SNMPAnalogSignal>(d);
-                            d.CommandSignals = DBHelper.GetDeviceSignalsInfo<SNMPCommandSignal>(d);
+                            d.BinarySignals = DBHelper.GetDeviceBinarySignalsInfo<SNMPBinarySignal>(d);
+                            d.AnalogSignals = DBHelper.GetDeviceAnalogSignalsInfo<SNMPAnalogSignal>(d);
+                            d.CommandSignals = DBHelper.GetDeviceCommandSignalsInfo<SNMPCommandSignal>(d);
                         }
 
                         s.SNMPDevices = _stationDevices;

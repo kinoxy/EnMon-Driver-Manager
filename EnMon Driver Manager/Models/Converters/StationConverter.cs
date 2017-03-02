@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace EnMon_Driver_Manager.Models.StatusTexts
+namespace EnMon_Driver_Manager.Models.Stations
 {
-    class StatusTextTypeConverter : TypeConverter
+    class StationConverter :  TypeConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
@@ -35,15 +31,16 @@ namespace EnMon_Driver_Manager.Models.StatusTexts
 
             if (destType == typeof(string))
             {
-                if ((value is uint))
+                if ((value is ushort))
                 {
-                    var first = TemporaryValues.statusTexts.FirstOrDefault(d => d.StatusID == (uint)value);
+                    var first = TemporaryValues.stations.Find(d => d.ID == (ushort)value);
                     if (first != null) return first.Name;
+                    else return "";
 
                 }
-                if (value is StatusText)
+                if (value is Station)
                 {
-                    var first = TemporaryValues.statusTexts.FirstOrDefault(d => d.StatusID == ((StatusText)value).StatusID);
+                    var first = TemporaryValues.stations.Find(d => d.ID == ((Station)value).ID);
                     if (first != null) return first.Name;
                 }
 
@@ -68,13 +65,13 @@ namespace EnMon_Driver_Manager.Models.StatusTexts
         {
             if (value.GetType() == typeof(string))
             {
-                var first = TemporaryValues.statusTexts.FirstOrDefault(d => d.Name == (string)value);
-                if (first != null) return first.StatusID;
+                var first = TemporaryValues.stations.Find(d => d.Name == (string)value);
+                if (first != null) return first.ID;
             }
             if (value.GetType() == typeof(uint))
             {
                 if ((uint)value == 0) value = 1;
-                var first = TemporaryValues.statusTexts.FirstOrDefault(d => d.StatusID == (uint)value);
+                var first = TemporaryValues.stations.Find(d => d.ID == (uint)value);
                 if (first != null) return first.Name;
             }
             return null;

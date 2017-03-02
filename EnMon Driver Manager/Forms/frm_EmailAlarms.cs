@@ -26,6 +26,13 @@ namespace EnMon_Driver_Manager
 
         }
 
+        public frm_EmailAlarms(AbstractDBHelper dbhelper)
+        {
+            InitializeComponent();
+            DBHelper_EmailAlarms = dbhelper;
+
+        }
+
         private void InitializeDBConnection()
         {
             if (File.Exists(Constants.DatabaseConfigFileLocation))
@@ -40,8 +47,11 @@ namespace EnMon_Driver_Manager
 
         private void frm_EmailSettings_Load(object sender, EventArgs e)
         {
-            Task t1 = Task.Factory.StartNew(() => InitializeDBConnection());
-            t1.Wait();
+            if (DBHelper_EmailAlarms==null)
+            {
+                Task t1 = Task.Factory.StartNew(() => InitializeDBConnection());
+                t1.Wait(); 
+            }
             dt_MailGroups = new DataTable();
             LoadMailAlarmsToGridView();
         }

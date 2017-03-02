@@ -72,6 +72,30 @@
       <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="ComponentFactory.Krypton.Design, Version=4.4.1.0, Culture=neutral, PublicKeyToken=a87e673e9ecb6e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\KryptonWinFormControls.4.4.1.0\lib\net40\ComponentFactory.Krypton.Design.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ComponentFactory.Krypton.Docking, Version=4.4.1.0, Culture=neutral, PublicKeyToken=a87e673e9ecb6e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\KryptonWinFormControls.4.4.1.0\lib\net40\ComponentFactory.Krypton.Docking.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ComponentFactory.Krypton.Navigator, Version=4.4.1.0, Culture=neutral, PublicKeyToken=a87e673e9ecb6e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\KryptonWinFormControls.4.4.1.0\lib\net40\ComponentFactory.Krypton.Navigator.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ComponentFactory.Krypton.Ribbon, Version=4.4.1.0, Culture=neutral, PublicKeyToken=a87e673e9ecb6e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\KryptonWinFormControls.4.4.1.0\lib\net40\ComponentFactory.Krypton.Ribbon.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ComponentFactory.Krypton.Toolkit, Version=4.4.1.0, Culture=neutral, PublicKeyToken=a87e673e9ecb6e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\KryptonWinFormControls.4.4.1.0\lib\net40\ComponentFactory.Krypton.Toolkit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ComponentFactory.Krypton.Workspace, Version=4.4.1.0, Culture=neutral, PublicKeyToken=a87e673e9ecb6e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\KryptonWinFormControls.4.4.1.0\lib\net40\ComponentFactory.Krypton.Workspace.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
@@ -161,6 +185,7 @@
     <Compile Include="3rd Party Codes\YaTabControl\YaTabPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DataBase\DatabaseConnectionEventArgs.cs" />
     <Compile Include="Drivers\Abstract\AbstractDriver.cs" />
     <Compile Include="Drivers\Abstract\ITCPDriver.cs" />
     <Compile Include="Drivers\SNMP\SNMPClient.cs" />
@@ -168,6 +193,8 @@
     <Compile Include="Drivers\Abstract\TCPClientEventArgs.cs" />
     <Compile Include="Extensions\ComboBoxExtensions.cs" />
     <Compile Include="Extensions\CustomSortedCategoryAttribute.cs" />
+    <Compile Include="Extensions\DataGridViewExtensions.cs" />
+    <Compile Include="Extensions\FormExtensions.cs" />
     <Compile Include="FormComponents\AnalogSignal_Basic.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -181,6 +208,12 @@
       <DependentUpon>deneme.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\DynamicTypeDescriptor.cs" />
+    <Compile Include="Forms\Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\Form2.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -246,6 +279,30 @@
     <Compile Include="Forms\frm_ChooseProtocol.Designer.cs">
       <DependentUpon>frm_ChooseProtocol.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\frm_Drivers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_Drivers.Designer.cs">
+      <DependentUpon>frm_Drivers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frm_MailClientSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_MailClientSettings.Designer.cs">
+      <DependentUpon>frm_MailClientSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frm_PropertyGrid.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_PropertyGrid.Designer.cs">
+      <DependentUpon>frm_PropertyGrid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frm_Stations.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_Stations.Designer.cs">
+      <DependentUpon>frm_Stations.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\frm_Email.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -306,16 +363,32 @@
     <Compile Include="Forms\frm_SignalList.Designer.cs">
       <DependentUpon>frm_SignalList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\frm_Devices2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_Devices2.Designer.cs">
+      <DependentUpon>frm_Devices2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frm_Signals.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frm_Signals.Designer.cs">
+      <DependentUpon>frm_Signals.cs</DependentUpon>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Models\ArchivePeriods\ArchivePeriodConverter.cs" />
-    <Compile Include="Models\DataTypes\DataTypeConverter.cs" />
+    <Compile Include="Models\Converters\DeviceTypeConverter.cs" />
+    <Compile Include="Models\Converters\DataTypeConverter.cs" />
+    <Compile Include="Models\Converters\CommunicationStatusTextConverter.cs" />
     <Compile Include="Models\Devices\AbstractTCPDevice.cs" />
-    <Compile Include="Models\Devices\DeviceConverter.cs" />
+    <Compile Include="Models\Converters\DeviceConverter.cs" />
     <Compile Include="Models\Devices\IModbus.cs" />
     <Compile Include="Models\Devices\ModbusTCPDevice.cs" />
+    <Compile Include="Models\Converters\ProtocolConverter.cs" />
     <Compile Include="Models\Devices\SNMPDevice.cs" />
+    <Compile Include="Models\DeviceTypes\DeviceType.cs" />
     <Compile Include="Models\Signals\Modbus\IModbusSignal.cs" />
-    <Compile Include="Models\Signals\PageShownConverter.cs" />
+    <Compile Include="Models\Converters\TrueFalseTextConverter.cs" />
     <Compile Include="Models\Signals\SNMP\ISNMPSignal.cs" />
     <Compile Include="Models\AlarmMail.cs" />
     <Compile Include="Models\ArchivePeriods\ArchivePeriod.cs" />
@@ -338,7 +411,8 @@
     <Compile Include="Models\Signals\SNMP\SNMPAnalogSignal.cs" />
     <Compile Include="Models\Signals\SNMP\SNMPBinarySignal.cs" />
     <Compile Include="Models\Signals\SNMP\SNMPCommandSignal.cs" />
-    <Compile Include="Models\Stations\StationConverter.cs" />
+    <Compile Include="Models\Converters\TrueFalseValueConverter.cs" />
+    <Compile Include="Models\Converters\StationConverter.cs" />
     <Compile Include="Models\Stations\Station.cs" />
     <Compile Include="Models\Signals\Modbus\ModbusAnalogSignal.cs" />
     <Compile Include="Models\Signals\Modbus\ModbusBinarySignal.cs" />
@@ -352,8 +426,8 @@
     <Compile Include="Log.cs" />
     <Compile Include="DataBase\ConnectionString.cs" />
     <Compile Include="Models\StatusTexts\StatusText.cs" />
-    <Compile Include="Models\StatusTexts\StatusTextTypeConverter.cs" />
-    <Compile Include="Models\TemporaryValues.cs" />
+    <Compile Include="Models\Converters\StatusTextTypeConverter.cs" />
+    <Compile Include="Models\Converters\TemporaryValues.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -398,6 +472,9 @@
     <EmbeddedResource Include="Forms\deneme.resx">
       <DependentUpon>deneme.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\Form2.resx">
       <DependentUpon>Form2.cs</DependentUpon>
     </EmbeddedResource>
@@ -424,6 +501,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\frm_ChooseProtocol.resx">
       <DependentUpon>frm_ChooseProtocol.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_Drivers.resx">
+      <DependentUpon>frm_Drivers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_MailClientSettings.resx">
+      <DependentUpon>frm_MailClientSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_PropertyGrid.resx">
+      <DependentUpon>frm_PropertyGrid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_Stations.resx">
+      <DependentUpon>frm_Stations.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\frm_Email.resx">
       <DependentUpon>frm_Email.cs</DependentUpon>
@@ -478,6 +567,12 @@
     </None>
     <None Include="Resources\green.png" />
     <None Include="Resources\red.png" />
+    <EmbeddedResource Include="Forms\frm_Devices2.resx">
+      <DependentUpon>frm_Devices2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frm_Signals.resx">
+      <DependentUpon>frm_Signals.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -526,9 +621,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NewFolder1\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

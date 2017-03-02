@@ -15,11 +15,13 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
 
 #endregion
 
-        public ModbusAnalogSignal() 
+        public ModbusAnalogSignal() : base()
         {
             dataType = new DataType() {ID=1};
-            archivePeriod = new ArchivePeriod();
+            
             DataTypeID = 1;
+            FunctionCode = 3;
+            Address = 10001;
         }
 
         [Browsable(true)]
@@ -57,6 +59,12 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
                         break;
                     case "name":
                         Name = dr.Field<string>("name");
+                        break;
+                    case "device_name":
+                        DeviceName = dr.Field<string>("device_name");
+                        break;
+                    case "station_name":
+                        StationName = dr.Field<string>("station_name");
                         break;
                     case "identification":
                         Identification = dr.Field<string>("identification");
@@ -105,6 +113,11 @@ namespace EnMon_Driver_Manager.Models.Signals.Modbus
                         break;
                 }
             }
+        }
+
+        public override string GetBaseClassType()
+        {
+            return typeof(AnalogSignal).ToString();
         }
     }
 }

@@ -30,18 +30,19 @@ namespace EnMon_Driver_Manager.Models.Signals
 
         #region Constructors
 
-        public AnalogSignal()
+        public AnalogSignal() : base()
         {
             dataType = new DataType() {ID=1};
-            archivePeriod = new ArchivePeriod();
-
+            archivePeriod = new ArchivePeriod() { ID = 1 };
+            maxAlarmStatusTextID = 1;
+            minAlarmStatusTextID = 1;
         }
 
         #endregion Constructors
 
         #region Public Properties
 
-        [Browsable(false)]
+        [Browsable(true)]
         public uint CurrentValue { get; set; }
 
         [Browsable(true)]
@@ -51,15 +52,15 @@ namespace EnMon_Driver_Manager.Models.Signals
         )]
         [CustomSortedCategory("Maksimum Değer Alarm Ayarları", 6)]
         [CustomSortedDisplayName("Maksimum Alarm", 1)]
-        [TypeConverter(typeof(PageShownConverter))]
+        [TypeConverter(typeof(TrueFalseTextConverter))]
         public bool HasMaxAlarm
         {
             get { return hasMaxAlarm; }
             set
             {
                 hasMaxAlarm = value;
-                SetPropertyBoolAttributeValue("MaxAlarmValue", !value);
-                SetPropertyBoolAttributeValue("MaxAlarmStatusTextID", !value);
+                SetPropertyReadOnlyAttributeValue("MaxAlarmValue", !value);
+                SetPropertyReadOnlyAttributeValue("MaxAlarmStatusTextID", !value);
 
             }
         }
@@ -94,15 +95,15 @@ namespace EnMon_Driver_Manager.Models.Signals
         )]
         [CustomSortedCategory("Minimum Değer Alarm Ayarları", 7)]
         [CustomSortedDisplayName("Minimum Alarm", 1)]
-        [TypeConverter(typeof(PageShownConverter))]
+        [TypeConverter(typeof(TrueFalseTextConverter))]
         public bool HasMinAlarm
         {
             get { return hasMinAlarm; }
             set
             {
                 hasMinAlarm = value;
-                SetPropertyBoolAttributeValue("MinAlarmStatusTextID", !value);
-                SetPropertyBoolAttributeValue("MinAlarmValue", !value);    
+                SetPropertyReadOnlyAttributeValue("MinAlarmStatusTextID", !value);
+                SetPropertyReadOnlyAttributeValue("MinAlarmValue", !value);    
             }
         }
 
@@ -143,14 +144,14 @@ namespace EnMon_Driver_Manager.Models.Signals
         [Description("Evet: Analog sinyalin değeri seçilen periyod aralıklarında kaydedilir.\r\nHayır: Analog sinyalin değeri kaydedilmez")]
         [CustomSortedCategory("Arşivleme", 5)]
         [CustomSortedDisplayName("Arşivleme", 19)]
-        [TypeConverter(typeof(PageShownConverter))]
+        [TypeConverter(typeof(TrueFalseTextConverter))]
         public bool IsArchive
         {
             get { return isArchive; }
             set
             {
                 isArchive = value;
-                SetPropertyBoolAttributeValue("ArchivePeriodName", !value);
+                SetPropertyReadOnlyAttributeValue("ArchivePeriodName", !value);
             }
         }
 
@@ -171,11 +172,6 @@ namespace EnMon_Driver_Manager.Models.Signals
         }
 
         [Browsable(false)]
-        //[ReadOnly(true)]
-        //[Description("Data Tipi")]
-        //[CustomSortedCategory("Haberleşme Ayarları", 4)]
-        //[CustomSortedDisplayName("Data Tipi", 20)]
-        //[TypeConverter(typeof(DataTypeConverter))]
         public string DataTypeName
         {
             get

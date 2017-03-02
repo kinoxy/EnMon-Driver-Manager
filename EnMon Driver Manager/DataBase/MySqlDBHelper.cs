@@ -96,8 +96,10 @@ namespace EnMon_Driver_Manager.DataBase
                 if (conn.State == ConnectionState.Closed)
                 {
                     conn.Open();
+                    
                     IsConnected = true;
                     Log.Instance.Info("Database'e baglanıldı");
+                    OnDatabaseConnected();
                 }
 
                 if (conn.State == ConnectionState.Open)
@@ -106,6 +108,7 @@ namespace EnMon_Driver_Manager.DataBase
                 }
                 else
                 {
+                    OnDatabaseDisconnected();
                     return false;
                 }
             }
@@ -113,8 +116,10 @@ namespace EnMon_Driver_Manager.DataBase
             {
                 if (IsConnected)
                 {
+                    
                     Log.Instance.Error("Database baglantısı sorunu: {0}", ex.Message);
                     IsConnected = false;
+                    OnDatabaseDisconnected();
                 }
                 return false;
             }
@@ -132,6 +137,7 @@ namespace EnMon_Driver_Manager.DataBase
                 {
                     conn.Close();
                     Log.Instance.Info("Database baglantısı kesildi.");
+                    OnDatabaseDisconnected();
                 }
 
                 if (conn.State == System.Data.ConnectionState.Closed)
@@ -228,16 +234,22 @@ namespace EnMon_Driver_Manager.DataBase
                 using (var connection = new MySqlConnection(ConnectionString))
                 {
                     connection.Open();
+                    IsConnected = true;
+                    OnDatabaseConnected();
                     return true;
                 }
             }
             catch (Exception ex)
             {
                 Log.Instance.Error("Database Bağlantı Hatası => {0}", ex.Message);
+                IsConnected = false;
+                OnDatabaseDisconnected();
                 return false;
             }
         }
 
         #endregion Protected Methods
+
+        
     }
 }

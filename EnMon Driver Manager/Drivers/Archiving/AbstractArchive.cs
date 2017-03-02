@@ -8,39 +8,25 @@ using EnMon_Driver_Manager.Models.ArchivePeriods;
 
 namespace EnMon_Driver_Manager.Drivers.Archiving
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving'
     public abstract class AbstractArchiving
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving'
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.DBHelper_Archive'
         protected AbstractDBHelper DBHelper_Archive { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.DBHelper_Archive'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.periods'
         protected List<ArchivePeriod> periods;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.periods'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.archiveTimers'
         protected List<PollingTimer> archiveTimers;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.archiveTimers'
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.ArchivingStarted'
         public bool ArchivingStarted;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.ArchivingStarted'
 
-#pragma warning disable CS1572 // XML comment has a param tag for '_databasetype', but there is no parameter by that name
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractArchiving"/> class.
         /// </summary>
         /// <param name="_databasetype">The databasetype.</param>
         public AbstractArchiving()
-#pragma warning restore CS1572 // XML comment has a param tag for '_databasetype', but there is no parameter by that name
         {
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.StartArchiving()'
         protected bool StartArchiving()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.StartArchiving()'
         {
             try
             {
@@ -80,9 +66,7 @@ namespace EnMon_Driver_Manager.Drivers.Archiving
             );
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.ArchiveValues(uint)'
         protected abstract void ArchiveValues(uint _periodID);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member 'AbstractArchiving.ArchiveValues(uint)'
 
         /// <summary>
         /// Gets the archive periods.

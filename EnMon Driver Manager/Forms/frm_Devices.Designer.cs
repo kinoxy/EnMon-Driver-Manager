@@ -42,7 +42,7 @@ namespace EnMon_Driver_Manager
             // frm_Devices
             // 
             this.AutoScroll = true;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(81)))), ((int)(((byte)(181)))));
+            this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(402, 253);
             this.Name = "frm_Devices";
             this.Load += new System.EventHandler(this.frm_Devices_Load);

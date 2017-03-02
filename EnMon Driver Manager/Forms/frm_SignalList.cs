@@ -1104,16 +1104,19 @@ namespace EnMon_Driver_Manager
 
         private void AddStationToDataBaseOrRemoveFromCSVTable(string stationName)
         {
-#pragma warning disable CS0168 // The variable '_dt' is declared but never used
+
             DataTable _dt;
-#pragma warning restore CS0168 // The variable '_dt' is declared but never used
+
             // Kullanıcıya istasyonu database'e ekleyip eklemek istemediği sorulur,
             DialogResult result = MessageBox.Show(String.Format("{0} adlı istasyon database'de bulunamadı. istasyon database'e eklenmezse CSV dosyasında {0} adlı istasyona ait sinyaller de database'e eklenmeyecektir. İstasyonu database'e eklemek ister misiniz?", stationName), "EnMon Sürücü Yöneticisi", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
             // Kullanıcının cevabı "evet" olursa
             if (result == DialogResult.Yes)
             {
+                Station station = new Station();
+                station.ID = DBHelper_SignalList.GetNextStationID();
+                station.Name = stationName;
                 // İstasyon database' eklenir
-                if (DBHelper_SignalList.AddStation(stationName))
+                if (DBHelper_SignalList.AddStation(station))
                 {
                     //ushort maxID = stations.Max(s => s.ID);
                     //Station newStation = new Station();

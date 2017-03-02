@@ -268,9 +268,9 @@ namespace EnMon_Driver_Manager.Modbus
                         // Her device için device'a ait sinyaller veritabanından çekilir
                         foreach (ModbusTCPDevice d in _stationDevices)
                         {
-                            d.BinarySignals = DBHelper.GetDeviceSignalsInfo<ModbusBinarySignal>(d);
-                            d.AnalogSignals = DBHelper.GetDeviceSignalsInfo<ModbusAnalogSignal>(d);
-                            d.CommandSignals = DBHelper.GetDeviceSignalsInfo<ModbusCommandSignal>(d);
+                            d.BinarySignals = DBHelper.GetDeviceBinarySignalsInfo<ModbusBinarySignal>(d);
+                            d.AnalogSignals = DBHelper.GetDeviceAnalogSignalsInfo<ModbusAnalogSignal>(d);
+                            d.CommandSignals = DBHelper.GetDeviceCommandSignalsInfo<ModbusCommandSignal>(d);
                         }
 
                         s.ModbusTCPDevices = _stationDevices;

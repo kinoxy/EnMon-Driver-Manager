@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace EnMon_Driver_Manager.Models.Stations
+namespace EnMon_Driver_Manager.Models.Converters
 {
-    class StationConverter :  TypeConverter
+    class DeviceConverter : TypeConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
@@ -11,8 +11,9 @@ namespace EnMon_Driver_Manager.Models.Stations
 
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
-            return new StandardValuesCollection(TemporaryValues.stations);
+            return new StandardValuesCollection(TemporaryValues.devices);
 
         }
+
     }
 }

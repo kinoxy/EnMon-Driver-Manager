@@ -1,5 +1,4 @@
 ﻿using EnMon_Driver_Manager.DataBase;
-using EnMon_Driver_Manager.Drivers.Mail;
 using EnMon_Driver_Manager.Forms;
 using EnMon_Driver_Manager.Models;
 using IniParser;
@@ -9,8 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 //using System.Windows.Controls;
 using System.Windows.Forms;
 
@@ -20,37 +18,47 @@ namespace EnMon_Driver_Manager
 
     {
         #region Private Properties
+
         private DataTable dt_MailGroups { get; set; }
 
         private AbstractDBHelper DBHelper_EmailSettings;
-        #endregion
+
+        #endregion Private Properties
 
         #region Public Properties
+
         public string EMailAddressForTestMail;
 
         public EmailSettingsEventHandler MailClientSettingsUpdateRequested;
-        #endregion
+
+        #endregion Public Properties
 
         #region Constructors
+
         public frm_Email()
         {
             InitializeComponent();
         }
-        #endregion
+
+        public frm_Email(AbstractDBHelper dbhelper)
+        {
+            InitializeComponent();
+            DBHelper_EmailSettings = dbhelper;
+        }
+
+        #endregion Constructors
 
         #region Events
+
         private void btn_Update_Click(object sender, EventArgs e)
         {
             try
             {
-
                 //OnMailClientSettingsUpdateRequested(txt_MailServerName.Text, txt_MailServerPort.Text, txt_UserName.Text, txt_Password.Text);
-                if (UpdateMailClientSettings(txt_MailServerName.Text, txt_MailServerPort.Text, txt_UserName.Text, txt_Password.Text, txt_From.Text, cbx_UseSSL.Checked) & UpdateMailGroups() & AddMailGroupsToComboBox())
+                if (UpdateMailGroups() & AddMailGroupsToComboBox())
                 {
                     MessageBox.Show("Ayarlar başarılı bir şekilde güncellendi", Constants.MessageBoxHeader, MessageBoxButtons.OK);
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -61,7 +69,6 @@ namespace EnMon_Driver_Manager
 
         private void btn_NewGroup_Click(object sender, EventArgs e)
         {
-
         }
 
         private void comboBox1_DropDown(object sender, EventArgs e)
@@ -82,13 +89,7 @@ namespace EnMon_Driver_Manager
 
         private async void frm_Email_Load(object sender, EventArgs e)
         {
-            Task t1 = Task.Factory.StartNew(() => DBHelper_EmailSettings = StaticHelper.InitializeDatabase(Constants.DatabaseConfigFileLocation));
-
-            //Task t2 = Task.Factory.StartNew(() => ShowMailClientSettings());
-            ShowMailClientSettings();
-
             dt_MailGroups = new DataTable();
-            await t1;
         }
 
         private void btn_AddSelectedUserToGroup_Click(object sender, EventArgs e)
@@ -108,7 +109,6 @@ namespace EnMon_Driver_Manager
                 foreach (User u in _users)
                 {
                     MoveUserToGroupListBox(u);
-
                 }
             }
         }
@@ -147,18 +147,6 @@ namespace EnMon_Driver_Manager
             }
         }
 
-        private void chkBox_ShowPassword_CheckStateChanged(object sender, EventArgs e)
-        {
-            if (chkBox_ShowPassword.CheckState == CheckState.Checked)
-            {
-                txt_Password.UseSystemPasswordChar = false;
-            }
-            else
-            {
-                txt_Password.UseSystemPasswordChar = true;
-            }
-        }
-
         private void btn_DeleteGroup_Click(object sender, EventArgs e)
         {
             if (comboBox1.SelectedItem != null)
@@ -171,80 +159,6 @@ namespace EnMon_Driver_Manager
                     AddMailGroupsToComboBox();
                     comboBox1.SelectedItem = null;
                 }
-            }
-        }
-
-        private void btn_SendTestMail_Click(object sender, EventArgs e)
-        {
-            EMailAddressForTestMail = "";
-            frm_GetEmailAddress Frm_GetEmailAddress = new frm_GetEmailAddress();
-            Frm_GetEmailAddress.frm_GetEmailAddress_Send += SendTestEMail;
-            Frm_GetEmailAddress.ShowDialog();
-
-        }
-
-        private async void SendTestEMail(object source, frm_GetEmailAddressArgs args)
-        {
-            if (VerifyMailSettingInputsAreCorrect())
-            {
-                MailClient client = new MailClient(txt_MailServerName.Text, txt_MailServerPort.Text, txt_UserName.Text, txt_Password.Text, txt_From.Text, cbx_UseSSL.Checked);
-
-                string message = @"Bu bir deneme mesajıdır.";
-
-                List<string> _toWhoList = new List<string>();
-                _toWhoList.Add(args.EMailAddress);
-
-                try
-                {
-                    this.Cursor = Cursors.WaitCursor;
-                    await client.SendMailAsync(_toWhoList, message);
-                    MessageBox.Show("E-posta gönderimi başarılı", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Test E-postası gönderilemedi.\nAyrıntılı bilgi için log dosyasına bakınız.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Log.Instance.Error("Mail Server'a baglanırken hata : {0}", ex.Message);
-                }
-                finally
-                {
-                    this.Cursor = Cursors.Default;
-                }
-            }
-
-        }
-
-        private bool VerifyMailSettingInputsAreCorrect()
-        {
-            int portnumber = 0;
-            if (txt_MailServerName.Text == null)
-            {
-                MessageBox.Show("Sunucu Adresi bilgisi boş bırakılamaz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            else if (txt_MailServerPort.Text == null)
-            {
-                MessageBox.Show("Port Numarası bilgisi boş bırakılamaz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            else if (!(int.TryParse(txt_MailServerPort.Text, out portnumber)))
-            {
-                MessageBox.Show("Geçerli bir port numarası giriniz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            else if (txt_UserName.Text == null || txt_UserName.Text == string.Empty)
-            {
-                MessageBox.Show("Kullanıcı Adı bilgisi boş bırakılamaz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            else if (txt_Password.Text == null || txt_Password.Text == string.Empty)
-            {
-                MessageBox.Show("Şifre bilgisi boş bırakılamaz", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            else
-            {
-                return true;
             }
         }
 
@@ -265,11 +179,10 @@ namespace EnMon_Driver_Manager
                 MessageBox.Show("E-Posta grubu oluştururken hata oluştu.\nAyrıntılı bilgi için log dosyasına bakınız.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        #endregion
 
-        #region Public Methods
+        #endregion Events
 
-        #endregion
+
 
         #region Private Methods
 
@@ -303,10 +216,7 @@ namespace EnMon_Driver_Manager
             args.Username = _UserName;
             args.Password = _Password;
 
-            if (MailClientSettingsUpdateRequested != null)
-            {
-                MailClientSettingsUpdateRequested(this, args);
-            }
+            MailClientSettingsUpdateRequested?.Invoke(this, args);
         }
 
         private bool AddMailGroupsToComboBox()
@@ -314,7 +224,6 @@ namespace EnMon_Driver_Manager
             List<MailGroup> mailGroups;
             try
             {
-
                 mailGroups = DBHelper_EmailSettings.GetMailGroups();
                 if (mailGroups.Count > 1)
                 {
@@ -327,7 +236,7 @@ namespace EnMon_Driver_Manager
 
                     comboBox1.Items.Clear();
 
-                    // Mailgroup 
+                    // Mailgroup
                     mailGroups.Remove(mailGroups.Where((mg) => mg.Name == "No Group").First());
                     foreach (MailGroup mg in mailGroups)
                     {
@@ -351,7 +260,6 @@ namespace EnMon_Driver_Manager
                         }
                     }
 
-
                     return true;
                 }
                 else
@@ -362,59 +270,7 @@ namespace EnMon_Driver_Manager
             }
             catch (Exception)
             {
-
                 throw;
-            }
-        }
-
-        private void ShowMailClientSettings()
-        {
-            if (File.Exists(Constants.MailClientConfigFileLocation))
-            {
-                string _mailServerName = string.Empty;
-                string _mailServerPort = string.Empty;
-                string _userName = string.Empty;
-                string _password = string.Empty;
-
-                var parser = new FileIniDataParser();
-
-                IniData data = parser.ReadFile(Constants.MailClientConfigFileLocation, Encoding.UTF8);
-
-                var _parameters = data["MailClient Parameters"];
-
-                foreach (KeyData kd in _parameters)
-                {
-                    switch (kd.KeyName.Trim())
-                    {
-                        case "MailServerName":
-                            txt_MailServerName.Text = kd.Value.Trim();
-                            break;
-
-                        case "MailServerPort":
-                            txt_MailServerPort.Text = kd.Value.Trim();
-                            break;
-
-                        case "UserName":
-                            txt_UserName.Text = kd.Value.Trim();
-                            break;
-
-                        case "Password":
-                            txt_Password.Text = kd.Value.Trim();
-                            break;
-                        case "MailAddress":
-                            txt_From.Text = kd.Value.Trim();
-                            break;
-                        case "EnableSSL":
-                            cbx_UseSSL.Checked = kd.Value.Trim() == "TRUE" ? true : false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("MailClient config dosyası okunamadı", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -438,10 +294,8 @@ namespace EnMon_Driver_Manager
                     {
                         lstBox_UsersNotAddedToGroup.Items.Add(u);
                     }
-
                 }
             }
-
         }
 
         private List<User> GetUsersForSelectedGroup(uint _groupID)
@@ -514,7 +368,6 @@ namespace EnMon_Driver_Manager
                 }
                 else
                 {
-
                     MessageBox.Show("E-Posta Konfigurasyon dosyası bulunamadı", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Log.Instance.Warn("E-Posta ayarlarını guncellerken {0} dosya konumunda -eposta konfigurasyon dosyası bulunamadı", Constants.MailClientConfigFileLocation);
                     return false;
@@ -522,25 +375,7 @@ namespace EnMon_Driver_Manager
             }
             catch (Exception ex)
             {
-
                 throw ex;
-            }
-
-        }
-
-        private void GetMailClientSettings(string _configFileLocation)
-        {
-            if (File.Exists(_configFileLocation))
-            {
-                var parser = new FileIniDataParser();
-
-                IniData iniFile = parser.ReadFile(_configFileLocation);
-                iniFile.Sections["MailClient Parameters"]["MailServerName"] = txt_MailServerName.Text;
-                iniFile.Sections["MailClient Parameters"]["MailServerPort"] = txt_MailServerPort.Text;
-                iniFile.Sections["MailClient Parameters"]["UserName"] = txt_UserName.Text;
-                iniFile.Sections["MailClient Parameters"]["Password"] = txt_Password.Text;
-                parser.WriteFile(_configFileLocation, iniFile, Encoding.Default);
-
             }
         }
 
@@ -562,14 +397,21 @@ namespace EnMon_Driver_Manager
             }
             catch (Exception ex)
             {
-
                 Log.Instance.Error("Grup Adı değiştirilemedi: => {0}", ex.Message);
             }
         }
 
-        #endregion
+        #endregion Private Methods
 
         private void grp_ServerSettings_Enter(object sender, EventArgs e)
+        {
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void kryptonGroupBox1_Paint(object sender, PaintEventArgs e)
         {
 
         }
@@ -584,9 +426,7 @@ namespace EnMon_Driver_Manager
         public string Username { get; set; }
 
         public string Password { get; set; }
-
     }
 
     public delegate void EmailSettingsEventHandler(object source, EmailSettingsEventArgs args);
-
 }

@@ -41,15 +41,7 @@ namespace EnMon_Driver_Manager
                         if (GetDatabaseConnectionInfoFromUser(DatabaseType, DatabaseName, ServerAddress, UserName, Password))
                         {
                             
-                            // Kullanıcı veritabanı bilgilerini girdiyse tekrardan bağlantı kurma denenir.
-                            if(TryConnectToDatabase())
-                            {
-                                WriteNewDatabaseConnectionSettingsToDatabaseConfigFile();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Database bağlantısı kurulamadı.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
+                            
                         }
                     }
 
@@ -117,28 +109,38 @@ namespace EnMon_Driver_Manager
         private static bool GetDatabaseConnectionInfoFromUser(string databaseType, string databaseName, string serverAddress, string userName, string password)
         {
             frm_GetDatabaseConnectionProperties form = new frm_GetDatabaseConnectionProperties(databaseType, databaseName, serverAddress, userName, password);
-            form.FormSubmitted += GetDatabaseConnectionPropertiesFromForm;
+            form.FormSubmitted += TryToConnectDatabase;
             DialogResult result = form.ShowDialog();
             if (result == DialogResult.OK) return true;
             return false;
         }
 
-        private static bool GetDatabaseConnectionInfoFromUser()
+        public static bool GetDatabaseConnectionInfoFromUser()
         {
-            frm_GetDatabaseConnectionProperties form = new frm_GetDatabaseConnectionProperties();
-            form.FormSubmitted += GetDatabaseConnectionPropertiesFromForm;
+            frm_GetDatabaseConnectionProperties form = new frm_GetDatabaseConnectionProperties(DatabaseType, DatabaseName, ServerAddress, UserName, Password);
+            form.FormSubmitted += TryToConnectDatabase;
             DialogResult result = form.ShowDialog();
             if (result == DialogResult.OK) return true;
             return false;
         }
 
-        private static void GetDatabaseConnectionPropertiesFromForm(object source, frm_GetDatabaseConnectionPropertiesEventArgs e)
+        private static void TryToConnectDatabase(object source, frm_GetDatabaseConnectionPropertiesEventArgs e)
         {
             DatabaseName = e.DatabaseName;
             DatabaseType = e.DataBaseType;
             ServerAddress = e.ServerAddress;
             UserName = e.UserName;
             Password = e.Password;
+
+            // Kullanıcı veritabanı bilgilerini girdiyse tekrardan bağlantı kurma denenir.
+            if (TryConnectToDatabase())
+            {
+                WriteNewDatabaseConnectionSettingsToDatabaseConfigFile();
+            }
+            else
+            {
+                MessageBox.Show("Database bağlantısı kurulamadı.", Constants.MessageBoxHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private static bool TryConnectToDatabase()

@@ -1,4 +1,5 @@
 ﻿using EnMon_Driver_Manager.Extensions;
+using EnMon_Driver_Manager.Models.Converters;
 using EnMon_Driver_Manager.Models.Devices;
 using EnMon_Driver_Manager.Models.Stations;
 using System.ComponentModel;
@@ -35,7 +36,7 @@ namespace EnMon_Driver_Manager.Models.Signals
         public uint ID { get; set; }
 
         [Browsable(true)]
-        [ReadOnly(false)]
+        [ReadOnly(true)]
         [Description("Sinyale ait kısa isim")]
         [TypeConverter(typeof(StationConverter))]
         [CustomSortedCategory("Genel Ayarlar", 2)]
@@ -46,14 +47,14 @@ namespace EnMon_Driver_Manager.Models.Signals
             set
             {
                 stationName = value;
-                DeviceName = string.Empty;
+                if(!GetPropertyReadOnlyAttributeValue("DeviceName")) DeviceName = string.Empty;
                 TemporaryValues.devices = TemporaryValues.stations.First(s => s.Name == value).Devices;
                 identification = stationName + " " + deviceName + " " + name;
             }
         }
 
         [Browsable(true)]
-        [ReadOnly(false)]
+        [ReadOnly(true)]
         [Description("Sinyale ait kısa isim")]
         [CustomSortedCategory("Genel Ayarlar", 2)]
         [TypeConverter(typeof(DeviceConverter))]
@@ -104,30 +105,41 @@ namespace EnMon_Driver_Manager.Models.Signals
         [Browsable(true)]
         [ReadOnly(false)]
         [Description("Evet: Sinyalin değeri cihaz detay sayfasında gösterilir \r\nHayır: Sinyalin değeri cihaz detay sayfasında gösterilmez")]
-        [CustomSortedCategory("Sayfa Gösterimi", 3)]
+        [CustomSortedCategory("Sayfa Gösterimi", 4)]
         [CustomSortedDisplayName("Detay Sayfası Gösterimi", 2)]
-        [TypeConverter(typeof(PageShownConverter))]
+        [TypeConverter(typeof(TrueFalseTextConverter))]
         public bool DisplayAtDeviceDetailPage { get; set; }
 
         [Browsable(true)]
         [ReadOnly(false)]
         [Description("Evet: Sinyalin değeri istasyon detay sayfasında gösterilir \r\n Hayır: Sinyalin değeri istasyon detay sayfasında gösterilmez")]
-        [CustomSortedCategory("Sayfa Gösterimi", 3)]
+        [CustomSortedCategory("Sayfa Gösterimi", 4)]
         [CustomSortedDisplayName("İstasyon Sayfası Gösterimi", 1)]
-        [TypeConverter(typeof(PageShownConverter))]
+        [TypeConverter(typeof(TrueFalseTextConverter))]
         public bool DisplayAtStationDetailPage { get; set; }
 
         public virtual void GetPropertyValuesFromDataRow(DataRow dr)
         {
         }
 
+        public virtual string GetBaseClassType()
+        {
+            return "";
+        }
+
+
         #endregion Public Properties
 
-
+        #region Constructors
+        public Signal()
+        {
+            Name = "Yeni Sinyal";
+        }
+        #endregion
 
         #region Protected Methods
 
-        protected void SetPropertyBoolAttributeValue(string _propertyName, bool value)
+        protected void SetPropertyReadOnlyAttributeValue(string _propertyName, bool value)
         {
             PropertyDescriptor descriptor = TypeDescriptor.GetProperties(this.GetType())[_propertyName];
             if (descriptor != null)
@@ -138,6 +150,32 @@ namespace EnMon_Driver_Manager.Models.Signals
             }
         }
 
+        
+        protected bool GetPropertyReadOnlyAttributeValue(string _propertyName)
+        {
+            PropertyDescriptor descriptor = TypeDescriptor.GetProperties(this.GetType())[_propertyName];
+            if (descriptor != null)
+            {
+                ReadOnlyAttribute attrib = (ReadOnlyAttribute)descriptor.Attributes[typeof(ReadOnlyAttribute)];
+                FieldInfo attribute = attrib.GetType().GetField("isReadOnly", BindingFlags.NonPublic | BindingFlags.Instance);
+                return (bool)attribute.GetValue(attrib);
+            }
+            return false;
+        }
+
         #endregion Protected Methods
+
+        #region Public Methods
+        public void SetPropertyBrowsableAttributeValue(string _propertyName, bool value)
+        {
+            PropertyDescriptor descriptor = TypeDescriptor.GetProperties(this.GetType())[_propertyName];
+            if (descriptor != null)
+            {
+                BrowsableAttribute attrib = (BrowsableAttribute)descriptor.Attributes[typeof(BrowsableAttribute)];
+                FieldInfo isBrowsable = attrib.GetType().GetField("Browsable", BindingFlags.NonPublic | BindingFlags.Instance);
+                isBrowsable.SetValue(attrib, value);
+            }
+        }
+        #endregion
     }
 }

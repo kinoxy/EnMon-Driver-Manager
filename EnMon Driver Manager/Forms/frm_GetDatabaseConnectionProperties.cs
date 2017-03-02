@@ -46,10 +46,7 @@ namespace EnMon_Driver_Manager.Forms
                 Password = txt_DatabaseUserPassword.Text
             };
 
-            if(FormSubmitted != null)
-            {
-                FormSubmitted(this, args);
-            }
+            FormSubmitted?.Invoke(this, args);
         }
 
         private bool VerifyInputsAtFormControls()
